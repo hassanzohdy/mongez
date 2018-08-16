@@ -19,10 +19,6 @@ function copy_r($src,$dst) {
     closedir($dir); 
 }
  
-copy_r('./laravel-startup-files/app', './app');
-copy_r('./laravel-startup-files/database', './database');
-copy_r('./laravel-startup-files/config', './config');
-
-unlink('./laravel-startup');
-
-rmdir('./laravel-startup-files');
+copy_r('./laravel-startup-files/app', './../../../app');
+copy_r('./laravel-startup-files/database', './../../../database');
+copy_r('./laravel-startup-files/config', './../../../config');
