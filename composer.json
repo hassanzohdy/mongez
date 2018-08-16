@@ -6,7 +6,7 @@
     "type": "project",
     "minimum-stability": "dev",
     "prefer-stable": true,
-    "require": {
+    "require-dev": {
         "laravel/laravel": "5.6.33"
     },
     "autoload": {
