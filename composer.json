@@ -16,7 +16,7 @@
     },
     "scripts": {
         "post-create-project-cmd": [
-            "@php vendor/hassanzohdy/laravel-startup/laravel-startup"
+            "php vendor/hassanzohdy/laravel-startup/laravel-startup"
         ]
     }
 }
