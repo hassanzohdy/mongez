@@ -16,9 +16,18 @@ This project aims to make using Laravel framework more organized and extensible.
 - [Helpers](#helpers)
 
 # Requirements
-Laravel 5.6 is used at the moment in `Laravel Startup` so please [check laravel requirements](https://laravel.com/docs/5.6/installation#server-requirements).
+- Laravel `>=5.6` 
 
 # Installation
-just run the following composer command 
+
+Run the following Command in your cli.
 
 `composer require hassanzohdy/laravel-startup`
+
+Once its done run the following command
+
+`php vendor/hassanzohdy/laravel-startup/laravel-startup`
+
+Last step is to add the following service provider in `config/app.php` providers list.
+
+`App\Providers\StartupServiceProvider::class`

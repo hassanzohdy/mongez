@@ -21,6 +21,6 @@ function copy_r($src,$dst) {
     closedir($dir); 
 }
 
-copy_r(__DIR__ . '/app', __DIR__ . '/../../../app');
-copy_r(__DIR__ . '/database', __DIR__ . '/../../../database');
-copy_r(__DIR__ . '/config', __DIR__ . '/../../../config');
+copy_r(__DIR__ . '/src/app', __DIR__ . '/../../../app');
+copy_r(__DIR__ . '/src/database', __DIR__ . '/../../../database');
+copy_r(__DIR__ . '/src/config', __DIR__ . '/../../../config');
