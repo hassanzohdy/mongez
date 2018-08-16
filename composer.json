@@ -5,10 +5,5 @@
     "license": "MIT",
     "type": "project",
     "minimum-stability": "dev",
-    "prefer-stable": true,
-    "autoload": {
-        "files": [
-            "app/Helpers/functions.php"
-        ]
-    }
+    "prefer-stable": true
 }
