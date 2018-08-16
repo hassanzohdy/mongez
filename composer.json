@@ -10,12 +10,5 @@
         "files": [
             "app/Helpers/functions.php"
         ]
-    },
-    "extra": {
-        "laravel": {
-            "providers": [
-                "App\\Providers\\StartupServiceProvider"
-            ]
-        }
     }
 }
