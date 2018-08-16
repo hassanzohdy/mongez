@@ -21,4 +21,4 @@ Laravel 5.6 is used at the moment in `Laravel Startup` so please [check laravel 
 # Installation
 just run the following composer command 
 
-`composer require `
+`composer require hassanzohdy/laravel-startup`
