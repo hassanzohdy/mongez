@@ -11,6 +11,13 @@
             "app/Helpers/functions.php"
         ]
     },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "App\\Providers\\StartupServiceProvider"
+            ]
+        }
+    },
     "scripts": {
         "post-create-project-cmd": [
             "php vendor/hassanzohdy/laravel-startup/laravel-startup"

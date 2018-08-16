@@ -2,11 +2,18 @@
 
 namespace App\Providers;
 
+use Arr;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 
-class AppServiceProvider extends ServiceProvider
+class StartupServiceProvider extends ServiceProvider
 {
+    /**
+     * Startup config
+     * 
+     * @var array
+     */
+    protected $startup;
     /**
      * Bootstrap any application services.
      *
@@ -14,6 +21,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        $this->config = config('startup');
+        
+        // register aliases
+        $this->registerAliases();
+
         // register macros
         $this->registerMacros();
 
@@ -21,11 +33,25 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
+     * Register new aliases to the application
+     * 
+     * @return array
+     */
+    protected function registerAliases()
+    {
+        $aliases = $this->config['aliases'];
+        
+        foreach ($aliases as $alias => $original) {
+            class_alias($original, $alias);
+        }
+    }
+
+    /**
      * Manage database options
      */
     public function manageDatabase()
     {
-        $defaultLength = config('database.connections.mysql.defaultStringLength');
+        $defaultLength = Arr::get($this->config, 'database.mysql.defaultStringLength');
 
         if ($defaultLength) {
             Schema::defaultStringLength($defaultLength);
@@ -39,7 +65,7 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function registerMacros()
     {
-        $macros = (array) config('app.macros');
+        $macros = (array) $this->config['macros'];
 
         foreach ($macros as $original => $mixin) {
             $original::mixin(new $mixin);
