@@ -7,7 +7,7 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "laravel/laravel": ">=5.6"
+        "laravel/laravel": "^5.6.33"
     },
     "autoload": {
         "files": [
