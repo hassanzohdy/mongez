@@ -21,6 +21,6 @@ function copy_r($src,$dst) {
     closedir($dir); 
 }
 
-copy_r(__DIR__ . '/laravel-startup-files/app', __DIR__ . '/../../../app');
-copy_r(__DIR__ . '/laravel-startup-files/database', __DIR__ . '/../../../database');
-copy_r(__DIR__ . '/laravel-startup-files/config', __DIR__ . '/../../../config');
+copy_r(__DIR__ . '/app', __DIR__ . '/../../../app');
+copy_r(__DIR__ . '/database', __DIR__ . '/../../../database');
+copy_r(__DIR__ . '/config', __DIR__ . '/../../../config');

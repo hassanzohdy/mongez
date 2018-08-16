@@ -11,9 +11,11 @@
             "app/Helpers/functions.php"
         ]
     },
-    "scripts": {
-        "post-autoload-dump": [
-            "php vendor/hassanzohdy/laravel-startup/laravel-startup"
-        ]
+    "extra": {
+        "laravel": {
+            "providers": [
+                "App\\Providers\\StartupServiceProvider"
+            ]
+        }
     }
 }
