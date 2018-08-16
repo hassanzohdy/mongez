@@ -31,3 +31,14 @@ Once its done run the following command
 Last step is to add the following service provider in `config/app.php` providers list.
 
 `App\Providers\StartupServiceProvider::class`
+
+If you want to load `app/helpers/functions` automatically add it in your `composer.json` in the autoload section so it look like:
+
+```json
+"autoload": {
+    "files": [
+        "app/Helpers/functions.php"
+    ]
+```
+
+then run `composer dump-autoload`.
