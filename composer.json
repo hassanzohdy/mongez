@@ -6,9 +6,6 @@
     "type": "project",
     "minimum-stability": "dev",
     "prefer-stable": true,
-    "require-dev": {
-        "laravel/laravel": "5.6.33"
-    },
     "autoload": {
         "files": [
             "app/Helpers/functions.php"
