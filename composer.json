@@ -1,0 +1,20 @@
+{
+    "name": "hassanzohdy/laravel-startup",
+    "description": "An organized starting up new laravel project for more organization.",
+    "keywords": ["framework", "laravel"],
+    "license": "MIT",
+    "type": "project",
+    "require": {
+        "laravel/laravel": "^5.6"
+    },
+    "autoload": {
+        "files": [
+            "app/Helpers/functions.php"
+        ]
+    },
+    "scripts": {
+        "post-create-project-cmd": [
+            "@php laravel-startup"
+        ]
+    }
+}

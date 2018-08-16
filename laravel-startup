@@ -1,0 +1,28 @@
+#!/usr/bin/env php
+<?php
+
+echo "Copying Laravel Startup Files...." . PHP_EOL;
+
+function copy_r($src,$dst) { 
+    $dir = opendir($src); 
+    @mkdir($dst); 
+    while(false !== ( $file = readdir($dir)) ) { 
+        if (( $file != '.' ) && ( $file != '..' )) { 
+            if ( is_dir($src . '/' . $file) ) { 
+                copy_r($src . '/' . $file,$dst . '/' . $file); 
+            } 
+            else { 
+                copy($src . '/' . $file,$dst . '/' . $file); 
+            } 
+        } 
+    } 
+    closedir($dir); 
+}
+ 
+copy_r('./laravel-startup-files/app', './app');
+copy_r('./laravel-startup-files/database', './database');
+copy_r('./laravel-startup-files/config', './config');
+
+unlink('./laravel-startup');
+
+rmdir('./laravel-startup-files');
