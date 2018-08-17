@@ -1,0 +1,25 @@
+#!/usr/bin/env php
+<?php
+
+echo "Copying Laravel organizer Files...." . PHP_EOL;
+
+function copy_r($src,$dst) { 
+    $dir = opendir($src); 
+    if (! is_dir($dst)) {
+        mkdir($dst); 
+    }
+    while(false !== ( $file = readdir($dir)) ) { 
+        if (( $file != '.' ) && ( $file != '..' )) { 
+            if ( is_dir($src . '/' . $file) ) { 
+                copy_r($src . '/' . $file,$dst . '/' . $file); 
+            } 
+            else { 
+                copy($src . '/' . $file,$dst . '/' . $file); 
+            } 
+        } 
+    } 
+    closedir($dir); 
+}
+
+copy_r(__DIR__ . '/files/app', __DIR__ . '/../../../app');
+copy_r(__DIR__ . '/files/config', __DIR__ . '/../../../config');

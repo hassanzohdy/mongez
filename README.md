@@ -1,4 +1,4 @@
-# Laravel Startup
+# Laravel Organizer
 
 This project aims to make using Laravel framework more organized and extensible.
 
@@ -22,30 +22,14 @@ This project aims to make using Laravel framework more organized and extensible.
 
 Run the following Command in your cli.
 
-`composer require hz/laravel-startup`
+`composer require hz/laravel-organizer`
 
 Once its done run the following command
 
-`php vendor/hz/laravel-startup/laravel-startup`
-
-Last step is to add the following service provider in `config/app.php` providers list.
-
-`App\Providers\StartupServiceProvider::class`
-
-If you want to load `app/helpers/functions` automatically add it in your `composer.json` in the autoload section so it look like:
-
-```json
-"autoload": {
-    "files": [
-        "app/Helpers/functions.php"
-    ]
-```
-
-then run `composer dump-autoload`.
+`php vendor/hz/laravel-organizer/organize`
 
 # Getting started
 Once the package is fully installed successfully, you will find the following files/directories in your application.
-
 
 ```
 Laravel Project
@@ -56,21 +40,18 @@ Laravel Project
 │       └─── --- exceptions here ---
 │   └─── Helpers
 │   |   └─── --- Helpers Classes And functions  ---
-│   |   └─── functions.php
 │   └─── Items
 │       └─── --- items ---  
 │   └─── Macros
 │       └─── --- macros here ---
 │   └─── Managers
 │       └─── --- Abstract classes here ---
-│   └─── Providers
-│       └─── --- StartupProvider ---
 │   └─── Repositories
 │       └─── --- Repositories here ---
 │   └─── Traits
 │       └─── --- Traits here ---
 └─── config
-|   └─── startup.php 
+|   └─── organizer.php 
 ```
 
 # Contracts
@@ -88,17 +69,17 @@ All macros should be placed in `app/Macros` directory.
 
 # How to add new macro
 
-Go to `config/startup.php` and in the `macors` section add your macro as the key will be the original class and the value will be your `mixin` class as follows:
+Go to `config/organizer.php` and in the `macors` section add your macro as the key will be the original class and the value will be your `mixin` class as follows:
 
 ```php
 'macros' => [
-    Illuminate\Support\Collection::class => App\Macros\Support\Collection::class
+    Illuminate\Support\Collection::class => HZ\Laravel\Organizer\App\Macros\Support\Collection::class
 ]
 ```
 
 So lets take the `Collection` class for example, let's assume we want to add more methods to the `Illuminate\Support\Collection` class like `wake` method.
 
-This method mainly applies a callback on the entire collection without the need of creating new one, which basically using the [array_walk() function](http://php.net/manual/en/function.array-walk.php).
+This method mainly applies a callback on the entire collection without the need of creating new one, which basically using the [array_walk() ](http://php.net/manual/en/function.array-walk.php) function.
 
 Let's assume we've a price list 
 
@@ -165,7 +146,7 @@ For example let's say we want the response of each user be like:
 
 So we need to do two things here, adjusting the `name` property and setting a full `image url` path for each user.
 
-So our `app/Items/User/User.php` class should be like:
+So our `app/Items/User/User.php` class should look like:
 
 ```php
 
@@ -184,6 +165,7 @@ class User extends Item
     {
         return [
             'id' => $this->id,
+            'email' => $this->email,
             'image' => url('images/' . $this->image),
             'name' => [
                 'first' => $this->first_name,
@@ -195,4 +177,8 @@ class User extends Item
 }
 ```
 
-Also peer in mind that `Items` are used in [repositories](#repositories) in the `list` method.
+Also peer in mind that `Items` should be used in [repositories](#repositories) in the `list` method.
+
+# Repositories
+# Database
+# Helpers
