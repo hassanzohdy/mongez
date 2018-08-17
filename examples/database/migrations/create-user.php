@@ -19,7 +19,8 @@ class CreateUsersTable extends Migration
             $table->string('last_name');
             $table->string('email')->unique();
             $table->string('password');
-            // this will add the following:
+
+            // the loggers() method will add the following:
             // created_at timestamp
             // created_by int
             // updated_at timestamp

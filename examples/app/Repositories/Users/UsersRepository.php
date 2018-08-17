@@ -1,12 +1,12 @@
 <?php
-namespace HZ\Laravel\Organizer\App\Repositories\Users;
+namespace App\Repositories\Users;
 
 use DB;
 use Item;
-use HZ\Laravel\Organizer\App\Models\User\User;
-use HZ\Laravel\Organizer\App\Items\Users\Users;
-use Illuminate\Http\Request;
-use HZ\Laravel\Organizer\App\Managers\RepositoryManager;
+use Items\Users\Users;
+use App\Models\User\User;
+use Illuminate\Http\Request; // Or just use Request if you're enabling it in the alias list 
+use HZ\Laravel\Organizer\App\Managers\RepositoryManager; // Or RepositoryManager
 use HZ\Laravel\Organizer\App\Contracts\RepositoryInterface;
 
 class UsersRepository extends RepositoryManager implements RepositoryInterface

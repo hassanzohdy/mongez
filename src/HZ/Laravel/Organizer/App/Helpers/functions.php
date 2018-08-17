@@ -11,9 +11,7 @@ if (! function_exists('user')) {
      */
     function user()
     {
-        // this is used for now for api routes
-        // adjust it to suit your needs
-        return Auth('api')->user();
+        return request()->user();
     }
 }
 

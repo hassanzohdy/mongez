@@ -22,8 +22,10 @@ return [
     */
     'repositories' => [
         // add your repositories here
-
-        'users' => HZ\Laravel\Organizer\App\Repositories\Users\UsersRepository::class,
+        
+        // 'repo-short-name' => RepositoryClassPath::class,
+        // for example
+        // 'users' => App\Repositories\Users\UsersRepository::class,
     ],
     
     /*

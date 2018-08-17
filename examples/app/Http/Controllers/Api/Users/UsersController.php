@@ -1,10 +1,11 @@
 <?php
-
 namespace App\Http\Controllers\User;
 
+// these shortcuts will work only if they are in the `alias` list in the `config/organizer.php` file
 use Request;
+use ApiController; 
 
-class UserController extends \ApiController
+class UserController extends ApiController
 {
     /**
      * Controller info
