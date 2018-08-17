@@ -22,11 +22,11 @@ This project aims to make using Laravel framework more organized and extensible.
 
 Run the following Command in your cli.
 
-`composer require hz/laravel-organizer`
+`composer require hassanzohdy/laravel-organizer`
 
 Once its done run the following command
 
-`php vendor/hz/laravel-organizer/organize`
+`php vendor/hassanzohdy/laravel-organizer/organize`
 
 # Getting started
 Once the package is fully installed successfully, you will find the following files/directories in your application.
