@@ -182,3 +182,23 @@ Also peer in mind that `Items` should be used in [repositories](#repositories) i
 # Repositories
 # Database
 # Helpers
+
+Helpers are groups of `classes` and helper `functions`.
+
+Mainly, helpers are used to do some functions for other classes.
+
+For example, the [Select](./docs/helpers/select) is used to manage any passed selections to any [Repository](#repositories).
+
+Sometimes you want to do some quick function for easy access, for example in the [Helper functions](./docs/helpers/functions) file we have the [user()](./docs/helpers/functions#user) function which returns the object of the current user.
+
+Best way to inject your `functions` files is to add it in your `composer.json` file in the `autoload` section, like this:
+
+```json
+"autoload": {
+    "files": [
+        "app/Helpers/my-functions.php"
+    ]
+}
+```
+
+> Don't forget to run `composer dump-autoload` after adding the helper functions.
