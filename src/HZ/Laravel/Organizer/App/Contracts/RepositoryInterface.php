@@ -3,8 +3,8 @@ namespace HZ\Laravel\Organizer\App\Contracts;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Model;
 use HZ\Laravel\Organizer\App\Managers\Item;
-use HZ\Laravel\Organizer\App\Helpers\Database\Eloquent\Model;
 
 interface RepositoryInterface
 {
@@ -12,7 +12,7 @@ interface RepositoryInterface
      * Create new record
      * 
      * @param  \Illuminate\Http\Request $request
-     * @return HZ\Laravel\Organizer\App\Helpers\Database\Eloquent\Model
+     * @return Illuminate\Database\Eloquent\Model
      */
     public function create(Request $request): Model;
 
@@ -21,7 +21,7 @@ interface RepositoryInterface
      * 
      * @param  int id
      * @param  \Illuminate\Http\Request $request
-     * @return HZ\Laravel\Organizer\App\Helpers\Database\Eloquent\Model
+     * @return Illuminate\Database\Eloquent\Model
      */
     public function update(int $id, Request $request): Model;
 
