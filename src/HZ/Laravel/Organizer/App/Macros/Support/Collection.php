@@ -19,6 +19,18 @@ class Collection
     }
 
     /**
+     * Add one ore element to the beginning of the collection
+     * 
+     * @param  mixed ...$value
+     * @return void
+     */
+    public function unshift() {
+        return function (...$value) {
+            array_unshift($this->items, ...$value);
+        };
+    }
+
+    /**
      * Remove from the collection the given value
      * 
      * @param  mixed $value
