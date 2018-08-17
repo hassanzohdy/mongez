@@ -5,14 +5,14 @@ This project aims to make using Laravel framework more organized and extensible.
 # Table of contents
 - [Requirements](#requirements)
 - [Installation](#installation)
-- [Database](#database)
-- [Models](#models)
-- [Repositories](#repositories)
+- [Getting Started](#getting-started)
+- [Contracts](#contracts)
 - [Macros](#macros)
+- [Managers](#managers)
 - [traits](#traits)
 - [Items](#items)
-- [Contracts](#contracts)
-- [Managers](#managers)
+- [Repositories](#repositories)
+- [Database](#database)
 - [Helpers](#helpers)
 
 # Requirements
@@ -22,11 +22,11 @@ This project aims to make using Laravel framework more organized and extensible.
 
 Run the following Command in your cli.
 
-`composer require hassanzohdy/laravel-startup`
+`composer require hz/laravel-startup`
 
 Once its done run the following command
 
-`php vendor/hassanzohdy/laravel-startup/laravel-startup`
+`php vendor/hz/laravel-startup/laravel-startup`
 
 Last step is to add the following service provider in `config/app.php` providers list.
 
@@ -42,3 +42,157 @@ If you want to load `app/helpers/functions` automatically add it in your `compos
 ```
 
 then run `composer dump-autoload`.
+
+# Getting started
+Once the package is fully installed successfully, you will find the following files/directories in your application.
+
+
+```
+Laravel Project
+└─── app
+│   └─── Contracts
+│       └─── --- Interfaces here ---
+│   └─── Exceptions
+│       └─── --- exceptions here ---
+│   └─── Helpers
+│   |   └─── --- Helpers Classes And functions  ---
+│   |   └─── functions.php
+│   └─── Items
+│       └─── --- items ---  
+│   └─── Macros
+│       └─── --- macros here ---
+│   └─── Managers
+│       └─── --- Abstract classes here ---
+│   └─── Providers
+│       └─── --- StartupProvider ---
+│   └─── Repositories
+│       └─── --- Repositories here ---
+│   └─── Traits
+│       └─── --- Traits here ---
+└─── config
+|   └─── startup.php 
+```
+
+# Contracts
+
+Contracts are list of `interfaces` that will be used to store all of your interfaces in that directory so you can easily access all interfaces from one directory. 
+
+## Available contracts
+- [RepositoryInterface](./docs/contracts/repository)
+
+# Macros
+
+Macros are used to extend `append` methods to existing classes on the runtime without modifying the original class.
+
+All macros should be placed in `app/Macros` directory.
+
+# How to add new macro
+
+Go to `config/startup.php` and in the `macors` section add your macro as the key will be the original class and the value will be your `mixin` class as follows:
+
+```php
+'macros' => [
+    Illuminate\Support\Collection::class => App\Macros\Support\Collection::class
+]
+```
+
+So lets take the `Collection` class for example, let's assume we want to add more methods to the `Illuminate\Support\Collection` class like `wake` method.
+
+This method mainly applies a callback on the entire collection without the need of creating new one, which basically using the [array_walk() function](http://php.net/manual/en/function.array-walk.php).
+
+Let's assume we've a price list 
+
+`$priceList = collect([100, 200, 900, 500]);`
+
+Now let's get the same price list but with `10%` taxes added on it.
+
+```php
+$priceList->walk(function (& $price) {
+    $price += $price * 0.1;
+});
+```
+
+## Available Macros
+- [Illuminate\Support\Collection](./docs/macros/collection) 
+- [Illuminate\Support\Str](./docs/macros/str) 
+- [Illuminate\Support\Arr](./docs/macros/arr) 
+- [Illuminate\Database\Schema\Blueprint](./docs/macros/blueprint) 
+
+# Managers
+
+Managers are `abstract classes` that will be used for `inheritance` only.
+
+Managers should be used to **encapsulate** common methods between same classes like `RepositoryManager` for instance, it's used to implement some common methods between all [repositories](#repositories) and also add some `abstract` method for the child classes.
+
+## Available Managers
+- [Item](./docs/managers/item)
+- [RepositoryManager](./docs/managers/repository)
+- [ApiController](./docs/managers/api)
+
+
+# Traits
+
+Traits are massively good for using set of methods in many classes to fullfil the drop of the php single class inheritance.
+
+Any traits should be placed in the `app/Traits` directory 
+
+## Available traits
+- [RepositoryTrait](./docs/traits/repository)
+
+# Items
+Every item is just a `Fluent` class that is used to dynamically set/get data in the class.
+
+The main purpose for items here is to manage what type of data that you want to send in `json` responses as you may not want to send all fetch columns from the table or even modify some values.
+
+Let's assume we want to list of users that has the following columns in the `users` table:
+
+`id`, `first_name`, `last_name`, `email`, `password`, `image`
+
+For example let's say we want the response of each user be like:
+
+```json
+{
+    "id": 41,
+    "email": "john.doe@example.com",
+    "image": "https://mysite.com/public/images/john-doe.jpg",
+    "name": {
+        "first": "John",
+        "last": "Doe",
+        "full": "John Doe"
+    }
+}
+```
+
+So we need to do two things here, adjusting the `name` property and setting a full `image url` path for each user.
+
+So our `app/Items/User/User.php` class should be like:
+
+```php
+
+namespace App\Items\User;
+
+use App\Managers\Item;
+
+class User extends Item 
+{
+    /**
+     * Set the data that should be sent in response
+     * 
+     * @return array
+     */
+    public function send(): array
+    {
+        return [
+            'id' => $this->id,
+            'image' => url('images/' . $this->image),
+            'name' => [
+                'first' => $this->first_name,
+                'last' => $this->last_name,
+                'full' => $this->first_name . ' ' . $this->last_name,
+            ],
+        ];
+    }  
+}
+```
+
+Also peer in mind that `Items` are used in [repositories](#repositories) in the `list` method.
