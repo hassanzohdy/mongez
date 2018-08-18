@@ -1,25 +1,18 @@
 #!/usr/bin/env php
 <?php
 
-echo "Copying Laravel organizer Files...." . PHP_EOL;
+echo "Preparing Laravel organizer...." . PHP_EOL;
 
-function copy_r($src,$dst) { 
-    $dir = opendir($src); 
-    if (! is_dir($dst)) {
-        mkdir($dst); 
+$basePath = __DIR__ . '/../../../';
+
+$directories = ['Exceptions', 'Contracts', 'Items', 'Managers', 'Repositories', 'Traits', 'Macros', 'Helpers'];
+
+foreach ($directories as $directory) {
+    if (! is_dir($directoryPath = $basePath . 'app/' . $directory)) {
+        mkdir($directoryPath);
     }
-    while(false !== ( $file = readdir($dir)) ) { 
-        if (( $file != '.' ) && ( $file != '..' )) { 
-            if ( is_dir($src . '/' . $file) ) { 
-                copy_r($src . '/' . $file,$dst . '/' . $file); 
-            } 
-            else { 
-                copy($src . '/' . $file,$dst . '/' . $file); 
-            } 
-        } 
-    } 
-    closedir($dir); 
 }
 
-copy_r(__DIR__ . '/files/app', __DIR__ . '/../../../app');
-copy_r(__DIR__ . '/files/config', __DIR__ . '/../../../config');
+// copy the organizer file
+
+copy(__DIR__ . 'files/config/organizer.php', $basePath . 'config/organizer.php');
