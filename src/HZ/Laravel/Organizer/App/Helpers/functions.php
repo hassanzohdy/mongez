@@ -68,13 +68,14 @@ if (! function_exists('array_remove')) {
     /**
      * Remove from array by the given value
      * 
-     * @param mixed $value
-     * @param array $array
-     * @return void
+     * @param  mixed $value
+     * @param  array $array
+     * @param  bool $removeFirstOnly
+     * @return array
      */
-    function array_remove_by_value($value, array &$array)
+    function array_remove($value, array $array, bool $removeFirstOnly = false): array
     {
-        return Arr::remove($value, $array);
+        return Arr::remove($value, $array, $removeFirstOnly);
     }
 }
 
@@ -86,7 +87,7 @@ if (! function_exists('str_remove_first')) {
      * @param string $object
      * @return string
      */
-    function str_remove_first($needle, string $object)
+    function str_remove_first(string $needle, string $object)
     {
         return Str::removeFirst($needle, $object);
     }

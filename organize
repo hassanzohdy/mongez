@@ -15,4 +15,6 @@ foreach ($directories as $directory) {
 
 // copy the organizer file
 
-copy(__DIR__ . 'files/config/organizer.php', $basePath . 'config/organizer.php');
+if (! file_exists($basePath . 'config/organizer.php')) {
+    copy(__DIR__ . '/files/config/organizer.php', $basePath . 'config/organizer.php');
+}

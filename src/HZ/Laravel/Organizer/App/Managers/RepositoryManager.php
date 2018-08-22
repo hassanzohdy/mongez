@@ -9,7 +9,7 @@ use Illuminate\Support\Collection;
 use HZ\Laravel\Organizer\App\Traits\RepositoryTrait;
 use HZ\Laravel\Organizer\App\Helpers\Repository\Select;
 use HZ\Laravel\Organizer\App\Contracts\RepositoryInterface;
-use HZ\Laravel\Organizer\App\Helpers\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Model;
 
 abstract class RepositoryManager implements RepositoryInterface
 {
@@ -18,6 +18,13 @@ abstract class RepositoryManager implements RepositoryInterface
      * for quick access to other repositories
      */
     use RepositoryTrait;
+
+    /**
+     * Model name
+     * 
+     * @const string
+     */
+    const MODEL = '';
 
     /**
      * Set if the current repository uses a soft delete method or not
@@ -56,11 +63,11 @@ abstract class RepositoryManager implements RepositoryInterface
     const RETRIEVE_DELETED_RECORDS = 'DELETED';
 
     /**
-     * Retrieval mode flag
+     * Retrieval mode keyword to be used in the options list flag
      * 
      * @const string
      */
-    const RETRIEVAL_MODE_KEYWORD = 'retrievalMode';
+    const RETRIEVAL_MODE = 'retrievalMode';
 
     /**
      * Default retrieval mode
@@ -177,12 +184,18 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $this->select();
 
-        $retrieveModel = $this->option(static::RETRIEVAL_MODE_KEYWORD, static::DEFAULT_RETRIEVAL_MODE);
+        if (static::USING_SOFT_DELETE === true) {
+            $retrieveMode = $this->option(static::RETRIEVAL_MODE, static::DEFAULT_RETRIEVAL_MODE);
 
-        if ($retrieveModel == static::RETRIEVE_ACTIVE_RECORDS) {
-            $deletedAtColumn = $this->table . '.' . static::DELETED_AT;
-
-            $this->query->whereNull($deletedAtColumn);    
+            if ($retrieveMode == static::RETRIEVE_ACTIVE_RECORDS) {
+                $deletedAtColumn = $this->table . '.' . static::DELETED_AT;
+    
+                $this->query->whereNull($deletedAtColumn);    
+            } elseif ($retrieveMode == static::RETRIEVE_DELETED_RECORDS) {
+                $deletedAtColumn = $this->table . '.' . static::DELETED_AT;
+    
+                $this->query->whereNotNull($deletedAtColumn);    
+            }
         }
 
         $this->filter();
@@ -191,7 +204,7 @@ abstract class RepositoryManager implements RepositoryInterface
             $this->query->select(...$this->select->list());
         }
         
-        $this->orderBy();
+        $this->orderBy(array_filter((array) $this->option('orderBy')));
         
         $records = $this->query->get();
 
@@ -219,12 +232,19 @@ abstract class RepositoryManager implements RepositoryInterface
      * 
      * @return void
      */
-    abstract protected function orderBy();
+    protected function orderBy(array $orderBy)
+    {
+        if (empty($orderBy)) {
+            $orderBy = [$this->column('id'), 'DESC'];
+        }
+
+        $this->query->orderBy(...$orderBy);
+    }
     
     /**
      * Adjust records that were fetched from database
      *
-     * @param \Illuminate\Support\Collection
+     * @param \Illuminate\Support\Collection $records
      * @return \Illuminate\Support\Collection
      */
     protected function records(Collection $records): Collection
@@ -233,12 +253,23 @@ abstract class RepositoryManager implements RepositoryInterface
     }
 
     /**
+     * Get column name appended by table|table alias 
+     * 
+     * @param  string $column
+     * @return string
+     */
+    protected function column(string $column): string
+    {
+        return $this->table . '.' . $column;
+    }
+
+    /**
      * Set options list
      *
      * @param array $options
      * @return void
      */
-    protected function setOptions(array $options): void
+    private function setOptions(array $options): void
     {
         $this->options = $options;
 
@@ -252,7 +283,7 @@ abstract class RepositoryManager implements RepositoryInterface
      *
      * @param  string $key
      * @param  mixed $default
-     * @return void
+     * @return mixed
      */
     protected function option(string $key, $default = null)
     {
@@ -264,60 +295,83 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     public function create(Request $request): Model
     {
-        $model = new $this->model;
+        $modelName = static::MODEL;
+
+        $model = new $modelName;
 
         $this->setData($model, $request);
 
         $model->save();
 
         $this->onCreate($model, $request);
+        
+        $this->onSave($model, $request);
 
         return $model;
     }
 
     /**
-     * This is a direct insertion to the database 
-     * It means that the data will be totally sent as an argument
-     * 
-     * @param  array $data
-     * @return \HZ\Laravel\Organizer\App\Helpers\Database\Eloquent\Model
+     * This method will be triggered after creating new record in database
+     *
+     * @parm   \Illuminate\Database\Eloquent\Model $model
+     * @param  \Illuminate\Http\Request $request
+     * @return void
      */
-    public function insert(array $data): Model
-    {
-        $model = new $this->model;
+    protected function onCreate(Model $model, Request $request) {}
 
-        $this->updateModel($model, $data);
+    /**
+     * {@inheritDoc}
+     */
+    public function update(int $id, Request $request): Model
+    {
+        $model = (static::MODEL)::find($id);
+
+        $this->setData($model, $request);
 
         $model->save();
 
-        return $model;    
+        $this->onUpdate($model, $request);
+
+        $this->onSave($model, $request);
+
+        return $model;
     }
 
     /**
-     * This is a direct update to the database 
-     * It means that the data will be totally sent as an argument
-     * 
-     * @param  int $id
-     * @param  array $data
-     * @return \HZ\Laravel\Organizer\App\Helpers\Database\Eloquent\Model|null
+     * This method will be triggered after record is updated 
+     *
+     * @parm   \Illuminate\Database\Eloquent\Model $model
+     * @param  \Illuminate\Http\Request $request
+     * @return void
      */
-    public function edit(int $id, array $data):? Model
-    {
-        $model = $this->model::find($id);
+    protected function onUpdate(Model $model, Request $request) {}
 
-        if (! $model) return null;
+    /**
+     * This method will be triggered after creating or updating
+     *
+     * @parm   \Illuminate\Database\Eloquent\Model $model
+     * @param  \Illuminate\Http\Request $request
+     * @return void
+     */
+    protected function onSave(Model $model, Request $request) {}
 
-        $this->updateModel($model, $data);
-
-        $model->save();
-
-        return $model;    
-    }
+    /**
+     * Set data to the model
+     * This method is triggered on create and update as it will be a useful 
+     * method to set model data once instead of adding it on create and adding it again on update
+     * 
+     * In simple words, add common fields between create and update using this method
+     * 
+     * @parm   \Illuminate\Database\Eloquent\Model $model
+     * @param  \Illuminate\Http\Request $request
+     * @return void
+     */
+    abstract protected function setData(Model $model, Request $request);
 
     /**
      * Update record for the given model
      *
-     * @param  \HZ\Laravel\Organizer\App\Helpers\Database\Eloquent\Model $model
+     * @param  \Illuminate\Database\Eloquent\Model $model
      * @param  array $columns
      * @return void
      */
@@ -341,75 +395,39 @@ abstract class RepositoryManager implements RepositoryInterface
     }
 
     /**
-     * This method will be triggered after item create
-     *
-     * @parm   \HZ\Laravel\Organizer\App\Helpers\Database\Eloquent\Model $model
-     * @param  \Illuminate\Http\Request $request
-     * @return void
-     */
-    protected function onCreate(Model $model, Request $request) {}
-
-    /**
-     * {@inheritDoc}
-     */
-    public function update(int $id, Request $request): Model
-    {
-        $model = $this->model::find($id);
-
-        $this->setData($model, $request);
-
-        $model->save();
-
-        $this->onUpdate($model, $request);
-
-        return $model;
-    }
-
-    /**
-     * This method will be triggered after item create
-     *
-     * @parm   \HZ\Laravel\Organizer\App\Helpers\Database\Eloquent\Model $model
-     * @param  \Illuminate\Http\Request $request
-     * @return void
-     */
-    protected function onUpdate(Model $model, Request $request) {}
-
-    /**
-     * Set data to the model
-     * This method is triggered on create and update as it will be a useful 
-     * method to set model data once instead of adding it on create and adding it again on update
-     * 
-     * In simple words, add common fields between create and update using this method
-     * 
-     * @parm   \HZ\Laravel\Organizer\App\Helpers\Database\Eloquent\Model $model
-     * @param  \Illuminate\Http\Request $request
-     * @return void
-     */
-    abstract protected function setData(Model $model, Request $request);
-
-    /**
      * {@inheritDoc}
      */
     public function delete($id): bool
     {
-        $model = $this->model::find($id);
+        $model = (static::MODEL)::find($id);
 
         if (! $model) return false;
 
+        $this->beforeDeleting($model);
+
         $model->delete();
+
+        $this->onDelete($model, $id);
 
         return true;
     }
 
     /**
-     * This method will be triggered after item deleted
-     * This method works only with soft deletes
+     * This method is triggered before deleting the model
      * 
-     * @param \HZ\Laravel\Organizer\App\Helpers\Database\Eloquent\Model $model
+     * @param \Illuminate\Database\Eloquent\Model $model
+     * @return void
+     */
+    protected function beforeDeleting(Model $model) {}
+
+    /**
+     * This method will be triggered after item deleted
+     * 
+     * @param \Illuminate\Database\Eloquent\Model $model
      * @param  int $id
      * @return void
      */
-    protected function onDelete(Model $model, $id) {}
+    protected function onDelete(Model $model, int $id) {}
 
     /**
      * Call query builder methods dynamically

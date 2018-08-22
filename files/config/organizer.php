@@ -45,25 +45,4 @@ return [
         Illuminate\Database\Query\Builder::class => HZ\Laravel\Organizer\App\Macros\Database\Query\Builder::class,
         Illuminate\Database\Schema\Blueprint::class => HZ\Laravel\Organizer\App\Macros\Database\Schema\Blueprint::class,
     ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Class Aliases
-    |--------------------------------------------------------------------------
-    |
-    | This array of class aliases will be registered when this application
-    | is started. However, feel free to register as many as you wish as
-    | the aliases are "lazy" loaded so they don't hinder performance.
-    |
-    */
-    'aliases' => [
-        'Arr' => Illuminate\Support\Arr::class,
-        'Str' => Illuminate\Support\Str::class,
-        'Request' => Illuminate\Http\Request::class,
-        'Collection' => Illuminate\Support\Collection::class,
-        'Item' => HZ\Laravel\Organizer\App\Managers\Item::class,
-        'ApiController' => HZ\Laravel\Organizer\App\Managers\ApiController::class,
-        'Model' => HZ\Laravel\Organizer\App\Helpers\Database\Eloquent\Model::class,
-        'RepositoryTrait' => HZ\Laravel\Organizer\App\Traits\RepositoryTrait::class,
-    ],
 ];

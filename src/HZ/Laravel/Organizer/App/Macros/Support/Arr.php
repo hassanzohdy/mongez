@@ -8,16 +8,16 @@ class Arr
      * 
      * @param  mixed $value
      * @param  array $array
-     * @param  bool $removeOnlyFirst
+     * @param  bool $removeFirstOnly
      * @return array
      */
     public static function remove()
     {
-        return function ($value, array $array, bool $removeOnlyFirst = false): array {
+        return function ($value, array $array, bool $removeFirstOnly = false): array {
             foreach ($array as $key => $arrayValue) {
                 if ($value == $arrayValue) {
                     unset($array[$key]);
-                    if ($removeOnlyFirst === true) break;
+                    if ($removeFirstOnly === true) break;
                 }
             }
 

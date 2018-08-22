@@ -1,5 +1,5 @@
 <?php
-namespace HZ\Laravel\Organizer\App\Helpers\Database\Eloquent;
+namespace HZ\Laravel\Organizer\App\Managers;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model as BaseModel;

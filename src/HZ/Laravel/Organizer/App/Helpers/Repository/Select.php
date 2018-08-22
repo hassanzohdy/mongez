@@ -23,7 +23,7 @@ class Select
     }
 
     /**
-     * Add key to list
+     * Add one or more column to list
      *
      * @param  string $key
      * @return $this
@@ -52,14 +52,16 @@ class Select
      * Replace column
      *
      * @param  string $oldColumn
-     * @param  mixed $columns
+     * @param  mixed ...$newColumns
      * @return $this
      */
-    public function replace($oldColumn, ...$columns)
+    public function replace($oldColumn, ...$newColumns): self
     {
+        if (! $this->has($oldColumn)) return $this;
+
         $this->remove($oldColumn);
 
-        $this->add(...$columns);
+        $this->add(...$newColumns);
 
         return $this;
     }
@@ -76,13 +78,23 @@ class Select
     }
 
     /**
-     * Return $list array
+     * Return select list array
      *
      * @return array $list
      */
     public function list(): array
     {
         return $this->list->toArray();
+    }
+    
+    /**
+     * Determine if the select list is empty
+     * 
+     * @return bool
+     */
+    public function isEmpty(): bool
+    {
+        return $this->list->isEmpty();
     }
 
     /**

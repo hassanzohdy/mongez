@@ -4,7 +4,7 @@ namespace HZ\Laravel\Organizer\App\Macros\Support;
 class Str
 {
     /**
-     * Remove the first occurrence of the given needle 
+     * Remove the first occurrence of the given needle from the object 
      * 
      * @param string $needle
      * @param string $object
