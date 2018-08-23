@@ -1,0 +1,27 @@
+{
+    "name": "hassanzohdy/laravel-organizer",
+    "description": "An organized structure for building a neat laravel application(s).",
+    "keywords": ["laravel","organizer"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Hasan Zohdy",
+            "email": "hassanzohdy@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-0": {
+            "HZ\\Laravel\\Organizer\\App\\": "src/"
+        },
+        "files": [
+            "src/HZ/Laravel/Organizer/App/Helpers/functions.php"
+        ]
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "HZ\\Laravel\\Organizer\\App\\Providers\\OrganizerServiceProvider"
+            ]
+        }
+    }
+}

@@ -1,0 +1,22 @@
+#!/usr/bin/env php
+<?php
+
+echo "Preparing Laravel organizer...." . PHP_EOL;
+
+$basePath = __DIR__ . '/../../../';
+
+$directories = ['Exceptions', 'Contracts', 'Items', 'Managers', 'Models', 'Repositories', 'Traits', 'Macros', 'Helpers'];
+
+foreach ($directories as $directory) {
+    if (! is_dir($directoryPath = $basePath . 'app/' . $directory)) {
+        mkdir($directoryPath);
+    }
+}
+
+// copy the organizer file
+
+if (! file_exists($basePath . 'config/organizer.php')) {
+    copy(__DIR__ . '/files/config/organizer.php', $basePath . 'config/organizer.php');
+}
+
+echo 'Done!';
