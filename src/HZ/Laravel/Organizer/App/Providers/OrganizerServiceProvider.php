@@ -25,13 +25,7 @@ class OrganizerServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->config = config('organizer');
-        
-        // register macros
-        $this->registerMacros();
-
-        // manage database options
-        $this->manageDatabase();
+        //
     }
 
     /**
@@ -79,6 +73,12 @@ class OrganizerServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->config = config('organizer');
+        
+        // register macros
+        $this->registerMacros();
+
+        // manage database options
+        $this->manageDatabase();
     }
 }

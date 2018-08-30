@@ -6,10 +6,10 @@ use Auth;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Model;
 use HZ\Laravel\Organizer\App\Traits\RepositoryTrait;
 use HZ\Laravel\Organizer\App\Helpers\Repository\Select;
 use HZ\Laravel\Organizer\App\Contracts\RepositoryInterface;
-use Illuminate\Database\Eloquent\Model;
 
 abstract class RepositoryManager implements RepositoryInterface
 {
@@ -317,7 +317,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * @param  \Illuminate\Http\Request $request
      * @return void
      */
-    protected function onCreate($model, Request $request) {}
+    protected function onCreate(Model $model, Request $request) {}
 
     /**
      * {@inheritDoc}
@@ -344,7 +344,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * @param  \Illuminate\Http\Request $request
      * @return void
      */
-    protected function onUpdate($model, Request $request) {}
+    protected function onUpdate(Model $model, Request $request) {}
 
     /**
      * This method will be triggered after creating or updating
@@ -353,7 +353,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * @param  \Illuminate\Http\Request $request
      * @return void
      */
-    protected function onSave($model, Request $request) {}
+    protected function onSave(Model $model, Request $request) {}
 
     /**
      * Set data to the model
@@ -375,7 +375,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * @param  array $columns
      * @return void
      */
-    protected function updateModel($model, array $columns)
+    protected function updateModel(Model $model, array $columns)
     {
         // available syntax for the columns
         // 1- Associative array: ['name' => 'My Name', 'email' => 'MY@email.com']
@@ -418,7 +418,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * @param \Illuminate\Database\Eloquent\Model $model
      * @return void
      */
-    protected function beforeDeleting($model) {}
+    protected function beforeDeleting(Model $model) {}
 
     /**
      * This method will be triggered after item deleted
@@ -427,7 +427,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * @param  int $id
      * @return void
      */
-    protected function onDelete($model, int $id) {}
+    protected function onDelete(Model $model, int $id) {}
 
     /**
      * Call query builder methods dynamically

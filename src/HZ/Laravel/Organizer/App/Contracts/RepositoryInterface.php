@@ -4,7 +4,6 @@ namespace HZ\Laravel\Organizer\App\Contracts;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Model;
-use HZ\Laravel\Organizer\App\Managers\Item;
 
 interface RepositoryInterface
 {
@@ -45,9 +44,9 @@ interface RepositoryInterface
      * Get a specific record with full details
      * 
      * @param  int id
-     * @return \Item
+     * @return \HZ\Laravel\Organizer\App\Contracts\ItemInterface
      */
-    public function get(int $id): Item;
+    public function get(int $id);
     
     /**
      * Determine whether the given id exists 
