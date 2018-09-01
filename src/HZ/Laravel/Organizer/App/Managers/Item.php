@@ -4,7 +4,7 @@ namespace HZ\Laravel\Organizer\App\Managers;
 use Illuminate\Support\Fluent;
 use HZ\Laravel\Organizer\App\Contracts\ItemInterface;
 
-abstract class Item extends Fluent implements ItemInterface
+class Item extends Fluent implements ItemInterface
 {
     /**
      * Determine whether the item is empty

@@ -91,6 +91,13 @@ abstract class RepositoryManager implements RepositoryInterface
     const TABLE_ALIAS = '';
 
     /**
+     * Auto fill the following columns directly from the request
+     * 
+     * @const var
+     */
+    const DATA = [];
+
+    /**
      * This property will has the final table name that will be used
      * i.e if the TABLE_ALIAS is not empty, then this property will be the value of the TABLE_ALIAS
      * otherwise it will be the value of the TABLE constant
@@ -299,6 +306,12 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $model = new $modelName;
 
+        if (static::DATA) {
+            foreach (static::DATA as $column) {
+                $model->$column = $request->$column;
+            }
+        }
+
         $this->setData($model, $request);
 
         $model->save();
@@ -326,6 +339,12 @@ abstract class RepositoryManager implements RepositoryInterface
     {
         $model = (static::MODEL)::find($id);
 
+        if (static::DATA) {
+            foreach (static::DATA as $column) {
+                $model->$column = $request->$column;
+            }
+        }
+
         $this->setData($model, $request);
 
         $model->save();
@@ -335,6 +354,19 @@ abstract class RepositoryManager implements RepositoryInterface
         $this->onSave($model, $request);
 
         return $model;
+    }
+
+    /**
+     * If the given id exists then we will retrieve an existing record
+     * otherwise, create new model
+     * 
+     * @param  string $model
+     * @param  int $id
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    protected function findOrCreate(string $model, int $id): Model
+    {
+        return $model::find($id) ?: new $model;
     }
 
     /**
@@ -375,7 +407,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * @param  array $columns
      * @return void
      */
-    protected function updateModel(Model $model, array $columns)
+    protected function updateModel(Model $model, array $columns): void
     {
         // available syntax for the columns
         // 1- Associative array: ['name' => 'My Name', 'email' => 'MY@email.com']
@@ -392,6 +424,20 @@ abstract class RepositoryManager implements RepositoryInterface
         }
 
         $model->save();
+    }
+
+    /**
+     * Set the given data to the given model `without` saving it
+     * 
+     * @param  \Illuminate\Database\Eloquent\Model $model
+     * @param  array $columns
+     * @return void
+     */
+    protected function setModelData(Model $model, array $columns): void
+    {
+        foreach ($columns as $column => $value) {
+            $model->$key = $value;
+        }
     }
 
     /**

@@ -16,13 +16,7 @@ class Blueprint
             $this->integer('updated_by');
             $this->integer('deleted_by');
             $this->timestamps();
-            $this->softDeletes();
-
-            // indexes
-            $this->index('created_by');
-            $this->index('updated_by');
-            $this->index('deleted_by');
-            $this->index('deleted_at');
+            $this->softDeletes()->index();
         };
     }
 }
