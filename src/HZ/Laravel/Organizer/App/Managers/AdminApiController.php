@@ -114,7 +114,6 @@ abstract class AdminApiController extends ApiController
      */
     public function store(Request $request)
     {
-        
         $rules = array_merge((array) $this->controllerInfo('rules.all'), $this->storeValidation($request));
 
         $validator = Validator::make($request->all(), $rules);

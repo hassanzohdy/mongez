@@ -7,6 +7,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Traits\Macroable;
 use HZ\Laravel\Organizer\App\Traits\RepositoryTrait;
 use HZ\Laravel\Organizer\App\Helpers\Repository\Select;
 use HZ\Laravel\Organizer\App\Contracts\RepositoryInterface;
@@ -18,6 +19,13 @@ abstract class RepositoryManager implements RepositoryInterface
      * for quick access to other repositories
      */
     use RepositoryTrait;
+
+    /**
+     * Allow repository to be extended
+     */
+    use Macroable {
+        __call as marcoableMethods;
+    }
 
     /**
      * Model name
@@ -484,6 +492,10 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     public function __call($method, $args)
     {
-        return $this->query->$method(...$args);
+        if (method_exists($this->query, $method)) {
+            return $this->query->$method(...$args);
+        }
+
+        return $this->marcoableMethods($method, $args);
     }
 }
