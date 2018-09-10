@@ -451,7 +451,7 @@ abstract class RepositoryManager implements RepositoryInterface
     /**
      * {@inheritDoc}
      */
-    public function delete($id): bool
+    public function delete(int $id): bool
     {
         $model = (static::MODEL)::find($id);
 
