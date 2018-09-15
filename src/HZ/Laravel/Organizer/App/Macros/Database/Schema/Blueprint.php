@@ -11,12 +11,12 @@ class Blueprint
      */
     public static function loggers()
     {
-        return function () {
-            $this->integer('created_by');
-            $this->integer('updated_by');
-            $this->integer('deleted_by');
-            $this->timestamps();
-            $this->softDeletes()->index();
+        return function (string $createdBy = 'created_by', string $updatedBy = 'updated_by', string $deletedBy = 'deleted_by') {
+            $this->integer($createdBy);
+            $this->integer($updatedBy);
+            $this->integer($deletedBy);
+            $this->timestamps(); // created_at + updated_at
+            $this->softDeletes()->index()->nullable(); // deleted_at
         };
     }
 }
