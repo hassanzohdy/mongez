@@ -50,6 +50,8 @@ trait ModelTrait
      */
     public static function boot()
     {
+        // fixing laravel 5.7 update that we MUST call the parent boot method first 
+        parent::boot(); 
         // before creating, we will check if the created_by column has value
         // if so, then we will update the column for the current user id
         static::creating(function ($model) {
