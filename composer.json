@@ -3,7 +3,7 @@
     "description": "An organized structure for building a neat laravel application(s).",
     "keywords": ["laravel","organizer"],
     "license": "MIT",
-    "version": "1.3.6",
+    "version": "1.3.7",
     "authors": [
         {
             "name": "Hasan Zohdy",
@@ -12,16 +12,16 @@
     ],
     "autoload": {
         "psr-0": {
-            "HZ\\Laravel\\Organizer\\App\\": "src/"
+            "HZ\\Laravel\\Organizer\\": "src/"
         },
         "files": [
-            "src/HZ/Laravel/Organizer/App/Helpers/functions.php"
+            "src/HZ/Laravel/Organizer/Helpers/functions.php"
         ]
     },
     "extra": {
         "laravel": {
             "providers": [
-                "HZ\\Laravel\\Organizer\\App\\Providers\\OrganizerServiceProvider"
+                "HZ\\Laravel\\Organizer\\Providers\\OrganizerServiceProvider"
             ]
         }
     }
