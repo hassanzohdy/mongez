@@ -1,5 +1,4 @@
 <?php
-
 namespace HZ\Laravel\Organizer\Providers;
 
 use App;
@@ -8,9 +7,9 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use HZ\Laravel\Organizer\Events\Events;
-use \Laravel\Organizer\Console\Commands\DatabaseMaker;
-use \Laravel\Organizer\Console\Commands\ModuleBuilder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
+use HZ\Laravel\Organizer\Console\Commands\DatabaseMaker;
+use HZ\Laravel\Organizer\Console\Commands\ModuleBuilder;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 
 class OrganizerServiceProvider extends ServiceProvider
