@@ -8,6 +8,8 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use HZ\Laravel\Organizer\Events\Events;
+use \Laravel\Organizer\Console\Commands\DatabaseMaker;
+use \Laravel\Organizer\Console\Commands\ModuleBuilder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 
@@ -28,6 +30,12 @@ class OrganizerServiceProvider extends ServiceProvider
     public function boot()
     {
         //
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                ModuleBuilder::class,
+                DatabaseMaker::class,
+            ]);
+        }
     }
 
     /**
@@ -37,6 +45,10 @@ class OrganizerServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        config([
+            'organizer.root' => __DIR__ . '/../../../../../',
+        ]);
+
         $this->config = config('organizer');
 
         // register the repositories as singletones, only one instance in the entire application
