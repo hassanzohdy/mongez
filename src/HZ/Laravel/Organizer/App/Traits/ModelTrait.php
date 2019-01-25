@@ -7,30 +7,6 @@ use Illuminate\Database\Eloquent\Model as BaseModel;
 trait ModelTrait
 {
     /**
-     * Created By column
-     * Set it to false if this column doesn't exist in the table
-     *
-     * @var string|bool
-     */
-    protected $createdBy = 'created_by';
-
-    /**
-     * Updated By column
-     * Set it to false if this column doesn't exist in the table
-     *
-     * @var string|bool
-     */
-    protected $updatedBy = 'updated_by';
-
-    /**
-     * Deleted By column
-     * Set it to false if this column doesn't exist in the table
-     *
-     * @var string|bool
-     */
-    protected $deletedBy = 'deleted_by';
-
-    /**
      * Determine if the current model uses the given trait
      *
      * @param  string $trait

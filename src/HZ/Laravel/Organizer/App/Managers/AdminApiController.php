@@ -80,6 +80,8 @@ abstract class AdminApiController extends ApiController
     {
         $access = true;
 
+        $id = (int) $id;
+
         if (!$this->repository->has($id)) {
             return $this->badRequest('not-found');
         }

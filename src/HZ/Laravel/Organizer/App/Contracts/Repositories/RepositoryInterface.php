@@ -1,5 +1,5 @@
 <?php
-namespace HZ\Laravel\Organizer\App\Contracts;
+namespace HZ\Laravel\Organizer\App\Contracts\Repositories;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -13,7 +13,7 @@ interface RepositoryInterface
      * @param  \Illuminate\Http\Request $request
      * @return Illuminate\Database\Eloquent\Model
      */
-    public function create(Request $request): Model;
+    public function create(Request $request);
 
     /**
      * Update a specific record
@@ -22,7 +22,7 @@ interface RepositoryInterface
      * @param  \Illuminate\Http\Request $request
      * @return Illuminate\Database\Eloquent\Model
      */
-    public function update(int $id, Request $request): Model;
+    public function update(int $id, Request $request);
 
     /**
      * Delete a specific record
@@ -44,7 +44,7 @@ interface RepositoryInterface
      * Get a specific record with full details
      * 
      * @param  int id
-     * @return \HZ\Laravel\Organizer\App\Contracts\ItemInterface
+     * @return mixed
      */
     public function get(int $id);
     

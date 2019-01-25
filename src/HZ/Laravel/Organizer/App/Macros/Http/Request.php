@@ -48,7 +48,11 @@ class Request
     public function authorization()
     {
         return function () {
-            return $this->server('HTTP_AUTHORIZATION') ?: $this->server('REDIRECT_HTTP_AUTHORIZATION');
+            $authorization = $this->server('HTTP_AUTHORIZATION') ?: $this->server('REDIRECT_HTTP_AUTHORIZATION');
+
+            if (! $authorization) return null;
+
+            return explode(' ', $authorization);
         };
     }
 
@@ -68,7 +72,7 @@ class Request
             $authorization = $this->authorization();
 
             if (! $authorization) return;
-            list($type, $value) = explode(' ', $authorization);
+            list($type, $value) = $authorization;
 
             if ($authorizationType === Request::AUTO) {
                 return $value;

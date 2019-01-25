@@ -5,7 +5,7 @@ echo "Preparing Laravel organizer...." . PHP_EOL;
 
 $basePath = __DIR__ . '/../../../';
 
-$directories = ['Exceptions', 'Contracts', 'Items', 'Managers', 'Models', 'Repositories', 'Traits', 'Macros', 'Helpers'];
+$directories = ['Exceptions', 'Contracts', 'Services', 'EventsListeners', 'Managers', 'Models', 'Repositories', 'Traits', 'Macros', 'Helpers'];
 
 foreach ($directories as $directory) {
     if (! is_dir($directoryPath = $basePath . 'app/' . $directory)) {

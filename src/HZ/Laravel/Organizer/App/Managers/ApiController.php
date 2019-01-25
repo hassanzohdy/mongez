@@ -42,12 +42,12 @@ abstract class ApiController extends Controller
      * @param array $data
      * @return string
      */
-    protected function success($data)
+    protected function success($data = [])
     {
-        if ($data instanceof MessageBag) {
-            $data = ['data' => $data];
-        }
-
+        $data = $data ?: [
+            'success' => true,
+        ];
+        
         return $this->send(Response::HTTP_OK, $data);
     }
 
@@ -60,7 +60,13 @@ abstract class ApiController extends Controller
     protected function badRequest($data)
     {
         if ($data instanceof MessageBag) {
-            $data = ['errors' => $data->messages()];
+            $errors = [];
+            
+            foreach ($data->messages() as $input => $messagesList) {
+                $errors[$input] = $messagesList[0];
+            }
+            
+            $data = ['errors' => $errors];
         } elseif (is_string($data)) {
             $data = [
                 'error' => $data,

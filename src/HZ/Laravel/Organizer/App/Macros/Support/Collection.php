@@ -43,4 +43,28 @@ class Collection
             $this->items = Arr::remove($value, $this->items, $removeFirstOnly);
         };
     }
+
+    /**
+     * Remove from the collection the given value 
+     * 
+     * @param  string $arrayKey
+     * @param  mixed $value
+     * @param  bool $removeFirstOnly
+     * @return void
+     */
+    public function removeWhere() 
+    {
+        return function ($arrayKey, $value, bool $removeFirstOnly = false) {
+            foreach ($this->items as $key => $item) {
+                $oldValue = $item;
+                $item = (array) $item;
+
+                if(isset($item[$arrayKey]) && $item[$arrayKey] == $value) {
+                    unset($this->items[$key]);
+                } else {
+                    $this->items[$key] = $oldValue;
+                }
+            }
+        };
+    }
 }

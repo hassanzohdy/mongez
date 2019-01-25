@@ -1,16 +1,19 @@
 <?php
-namespace HZ\Laravel\Organizer\App\Managers;
+namespace HZ\Laravel\Organizer\App\Managers\Database\MYSQL;
 
 use DB;
+use App;
 use Auth;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Traits\Macroable;
+use HZ\Laravel\Organizer\App\Events\Events;
 use HZ\Laravel\Organizer\App\Traits\RepositoryTrait;
 use HZ\Laravel\Organizer\App\Helpers\Repository\Select;
-use HZ\Laravel\Organizer\App\Contracts\RepositoryInterface;
+use HZ\Laravel\Organizer\App\Contracts\Repositories\RepositoryInterface;
 
 abstract class RepositoryManager implements RepositoryInterface
 {
@@ -33,6 +36,29 @@ abstract class RepositoryManager implements RepositoryInterface
      * @const string
      */
     const MODEL = '';
+
+    /**
+     * Event name to be triggered
+     * If set to empty, then it will be the class model name
+     * 
+     * @const string
+     */
+    const EVENT = '';
+
+    /**
+     * Event name to be triggered
+     * If set to empty, then it will be the class model name
+     * 
+     * @const string
+     */
+    const EVENTS_LIST = [
+        'listing' => 'onListing',
+        'create' => 'onCreate',
+        'save' => 'onSave',
+        'update' => 'onUpdate',
+        'before-deleting' => 'beforeDeleting',
+        'delete' => 'onDelete',
+    ];
 
     /**
      * Set if the current repository uses a soft delete method or not
@@ -115,6 +141,13 @@ abstract class RepositoryManager implements RepositoryInterface
     protected $table;
 
     /**
+     * The base event name that will be used
+     *
+     * @const string
+     */
+    protected $eventName;
+
+    /**
      * User data
      *
      * @cont mixed
@@ -154,19 +187,60 @@ abstract class RepositoryManager implements RepositoryInterface
      * 
      * @param \Illuminate\Http\Request
      */
-    public function __construct(Request $request)
+    public function __construct(Request $request, Events $events)
     {
         $this->request = $request;
 
+        $this->events = $events;
+
         $this->user = user();
+
+        if (! empty(static::EVENTS_LIST)) {
+            $this->eventName = static::EVENT;
+
+            if (! $this->eventName) {
+                $eventNameModelBased = basename(static::MODEL);
+    
+                $this->eventName = strtolower($eventNameModelBased);
+                     
+                if (Str::endsWith($this->eventName, 'y')) {
+                    $this->eventName = Str::replaceLast('y', 'ies', $this->eventName);
+                } elseif (Str::endsWith($this->eventName, 's')) {
+                    $this->eventName = $this->eventName . 'es';
+                } else {
+                    $this->eventName = $this->eventName . 's';
+                }           
+            }
+
+            // register events
+            $this->registerEvents();    
+        }
+    }
+
+    /**
+     * Register repository events
+     * 
+     * @return void
+     */
+    protected function registerEvents()
+    {
+        if (! $this->eventName) return;
+
+        foreach (static::EVENTS_LIST as $eventName => $methodCallback) {
+            if (method_exists($this, $methodCallback)) {
+                $this->events->subscribe("{$this->eventName}.$eventName", static::class . '@' . $methodCallback);
+            }
+        }
     }
 
     /**
      * {@inheritDoc}
      */
     public function has(int $id): bool
-    {
-        return (bool) DB::table(static::TABLE)->where('id', $id)->first();
+    {        
+        $model = static::MODEL;
+        return (bool) $model::find($id);
+        // return (bool) DB::table(static::TABLE)->where('id', $id)->first();
     }
 
     /**
@@ -191,11 +265,9 @@ abstract class RepositoryManager implements RepositoryInterface
     {
         $this->setOptions($options);
 
-        $table = static::TABLE_ALIAS ? static::TABLE . ' as ' . static::TABLE_ALIAS : static::TABLE;
+        $this->query = $this->getQuery();
 
-        $this->query = DB::table($table);
-
-        $this->table = static::TABLE_ALIAS ?: static::TABLE;
+        $this->table = $this->columnTableName();
 
         $this->select();
 
@@ -225,7 +297,48 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $records = $this->records($records);
 
+        $results = $this->events->trigger("{$this->eventName}.listing", $records);
+
+        if ($results instanceof Collection) {
+            $records = $results;
+        }    
+
         return $records;
+    }
+
+    /**
+     * Get the query handler
+     * 
+     * @return mixed
+     */
+    protected function getQuery()
+    {
+        if (static::MODEL) {
+            $model = static::MODEL;
+            return $model::table();
+        } else {
+            return DB::table($this->tableName);
+        }
+    }
+
+    /**
+     * Get the table name that will be used in the query 
+     * 
+     * @return string
+     */
+    protected function tableName(): string 
+    {
+        return static::TABLE_ALIAS ? static::TABLE . ' as ' . static::TABLE_ALIAS : static::TABLE;
+    }
+    
+    /**
+     * Get the table name that will be used in the rest of the query like select, where...etc
+     * 
+     * @return string
+     */
+    protected function columnTableName(): string 
+    {
+        return static::TABLE_ALIAS ?: static::TABLE;
     }
 
     /**
@@ -284,7 +397,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * @param array $options
      * @return void
      */
-    private function setOptions(array $options): void
+    protected function setOptions(array $options): void
     {
         $this->options = $options;
 
@@ -308,7 +421,7 @@ abstract class RepositoryManager implements RepositoryInterface
     /**
      * {@inheritDoc}
      */
-    public function create(Request $request): Model
+    public function create(Request $request)
     {
         $modelName = static::MODEL;
 
@@ -324,28 +437,19 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $model->save();
 
-        $this->onCreate($model, $request);
-        
-        $this->onSave($model, $request);
+        $this->events->trigger("{$this->eventName}.save {$this->eventName}.create", $model, $request);
 
         return $model;
     }
 
     /**
-     * This method will be triggered after creating new record in database
-     *
-     * @parm   \Illuminate\Database\Eloquent\Model $model
-     * @param  \Illuminate\Http\Request $request
-     * @return void
-     */
-    protected function onCreate(Model $model, Request $request) {}
-
-    /**
      * {@inheritDoc}
      */
-    public function update(int $id, Request $request): Model
+    public function update(int $id, Request $request)
     {
         $model = (static::MODEL)::find($id);
+
+        $oldModel = clone $model;
 
         if (static::DATA) {
             foreach (static::DATA as $column) {
@@ -356,10 +460,8 @@ abstract class RepositoryManager implements RepositoryInterface
         $this->setData($model, $request);
 
         $model->save();
-
-        $this->onUpdate($model, $request);
-
-        $this->onSave($model, $request);
+        
+        $this->events->trigger("{$this->eventName}.save {$this->eventName}.update", $model, $request, $oldModel);
 
         return $model;
     }
@@ -376,24 +478,6 @@ abstract class RepositoryManager implements RepositoryInterface
     {
         return $model::find($id) ?: new $model;
     }
-
-    /**
-     * This method will be triggered after record is updated 
-     *
-     * @parm   \Illuminate\Database\Eloquent\Model $model
-     * @param  \Illuminate\Http\Request $request
-     * @return void
-     */
-    protected function onUpdate(Model $model, Request $request) {}
-
-    /**
-     * This method will be triggered after creating or updating
-     *
-     * @parm   \Illuminate\Database\Eloquent\Model $model
-     * @param  \Illuminate\Http\Request $request
-     * @return void
-     */
-    protected function onSave(Model $model, Request $request) {}
 
     /**
      * Set data to the model
@@ -444,7 +528,7 @@ abstract class RepositoryManager implements RepositoryInterface
     protected function setModelData(Model $model, array $columns): void
     {
         foreach ($columns as $column => $value) {
-            $model->$key = $value;
+            $model->$column = $value;
         }
     }
 
@@ -453,35 +537,20 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     public function delete(int $id): bool
     {
+        $modelName = static::MODEL;
+        
         $model = (static::MODEL)::find($id);
 
         if (! $model) return false;
 
-        $this->beforeDeleting($model);
+        if ($this->events->trigger("{$this->eventName}.before-deleting", $model, $id) === false) return false;
 
         $model->delete();
 
-        $this->onDelete($model, $id);
+        $this->events->trigger("{$this->eventName}.delete", $model, $id);
 
         return true;
     }
-
-    /**
-     * This method is triggered before deleting the model
-     * 
-     * @param \Illuminate\Database\Eloquent\Model $model
-     * @return void
-     */
-    protected function beforeDeleting(Model $model) {}
-
-    /**
-     * This method will be triggered after item deleted
-     * 
-     * @param \Illuminate\Database\Eloquent\Model $model
-     * @param  int $id
-     * @return void
-     */
-    protected function onDelete(Model $model, int $id) {}
 
     /**
      * Call query builder methods dynamically
@@ -496,6 +565,8 @@ abstract class RepositoryManager implements RepositoryInterface
             return $this->query->$method(...$args);
         }
 
+        // return $this->query->$method(...$args);
+        
         return $this->marcoableMethods($method, $args);
     }
 }

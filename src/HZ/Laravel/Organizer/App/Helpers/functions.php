@@ -1,7 +1,6 @@
 <?php
-
-use HZ\Laravel\Organizer\App\Contracts\RepositoryInterface;
 use HZ\Laravel\Organizer\App\Exceptions\NotFoundRepositoryException;
+use HZ\Laravel\Organizer\App\Contracts\Repositories\RepositoryInterface;
 
 if (! function_exists('user')) {
     /**
@@ -9,9 +8,9 @@ if (! function_exists('user')) {
      * 
      * @return mixed
      */
-    function user()
+    function user($guard = null)
     {
-        return request()->user();
+        return request()->user($guard);
     }
 }
 
@@ -59,7 +58,7 @@ if (! function_exists('repo')) {
         if (! $repositoryClass) {
             throw new NotFoundRepositoryException(sprintf('Call to undefined repository: %s', $repository));
         }
-
+       
         return App::make($repositoryClass);
     }
 }

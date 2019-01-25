@@ -2,10 +2,12 @@
 
 namespace HZ\Laravel\Organizer\App\Providers;
 
+use App;
 use Closure;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
+use HZ\Laravel\Organizer\App\Events\Events;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 
@@ -28,6 +30,50 @@ class OrganizerServiceProvider extends ServiceProvider
         //
     }
 
+    /**
+     * Register any application services.
+     *
+     * @return void
+     */
+    public function register()
+    {
+        $this->config = config('organizer');
+
+        // register the repositories as singletones, only one instance in the entire application
+        foreach (config('organizer.repositories') as $repositoryClass) {
+            App::singleton($repositoryClass);
+        }
+
+        App::singleton(Events::class);
+
+        // register macros
+        $this->registerMacros();
+
+        $this->registerEventsListeners();
+
+        if (strtolower(config('database.driver')) === 'mysql') {
+            // manage database options
+            $this->manageDatabase();
+        }
+    }
+
+    /**
+     * Register the events listeners
+     * 
+     * @return void
+     */
+    protected function registerEventsListeners()
+    {
+        $events = App::make(Events::class);
+
+        foreach ((array) config('organizer.events') as $eventName => $eventListeners) {
+            $eventListeners = (array) $eventListeners;
+            foreach ($eventListeners as $eventListener) {
+                $events->subscribe($eventName, $eventListener);
+            }
+        }
+    }
+    
     /**
      * Register all macros
      * 
@@ -64,21 +110,5 @@ class OrganizerServiceProvider extends ServiceProvider
         if ($defaultLength) {
             Schema::defaultStringLength($defaultLength);
         }
-    }
-
-    /**
-     * Register any application services.
-     *
-     * @return void
-     */
-    public function register()
-    {
-        $this->config = config('organizer');
-        
-        // register macros
-        $this->registerMacros();
-
-        // manage database options
-        $this->manageDatabase();
     }
 }
