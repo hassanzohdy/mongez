@@ -10,7 +10,6 @@ return [
             'defaultStringLength' => 191,
         ],
     ],
-
     /*
     |--------------------------------------------------------------------------
     | Application Repositories
@@ -21,13 +20,11 @@ return [
     |
     */
     'repositories' => [
-        // add your repositories here
-        
+        // add your repositories here  
         // 'repo-short-name' => RepositoryClassPath::class,
         // for example
         // 'users' => App\Repositories\Users\UsersRepository::class,
     ],
-    
     /*
     |--------------------------------------------------------------------------
     | Macroable classes
