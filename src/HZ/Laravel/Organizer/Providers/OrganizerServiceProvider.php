@@ -93,6 +93,8 @@ class OrganizerServiceProvider extends ServiceProvider
      */
     protected function registerMacros()
     {
+        if (empty($this->config['macros'])) return;
+
         $macros = (array) $this->config['macros'];
 
         foreach ($macros as $original => $mixin) {
