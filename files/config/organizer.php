@@ -39,10 +39,10 @@ return [
     |
     */
     'macros' => [
-        Illuminate\Support\Str::class => HZ\Laravel\Organizer\App\Macros\Support\Str::class,
-        Illuminate\Support\Arr::class => HZ\Laravel\Organizer\App\Macros\Support\Arr::class,
-        Illuminate\Support\Collection::class => HZ\Laravel\Organizer\App\Macros\Support\Collection::class,
-        Illuminate\Database\Query\Builder::class => HZ\Laravel\Organizer\App\Macros\Database\Query\Builder::class,
-        Illuminate\Database\Schema\Blueprint::class => HZ\Laravel\Organizer\App\Macros\Database\Schema\Blueprint::class,
+        Illuminate\Support\Str::class => HZ\Laravel\Organizer\Macros\Support\Str::class,
+        Illuminate\Support\Arr::class => HZ\Laravel\Organizer\Macros\Support\Arr::class,
+        Illuminate\Support\Collection::class => HZ\Laravel\Organizer\Macros\Support\Collection::class,
+        Illuminate\Database\Query\Builder::class => HZ\Laravel\Organizer\Macros\Database\Query\Builder::class,
+        Illuminate\Database\Schema\Blueprint::class => HZ\Laravel\Organizer\Macros\Database\Schema\Blueprint::class,
     ],
 ];

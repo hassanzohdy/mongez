@@ -33,8 +33,8 @@ Laravel Project
 │       └─── --- exceptions here ---
 │   └─── Helpers
 │   |   └─── --- Helpers Classes And functions  ---
-│   └─── Items
-│       └─── --- items ---  
+│   └─── Services
+│       └─── --- Handling 3d party services such as online payments ---  
 │   └─── Macros
 │       └─── --- macros here ---
 │   └─── Managers
