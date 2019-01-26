@@ -5,7 +5,7 @@ use Carbon\Carbon;
 use MongoDB\BSON\UTCDateTime;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-abstract class MongoJsonResource extends JsonResource 
+abstract class JsonResourceManager extends JsonResource 
 {
     /**
      * Request object

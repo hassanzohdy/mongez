@@ -4,6 +4,7 @@ namespace HZ\Laravel\Organizer\Console\Commands;
 use File;
 use Exception;
 use Illuminate\Support\Str;
+use Illuminate\Support\Arr;
 use Illuminate\Console\Command;
 
 class ModuleBuilder extends Command
@@ -14,6 +15,13 @@ class ModuleBuilder extends Command
      * @const array
      */
     const CONTROLLER_TYPES = ['setter', 'getter', 'admin'];
+
+    /**
+     * Module directory path
+     * 
+     * @var string
+     */
+    protected $root;
 
     /**
      * The module name
@@ -67,6 +75,7 @@ class ModuleBuilder extends Command
      */
     protected function adjustOptionsValues() 
     {
+        $this->root = config('organizer.root');
         $this->init();
         $this->create();
     }
@@ -167,12 +176,12 @@ class ModuleBuilder extends Command
         $content = str_ireplace("{$controllerType}Controller", "{$controllerName}Controller", $content);
         
         // replace controller path
-        $content = str_ireplace("ControllerPath", "Site\\$controllerPath", $content);
+        $content = str_ireplace("ControllerPath", $controllerPath, $content);
 
         // repository name 
         $content = str_ireplace('repo-name', $this->info['repositoryName'], $content);
 
-        $controllerDirectory = base_path("app/Http/Controllers/Api/$controllerPath");
+        $controllerDirectory = base_path("app/Http/Controllers/Api/Site/$controllerPath");
 
         if (! File::isDirectory($controllerDirectory)) {
             File::makeDirectory($controllerDirectory, 0755, true);
@@ -192,7 +201,7 @@ class ModuleBuilder extends Command
         $content = str_ireplace("AdminController", "{$controllerName}Controller", $content);
         
         // replace controller path
-        $content = str_ireplace("ControllerPath", "Admin\\$controllerPath", $content);
+        $content = str_ireplace("ControllerPath", $controllerPath, $content);
 
         // repository name 
         $content = str_ireplace('repo-name', $this->info['repositoryName'], $content);
@@ -315,6 +324,10 @@ class ModuleBuilder extends Command
         $dataList = '';
 
         if (! empty($this->info['data'])) {
+            if (in_array('id', $this->info['data'])) {
+                $this->info['data'] = Arr::remove('id', $this->info['data']);
+            }
+            
             $dataList = "'" . implode("', '", $this->info['data']) . "'";
         }
 
@@ -380,9 +393,6 @@ class ModuleBuilder extends Command
      */
     protected function path($path) 
     {
-        if (! $this->root) {
-            $this->root = config('organizer.root');
-        }
         return $this->root . '/module/' . $path;
     }
 

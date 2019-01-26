@@ -28,4 +28,9 @@ class RepositoryName extends RepositoryManager implements RepositoryInterface
      * {@inheritDoc}
      */
     const DATA = [DATA_LIST];       
+    
+    /**
+     * {@inheritDoc}
+     */
+    const FILTER_BY = [];
 }

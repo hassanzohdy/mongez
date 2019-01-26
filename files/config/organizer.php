@@ -10,6 +10,7 @@ return [
             'defaultStringLength' => 191,
         ],
     ],
+
     /*
     |--------------------------------------------------------------------------
     | Application Repositories

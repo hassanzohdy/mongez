@@ -13,10 +13,23 @@ foreach ($directories as $directory) {
     }
 }
 
-// copy the organizer file
+function recursive_copy($src,$dst) { 
+    $dir = opendir($src); 
+    @mkdir($dst); 
+    while(false !== ( $file = readdir($dir)) ) { 
+        if (( $file != '.' ) && ( $file != '..' )) { 
+            if ( is_dir($src . '/' . $file) ) { 
+                recursive_copy($src . '/' . $file,$dst . '/' . $file); 
+            } 
+            else { 
+                copy($src . '/' . $file,$dst . '/' . $file); 
+            } 
+        } 
+    } 
+    closedir($dir); 
+} 
 
-if (! file_exists($basePath . 'config/organizer.php')) {
-    copy(__DIR__ . '/files/config/organizer.php', $basePath . 'config/organizer.php');
-}
+// copy organizer files
+recursive_copy(__DIR__ .'/files ', $basePath);
 
 echo 'Done!';

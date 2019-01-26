@@ -38,6 +38,13 @@ abstract class RepositoryManager implements RepositoryInterface
     const MODEL = '';
 
     /**
+     * Resource class handler
+     * 
+     * @const string
+     */
+    const RESOURCE = '';
+
+    /**
      * Event name to be triggered
      * If set to empty, then it will be the class model name
      * 
@@ -127,9 +134,18 @@ abstract class RepositoryManager implements RepositoryInterface
     /**
      * Auto fill the following columns directly from the request
      * 
-     * @const var
+     * @const array
      */
     const DATA = [];
+
+    /**
+     * Filter by the given inputs if exists in the request body
+     * i.e ['name', 'email']
+     * or 
+     * ['name' => 'u.name', 'email' => 'u.email']
+     * @const array
+     */
+    const FILTER_BY = [];
 
     /**
      * This property will has the final table name that will be used
@@ -285,6 +301,18 @@ abstract class RepositoryManager implements RepositoryInterface
             }
         }
 
+        if (! empty(static::FILTER_BY)) {
+            foreach (static::FILTER_BY as $requestParam => $column) {
+                if (is_numeric($requestParam)) {
+                    $requestParam = $column;
+                }
+                
+                if ($request->$requestParam) {
+                    $this->query->where($column, $request->$requestParam);
+                }
+            }
+        }
+        
         $this->filter();
 
         if ($this->select->isNotEmpty()) {
@@ -305,6 +333,57 @@ abstract class RepositoryManager implements RepositoryInterface
 
         return $records;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function onListing(Collection $records): Collection
+    {
+        return $records->map(function ($record) {
+            $resource = static::RESOURCE;
+            return new $resource((object) $record);
+        });
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function get(int $id)
+    {
+        $model = static::MODEL;
+        $resource = static::RESOURCE;
+        return new $resource($model::find($id));
+    }
+
+    /**
+     * Get by the given column name
+     * 
+     * @param  string $column
+     * @param  mixed value
+     * @return mixed
+     */
+    public function getBy($column, $value) 
+    {
+        $model = static::MODEL;
+        $resource = static::RESOURCE;
+
+        $object = $model::where($column, $value)->first();
+
+        return $object ? new $resource($object) : null;
+    }
+    
+    /**
+     * Wrap the given model to its resource
+     * 
+     * @param \Model $model
+     * @return \JsonResource
+     */
+    public function wrap($model) 
+    {
+        $resource = static::RESOURCE;
+        return new $resource($model);
+    }
+
 
     /**
      * Get the query handler
@@ -346,14 +425,14 @@ abstract class RepositoryManager implements RepositoryInterface
      *
      * @return void
      */
-    abstract protected function filter(); 
+    protected function filter() {}
 
     /**
      * Manage Selected Columns
      *
      * @return void
      */
-    abstract protected function select();
+    protected function select() {}
 
     /**
      * Perform records ordering
@@ -429,6 +508,14 @@ abstract class RepositoryManager implements RepositoryInterface
 
         if (static::DATA) {
             foreach (static::DATA as $column) {
+                if ($column == 'password') {
+                    if ($request->password) {                        
+                        $model->password = bcrypt($request->password);
+                    }
+
+                    continue;
+                }
+        
                 $model->$column = $request->$column;
             }
         }
@@ -490,7 +577,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * @param  \Illuminate\Http\Request $request
      * @return void
      */
-    abstract protected function setData($model, Request $request);
+    protected function setData($model, Request $request) {}
 
     /**
      * Update record for the given model
