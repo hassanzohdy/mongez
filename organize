@@ -30,6 +30,6 @@ function recursive_copy($src,$dst) {
 } 
 
 // copy organizer files
-recursive_copy(__DIR__ .'/files ', $basePath);
+recursive_copy(__DIR__ .'/files', $basePath);
 
 echo 'Done!';
