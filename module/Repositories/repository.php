@@ -5,7 +5,7 @@ use RepositoryManager;
 use Illuminate\Http\Request;
 use App\Models\ModelPath as Model;
 use App\Http\Resources\ResourcePath as Resource;
-use HZ\Laravel\Organizer\App\Contracts\Repositories\RepositoryInterface;
+use HZ\Laravel\Organizer\Contracts\Repositories\RepositoryInterface;
 
 class RepositoryName extends RepositoryManager implements RepositoryInterface
 {

@@ -1,9 +1,9 @@
 <?php
 namespace App\Http\Resources\Users;
 
-use App\Managers\Resources\MongoJsonResource;
+use ResourceManager;
 
-class User extends MongoJsonResource
+class User extends ResourceManager
 {
     /**
      * {@inheritDoc}

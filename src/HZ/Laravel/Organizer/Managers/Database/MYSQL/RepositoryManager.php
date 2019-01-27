@@ -307,8 +307,8 @@ abstract class RepositoryManager implements RepositoryInterface
                     $requestParam = $column;
                 }
                 
-                if ($request->$requestParam) {
-                    $this->query->where($column, $request->$requestParam);
+                if ($value = $this->option($requestParam)) {
+                    $this->query->where($column, $value);
                 }
             }
         }

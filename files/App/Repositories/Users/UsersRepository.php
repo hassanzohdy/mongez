@@ -8,7 +8,7 @@ use RepositoryManager;
 use App\Models\User\User;
 use App\Traits\Auth\AccessToken;
 use App\Http\Resources\Users\User as Resource;
-use HZ\Laravel\Organizer\App\Contracts\Repositories\RepositoryInterface;
+use HZ\Laravel\Organizer\Contracts\Repositories\RepositoryInterface;
 
 class UsersRepository extends RepositoryManager implements RepositoryInterface
 {
