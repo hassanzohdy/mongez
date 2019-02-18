@@ -92,13 +92,15 @@ abstract class Model extends BaseModel
 
         $ids = DB::collection('ids');
 
+        $collection = $this->getTable();
+
         if (! $lastId) {
             $ids->insert([
-                'collection' => $this->collection,
+                'collection' => $collection,
                 'id' => $newId,
             ]);
         } else {
-            $ids->where('collection', $this->collection)->update([
+            $ids->where('collection', $collection)->update([
                 'id' => $newId
             ]);
         }
@@ -115,7 +117,7 @@ abstract class Model extends BaseModel
     {
         $ids = DB::collection('ids');
 
-        $info = $ids->where('collection', $this->collection ?: $this->table)->first();
+        $info = $ids->where('collection', $this->getTable())->first();
 
         return $info ? $info['id'] : 0;
     }

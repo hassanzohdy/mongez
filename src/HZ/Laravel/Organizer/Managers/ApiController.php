@@ -16,11 +16,11 @@ abstract class ApiController extends Controller
     use RepositoryTrait;
 
     /**
-     * User Model
-     *
+     * Repository name
+     * If provided, then the repository property will be the object of the repository
      * @var mixed
      */
-    protected $user = true;
+    protected $repository = null;
 
     /**
      * Constructor
@@ -28,11 +28,8 @@ abstract class ApiController extends Controller
      */
     public function __construct()
     {
-        // if the user property is set to true
-        // then we will inject the user property to the controller
-        // so it will be used easily
-        if ($this->user === true) {
-            $this->user = user();
+        if ($this->repository) {
+            $this->repository = repo($this->repository);
         }
     }
 

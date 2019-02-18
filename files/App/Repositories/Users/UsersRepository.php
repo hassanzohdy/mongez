@@ -3,10 +3,10 @@
 namespace App\Repositories\Users;
 
 use Str;
-use Request;
 use RepositoryManager;
-use App\Models\User\User;
+use Illuminate\Http\Request;
 use App\Traits\Auth\AccessToken;
+use App\Models\User\User as Model;
 use App\Http\Resources\Users\User as Resource;
 use HZ\Laravel\Organizer\Contracts\Repositories\RepositoryInterface;
 
@@ -17,7 +17,7 @@ class UsersRepository extends RepositoryManager implements RepositoryInterface
     /**
      * {@inheritDoc}
      */
-    const MODEL = User::class;
+    const MODEL = Model::class;
 
     /**
      * {@inheritDoc}

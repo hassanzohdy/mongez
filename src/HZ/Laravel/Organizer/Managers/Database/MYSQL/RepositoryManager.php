@@ -307,8 +307,12 @@ abstract class RepositoryManager implements RepositoryInterface
                     $requestParam = $column;
                 }
                 
-                if ($value = $this->option($requestParam)) {
-                    $this->query->where($column, $value);
+                if (! is_null($value = $this->option($requestParam))) {
+                    if (is_array($value)) {
+                        $this->query->whereIn($column, $value);
+                    } else {
+                        $this->query->where($column, $value);
+                    }
                 }
             }
         }
@@ -352,7 +356,11 @@ abstract class RepositoryManager implements RepositoryInterface
     {
         $model = static::MODEL;
         $resource = static::RESOURCE;
-        return new $resource($model::find($id));
+        $modelObject = $model::find($id);
+
+        if (! $modelObject) return null;
+
+        return new $resource($modelObject);
     }
 
     /**
@@ -442,7 +450,7 @@ abstract class RepositoryManager implements RepositoryInterface
     protected function orderBy(array $orderBy)
     {
         if (empty($orderBy)) {
-            $orderBy = [$this->column('id'), 'DESC'];
+            $orderBy = [$this->column('id'), 'desc'];
         }
 
         $this->query->orderBy(...$orderBy);
@@ -506,7 +514,7 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $model = new $modelName;
 
-        if (static::DATA) {
+        if (! empty(static::DATA)) {
             foreach (static::DATA as $column) {
                 if ($column == 'password') {
                     if ($request->password) {                        
@@ -540,6 +548,13 @@ abstract class RepositoryManager implements RepositoryInterface
 
         if (static::DATA) {
             foreach (static::DATA as $column) {
+                if ($column == 'password') {
+                    if ($request->password) {                        
+                        $model->password = bcrypt($request->password);
+                    }
+
+                    continue;
+                }
                 $model->$column = $request->$column;
             }
         }

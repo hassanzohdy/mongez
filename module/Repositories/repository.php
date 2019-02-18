@@ -7,7 +7,7 @@ use App\Models\ModelPath as Model;
 use App\Http\Resources\ResourcePath as Resource;
 use HZ\Laravel\Organizer\Contracts\Repositories\RepositoryInterface;
 
-class RepositoryName extends RepositoryManager implements RepositoryInterface
+class RepositoryNameRepository extends RepositoryManager implements RepositoryInterface
 {
     /**
      * {@inheritDoc}

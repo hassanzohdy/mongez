@@ -15,7 +15,7 @@ class User extends ResourceManager
      */
     protected function extend($request) 
     {
-        if ($this->accessTokens) {
+        if (! empty($this->accessTokens)) {
             $this->data['accessToken'] = $this->accessTokens[0]['token'];
         }
     }

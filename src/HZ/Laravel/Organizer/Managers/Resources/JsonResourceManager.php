@@ -1,6 +1,7 @@
 <?php
 namespace HZ\Laravel\Organizer\Managers\Resources;
 
+use DateTimeZone;
 use Carbon\Carbon;
 use MongoDB\BSON\UTCDateTime;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -129,6 +130,11 @@ abstract class JsonResourceManager extends JsonResource
             }
             if ($this->$column instanceof UTCDateTime) {
                 $this->$column = $this->$column->toDateTime();
+            }
+
+            if ($timezone = config('app.timezone')) {
+                $timezone = new DateTimeZone($timezone);
+                $this->$column->setTimeZone($timezone);
             }
 
             $this->data[$column] = [

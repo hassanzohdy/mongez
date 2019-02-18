@@ -141,7 +141,7 @@ abstract class AdminApiController extends ApiController
      */
     public function destroy($id)
     {
-        $this->repository->delete($id);
+        $this->repository->delete((int) $id);
 
         $response = [
             'success' => true,
