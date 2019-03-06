@@ -132,6 +132,13 @@ abstract class RepositoryManager implements RepositoryInterface
     const TABLE_ALIAS = '';
 
     /**
+     * Filter by columns
+     * 
+     * @const array
+     */
+    const FILTER_BY = [];
+
+    /**
      * Auto fill the following columns directly from the request
      * 
      * @const var
@@ -293,6 +300,13 @@ abstract class RepositoryManager implements RepositoryInterface
         }
 
         $this->filter();
+
+        foreach (static::FILTER_BY as $column => $option) {
+            if ($value = $this->option($option)) {
+                $column = is_numeric($column) ? $option : $column;
+                $this->query->where($column, $value);                
+            }
+        }
 
         if ($this->select->isNotEmpty()) {
             $this->query->select(...$this->select->list());
