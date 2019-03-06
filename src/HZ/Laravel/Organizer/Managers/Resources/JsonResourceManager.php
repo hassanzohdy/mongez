@@ -1,11 +1,11 @@
 <?php
-namespace HZ\Laravel\Organizer\App\Managers\Resources;
+namespace HZ\Laravel\Organizer\Managers\Resources;
 
 use Carbon\Carbon;
 use MongoDB\BSON\UTCDateTime;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-abstract class MongoJsonResource extends JsonResource 
+abstract class JsonResourceManager extends JsonResource 
 {
     /**
      * Request object
@@ -105,15 +105,9 @@ abstract class MongoJsonResource extends JsonResource
 
             $asset = $this->$column;
 
-            if (is_array($asset)) {
-                $asset = array_map(function ($asset) {
-                    return url($asset);
-                }, $asset);
-            } else {
-                $asset = url($asset);    
-            }
-
-            $this->data[$column] = $asset;
+            $this->data[$column] =  is_array($asset) ? url($asset) : array_map(function ($asset) {
+                return url($asset);
+            }, $asset);
         }
 
         foreach (static::COLLECTABLE as $column => $resource) {

@@ -1,8 +1,8 @@
 <?php
-namespace HZ\Laravel\Organizer\App\Managers\Database\MongoDB;
+namespace HZ\Laravel\Organizer\Managers\Database\MongoDB;
 
 use DB;
-use HZ\Laravel\Organizer\App\Traits\ModelTrait;
+use HZ\Laravel\Organizer\Traits\ModelTrait;
 use Jenssegers\Mongodb\Eloquent\Model as BaseModel;
 
 abstract class Model extends BaseModel

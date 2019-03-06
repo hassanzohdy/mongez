@@ -1,10 +1,10 @@
 <?php
-namespace HZ\Laravel\Organizer\App\Managers\Database\MongoDB;
+namespace HZ\Laravel\Organizer\Managers\Database\MongoDB;
 
 use DB;
 use Illuminate\Support\Collection;
-use HZ\Laravel\Organizer\App\Contracts\Repositories\RepositoryInterface;
-use HZ\Laravel\Organizer\App\Managers\Database\MYSQL\RepositoryManager as BaseRepositoryManager;
+use HZ\Laravel\Organizer\Contracts\Repositories\RepositoryInterface;
+use HZ\Laravel\Organizer\Managers\Database\MYSQL\RepositoryManager as BaseRepositoryManager;
 
 abstract class RepositoryManager extends BaseRepositoryManager implements RepositoryInterface
 {

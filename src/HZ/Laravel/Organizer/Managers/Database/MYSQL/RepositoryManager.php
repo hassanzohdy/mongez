@@ -1,5 +1,5 @@
 <?php
-namespace HZ\Laravel\Organizer\App\Managers\Database\MYSQL;
+namespace HZ\Laravel\Organizer\Managers\Database\MYSQL;
 
 use DB;
 use App;
@@ -10,10 +10,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Traits\Macroable;
-use HZ\Laravel\Organizer\App\Events\Events;
-use HZ\Laravel\Organizer\App\Traits\RepositoryTrait;
-use HZ\Laravel\Organizer\App\Helpers\Repository\Select;
-use HZ\Laravel\Organizer\App\Contracts\Repositories\RepositoryInterface;
+use HZ\Laravel\Organizer\Events\Events;
+use HZ\Laravel\Organizer\Traits\RepositoryTrait;
+use HZ\Laravel\Organizer\Helpers\Repository\Select;
+use HZ\Laravel\Organizer\Contracts\Repositories\RepositoryInterface;
 
 abstract class RepositoryManager implements RepositoryInterface
 {
@@ -178,7 +178,7 @@ abstract class RepositoryManager implements RepositoryInterface
     /**
      * Select Helper Object
      *
-     * @var \HZ\Laravel\Organizer\App\Helpers\Repository\Select
+     * @var \HZ\Laravel\Organizer\Helpers\Repository\Select
      */
     protected $select;
 
