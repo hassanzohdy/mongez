@@ -28,7 +28,7 @@ class LoginController extends ApiController
 
                 $accessToken = $usersRepository->generateAccessToken($user, $request);
 
-                $userInfo = $usersRepository->wrap($user);
+                $userInfo = $usersRepository->wrap($user)->toArray($request);
 
                 $userInfo['accessToken'] = $accessToken;
 

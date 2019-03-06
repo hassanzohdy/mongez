@@ -21,8 +21,11 @@ class RegisterController extends ApiController
             $usersRepository = $this->{config('app.user-repo')};
             $user = $usersRepository->create($request);
 
+            $userInfo = $usersRepository->wrap($user)->toArray($request);
+            $userInfo['accessToken'] = $user->accessTokens[0]['token'];
+
             return $this->success([
-                'user' => $usersRepository->wrap($user),
+                'user' => $userInfo,
             ]);
         } else {
             return $this->badRequest($validator->errors());

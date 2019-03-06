@@ -1,5 +1,5 @@
 <?php
-namespace HZ\Laravel\Organizer\Managers\Database\MYSQL;
+namespace HZ\Laravel\Organizer\App\Managers\Database\MYSQL;
 
 use DB;
 use App;
@@ -10,10 +10,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Traits\Macroable;
-use HZ\Laravel\Organizer\Events\Events;
-use HZ\Laravel\Organizer\Traits\RepositoryTrait;
-use HZ\Laravel\Organizer\Helpers\Repository\Select;
-use HZ\Laravel\Organizer\Contracts\Repositories\RepositoryInterface;
+use HZ\Laravel\Organizer\App\Events\Events;
+use HZ\Laravel\Organizer\App\Traits\RepositoryTrait;
+use HZ\Laravel\Organizer\App\Helpers\Repository\Select;
+use HZ\Laravel\Organizer\App\Contracts\Repositories\RepositoryInterface;
 
 abstract class RepositoryManager implements RepositoryInterface
 {
@@ -38,7 +38,7 @@ abstract class RepositoryManager implements RepositoryInterface
     const MODEL = '';
 
     /**
-     * Resource class handler
+     * Resource class 
      * 
      * @const string
      */
@@ -134,18 +134,9 @@ abstract class RepositoryManager implements RepositoryInterface
     /**
      * Auto fill the following columns directly from the request
      * 
-     * @const array
+     * @const var
      */
     const DATA = [];
-
-    /**
-     * Filter by the given inputs if exists in the request body
-     * i.e ['name', 'email']
-     * or 
-     * ['name' => 'u.name', 'email' => 'u.email']
-     * @const array
-     */
-    const FILTER_BY = [];
 
     /**
      * This property will has the final table name that will be used
@@ -187,7 +178,7 @@ abstract class RepositoryManager implements RepositoryInterface
     /**
      * Select Helper Object
      *
-     * @var \HZ\Laravel\Organizer\Helpers\Repository\Select
+     * @var \HZ\Laravel\Organizer\App\Helpers\Repository\Select
      */
     protected $select;
 
@@ -277,7 +268,7 @@ abstract class RepositoryManager implements RepositoryInterface
     /**
      * {@inheritDoc}
      */
-    function list(array $options): Collection 
+    public function list(array $options): Collection 
     {
         $this->setOptions($options);
 
@@ -301,22 +292,6 @@ abstract class RepositoryManager implements RepositoryInterface
             }
         }
 
-        if (! empty(static::FILTER_BY)) {
-            foreach (static::FILTER_BY as $requestParam => $column) {
-                if (is_numeric($requestParam)) {
-                    $requestParam = $column;
-                }
-                
-                if (! is_null($value = $this->option($requestParam))) {
-                    if (is_array($value)) {
-                        $this->query->whereIn($column, $value);
-                    } else {
-                        $this->query->where($column, $value);
-                    }
-                }
-            }
-        }
-        
         $this->filter();
 
         if ($this->select->isNotEmpty()) {
@@ -337,48 +312,6 @@ abstract class RepositoryManager implements RepositoryInterface
 
         return $records;
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function onListing(Collection $records): Collection
-    {
-        return $records->map(function ($record) {
-            $resource = static::RESOURCE;
-            return new $resource((object) $record);
-        });
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function get(int $id)
-    {
-        $model = static::MODEL;
-        $resource = static::RESOURCE;
-        $modelObject = $model::find($id);
-
-        if (! $modelObject) return null;
-
-        return new $resource($modelObject);
-    }
-
-    /**
-     * Get by the given column name
-     * 
-     * @param  string $column
-     * @param  mixed value
-     * @return mixed
-     */
-    public function getBy($column, $value) 
-    {
-        $model = static::MODEL;
-        $resource = static::RESOURCE;
-
-        $object = $model::where($column, $value)->first();
-
-        return $object ? new $resource($object) : null;
-    }
     
     /**
      * Wrap the given model to its resource
@@ -391,7 +324,6 @@ abstract class RepositoryManager implements RepositoryInterface
         $resource = static::RESOURCE;
         return new $resource($model);
     }
-
 
     /**
      * Get the query handler
@@ -433,14 +365,14 @@ abstract class RepositoryManager implements RepositoryInterface
      *
      * @return void
      */
-    protected function filter() {}
+    abstract protected function filter(); 
 
     /**
      * Manage Selected Columns
      *
      * @return void
      */
-    protected function select() {}
+    abstract protected function select();
 
     /**
      * Perform records ordering
@@ -450,7 +382,7 @@ abstract class RepositoryManager implements RepositoryInterface
     protected function orderBy(array $orderBy)
     {
         if (empty($orderBy)) {
-            $orderBy = [$this->column('id'), 'desc'];
+            $orderBy = [$this->column('id'), 'DESC'];
         }
 
         $this->query->orderBy(...$orderBy);
@@ -514,16 +446,8 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $model = new $modelName;
 
-        if (! empty(static::DATA)) {
+        if (static::DATA) {
             foreach (static::DATA as $column) {
-                if ($column == 'password') {
-                    if ($request->password) {                        
-                        $model->password = bcrypt($request->password);
-                    }
-
-                    continue;
-                }
-        
                 $model->$column = $request->$column;
             }
         }
@@ -548,13 +472,6 @@ abstract class RepositoryManager implements RepositoryInterface
 
         if (static::DATA) {
             foreach (static::DATA as $column) {
-                if ($column == 'password') {
-                    if ($request->password) {                        
-                        $model->password = bcrypt($request->password);
-                    }
-
-                    continue;
-                }
                 $model->$column = $request->$column;
             }
         }
@@ -592,7 +509,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * @param  \Illuminate\Http\Request $request
      * @return void
      */
-    protected function setData($model, Request $request) {}
+    abstract protected function setData($model, Request $request);
 
     /**
      * Update record for the given model

@@ -44,6 +44,7 @@ class ModuleBuilder extends Command
                                        {--type=getter}
                                        {--model=}
                                        {--data=}
+                                       {--uploads=}
                                        {--resource=}
                                        {--repository=}
                                        {--path=}
@@ -122,10 +123,11 @@ class ModuleBuilder extends Command
      */
     protected function initData() 
     {
-        $data = $this->option('data');
-
-        if ($data) {
-            $this->info['data'] = explode(',', $data);
+        foreach (['data', 'uploads'] as $option) {
+            $value = $this->option($option);
+            if ($value) {
+                $this->info[$option] = explode(',', $value);
+            }
         }
     }
 
@@ -279,6 +281,17 @@ class ModuleBuilder extends Command
         // replace resource data
         $content = str_ireplace("DATA_LIST", $dataList, $content);
 
+        // check for assets 
+
+        $assetsList = '';
+
+        if (! empty($this->info['uploads'])) {
+            $assetsList = "'" . implode("', '", $this->info['uploads']) . "'";
+        }
+
+        // replace resource data
+        $content = str_ireplace("ASSETS_LIST", $assetsList, $content);
+
         $resourceDirectory = base_path("app/Http/Resources/$resourcePath");
 
         if (! File::isDirectory($resourceDirectory)) {
@@ -333,6 +346,17 @@ class ModuleBuilder extends Command
 
         // replace repository data
         $content = str_ireplace("DATA_LIST", $dataList, $content);
+
+        // uploads
+        
+        $uploadsList = '';
+
+        if (! empty($this->info['uploads'])) {
+            $uploadsList = "'" . implode("', '", $this->info['uploads']) . "'";
+        }
+
+        // replace repository data
+        $content = str_ireplace("UPLOADS_LIST", $uploadsList, $content);
 
         $repositoryDirectory = base_path("app/Repositories/$repositoryPath");
 

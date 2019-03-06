@@ -38,7 +38,7 @@ class ResourceName extends ResourceManager
     /**
      * List of assets that will have a full url if available
      */
-    const ASSETS = [];
+    const ASSETS = [ASSETS_LIST];
 
     /**
      * Data that will be returned as a resources

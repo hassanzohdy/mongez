@@ -1,12 +1,11 @@
 <?php
-namespace HZ\Laravel\Organizer\Managers\Resources;
+namespace HZ\Laravel\Organizer\App\Managers\Resources;
 
-use DateTimeZone;
 use Carbon\Carbon;
 use MongoDB\BSON\UTCDateTime;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-abstract class JsonResourceManager extends JsonResource 
+abstract class MongoJsonResource extends JsonResource 
 {
     /**
      * Request object
@@ -99,21 +98,39 @@ abstract class JsonResourceManager extends JsonResource
         }
 
         foreach (static::ASSETS as $column) {
-            $this->data[$column] = $column ? url($this->$column) : null;
+            if (! isset($this->$column)) {
+                $this->data[$column] = null;
+                continue;    
+            }
+
+            $asset = $this->$column;
+
+            if (is_array($asset)) {
+                $asset = array_map(function ($asset) {
+                    return url($asset);
+                }, $asset);
+            } else {
+                $asset = url($asset);    
+            }
+
+            $this->data[$column] = $asset;
         }
 
         foreach (static::COLLECTABLE as $column => $resource) {
             if (isset($this->$column)) {
                 $collection = $this->$column;
                 $this->collect($column, $resource, $collection);
+            } else {
+                $this->data[$column] = [];
             }
         }
 
         foreach (static::RESOURCES as $column => $resource) {
-            if ($column == 'orders') dd($this->$column);
             if (isset($this->$column)) {
                 $resourceData = $this->$column;
                 $this->data[$column] = new $resource((object) $resourceData);
+            } else {
+                $this->data[$column] = [];
             }
         }
 
@@ -130,11 +147,6 @@ abstract class JsonResourceManager extends JsonResource
             }
             if ($this->$column instanceof UTCDateTime) {
                 $this->$column = $this->$column->toDateTime();
-            }
-
-            if ($timezone = config('app.timezone')) {
-                $timezone = new DateTimeZone($timezone);
-                $this->$column->setTimeZone($timezone);
             }
 
             $this->data[$column] = [

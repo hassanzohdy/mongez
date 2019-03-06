@@ -1,8 +1,8 @@
 <?php
-namespace HZ\Laravel\Organizer\Managers\Database\MongoDB;
+namespace HZ\Laravel\Organizer\App\Managers\Database\MongoDB;
 
 use DB;
-use HZ\Laravel\Organizer\Traits\ModelTrait;
+use HZ\Laravel\Organizer\App\Traits\ModelTrait;
 use Jenssegers\Mongodb\Eloquent\Model as BaseModel;
 
 abstract class Model extends BaseModel
@@ -86,9 +86,9 @@ abstract class Model extends BaseModel
      */
     public function nextId(): int
     {
-        $lastId = $this->lastInsertId();
-        
-        $newId = $lastId + 1;
+        $newId = $this->getNextId();
+
+        $lastId = $newId - 1;
 
         $ids = DB::collection('ids');
 
@@ -106,6 +106,16 @@ abstract class Model extends BaseModel
         }
         
         return $newId;
+    }
+
+    /**
+     * Get next id
+     * 
+     * @return int
+     */
+    public function getNextId(): int
+    {
+        return ((int) $this->lastInsertId()) + 1;
     }
 
     /**
