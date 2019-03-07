@@ -304,7 +304,11 @@ abstract class RepositoryManager implements RepositoryInterface
         foreach (static::FILTER_BY as $column => $option) {
             if ($value = $this->option($option)) {
                 $column = is_numeric($column) ? $option : $column;
-                $this->query->where($column, $value);                
+                if (is_array($value)) {
+                    $this->query->whereIn($column, $value);
+                } else {
+                    $this->query->where($column, $value);                
+                }
             }
         }
 
