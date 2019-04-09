@@ -1,9 +1,9 @@
 <?php
-namespace App\ModuleName\Resources;
+namespace App\Modules\ModuleName\Resources;
 
-use ResourceManager;
+use HZ\Illuminate\Organizer\Managers\Resources\JsonResourceManager;
 
-class ResourceName extends ResourceManager 
+class ResourceName extends JsonResourceManager 
 {
     /**
      * Data that must be returned

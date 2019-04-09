@@ -1,10 +1,10 @@
 <?php
-namespace App\ModuleName\Repositories;
+namespace App\Modules\ModuleName\Repositories;
 
-use RepositoryManager;
-use App\ModuleName\Models\ModelPath as Model;
-use App\ModuleName\Resources\ResourcePath as Resource;
+use App\Modules\ModuleName\Models\ModelName as Model;
+use App\Modules\ModuleName\Resources\ResourceName as Resource;
 use HZ\Illuminate\Organizer\Contracts\Repositories\RepositoryInterface;
+use HZ\Illuminate\Organizer\Managers\Database\DatabaseName\RepositoryManager;
 
 class RepositoryNameRepository extends RepositoryManager implements RepositoryInterface
 {

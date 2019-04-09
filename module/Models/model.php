@@ -1,4 +1,6 @@
 <?php
-namespace App\ModuleName\Models;
+namespace App\Modules\ModuleName\Models;
 
-class ModelName extends \Model {}
+use HZ\Illuminate\Organizer\Managers\Database\DatabaseName\Model;
+
+class ModelName extends Model {}

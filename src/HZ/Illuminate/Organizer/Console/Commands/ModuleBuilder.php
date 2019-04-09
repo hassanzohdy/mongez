@@ -25,8 +25,24 @@ class ModuleBuilder extends Command
 
     /**
      * The module name
+     * 
+     * @var string
      */
     protected $module;
+
+    /**
+     * The module name in studly case
+     * 
+     * @var string
+     */
+    protected $moduleName;
+
+    /**
+     * Current database name
+     * 
+     * @var string
+     */
+    protected $databaseName;
 
     /**
      * Module info
@@ -65,6 +81,12 @@ class ModuleBuilder extends Command
     public function handle()
     {
         $this->module = $this->argument('moduleName');
+
+        $this->moduleName = Str::studly($this->module);
+
+        $defaultDatabase = config('database.default');
+        
+        $this->databaseName = $defaultDatabase == 'mysql' ? 'MYSQL': 'MongoDB';
 
         $this->adjustOptionsValues();
     }
@@ -171,13 +193,13 @@ class ModuleBuilder extends Command
         $controllerType = $this->option('type');
 
         if (in_array($controllerType, ['all', 'site'])) {
-            $content = File::get($this->path("Controllers/Site/$controllerType.php"));
+            $content = File::get($this->path("Controllers/Site/controller.php"));
 
             // replace controller name
             $content = str_ireplace("ControllerName", "{$controllerName}Controller", $content);
 
             // replace module name
-            $content = str_ireplace("ModuleName", $this->module, $content);
+            $content = str_ireplace("ModuleName", $this->moduleName, $content);
 
             // repository name 
             $content = str_ireplace('repo-name', $this->info['repositoryName'], $content);
@@ -200,13 +222,13 @@ class ModuleBuilder extends Command
             // admin controller
             $this->info('Creating admin controller...');
 
-            $content = File::get($this->path("Controllers/Admin/$controllerType.php"));
+            $content = File::get($this->path("Controllers/Admin/controller.php"));
 
             // replace controller name
             $content = str_ireplace("ControllerName", "{$controllerName}Controller", $content);
 
             // replace module name
-            $content = str_ireplace("ModuleName", $this->module, $content);
+            $content = str_ireplace("ModuleName", $this->moduleName, $content);
 
             // repository name 
             $content = str_ireplace('repo-name', $this->info['repositoryName'], $content);
@@ -265,11 +287,14 @@ class ModuleBuilder extends Command
         // make it singular 
         $resourceName = Str::singular($resourceName);
 
+        // share it
+        $this->info['resourceName'] = $resourceName;
+
         // replace resource name
         $content = str_ireplace("ResourceName", "{$resourceName}", $content);
 
         // replace module name
-        $content = str_ireplace("ModuleName", $this->module, $content);
+        $content = str_ireplace("ModuleName", $this->moduleName, $content);
 
         $dataList = '';
 
@@ -296,7 +321,7 @@ class ModuleBuilder extends Command
         // replace resource data
         $content = str_ireplace("ASSETS_LIST", $assetsList, $content);
 
-        $resourceDirectory = $this->modulePath("Resources/$resourcePath");
+        $resourceDirectory = $this->modulePath("Resources");
 
         if (!File::isDirectory($resourceDirectory)) {
             File::makeDirectory($resourceDirectory, 0755, true);
@@ -319,21 +344,22 @@ class ModuleBuilder extends Command
 
         $repositoryName = basename($repository);
 
-        $repositoryPath = dirname($repository);
-
         $content = File::get($this->path("Repositories/repository.php"));
 
         // replace repository name
         $content = str_ireplace("RepositoryName", "{$repositoryName}", $content);
 
         // replace module name
-        $content = str_ireplace("ModuleName", $this->module, $content);
+        $content = str_ireplace("ModuleName", $this->moduleName, $content);
+
+        // replace database name 
+        $content = str_replace('DatabaseName', $this->databaseName, $content);
 
         // replace model path
-        $content = str_ireplace("ModelPath", $this->info['modelPath'], $content);
+        $content = str_ireplace("ModelName", $this->info['modelName'], $content);
 
         // replace resource path
-        $content = str_ireplace("ResourcePath", $this->info['resourcePath'], $content);
+        $content = str_ireplace("ResourceName", $this->info['resourceName'], $content);
 
         // repository name 
         $content = str_ireplace('repo-name', $this->info['repositoryName'], $content);
@@ -362,7 +388,7 @@ class ModuleBuilder extends Command
         // replace repository data
         $content = str_ireplace("UPLOADS_LIST", $uploadsList, $content);
 
-        $repositoryDirectory = $this->modulePath("Repositories/$repositoryPath");
+        $repositoryDirectory = $this->modulePath("Repositories/");
 
         if (!File::isDirectory($repositoryDirectory)) {
             File::makeDirectory($repositoryDirectory, 0755, true);
@@ -396,16 +422,18 @@ class ModuleBuilder extends Command
         // make it singular 
         $modelName = Str::singular($modelName);
 
+        $this->info['modelName'] = $modelName;
+
         // replace model name
         $content = str_ireplace("ModelName", "{$modelName}", $content);
 
+        // replace database name 
+        $content = str_replace('DatabaseName', $this->databaseName, $content);
+
         // replace module name
-        $content = str_ireplace("ModuleName", $this->module, $content);
-
-        // replace model path
-        $content = str_ireplace("ModelPath", $modelPath, $content);
-
-        $modelDirectory = $this->modulePath("Models/$modelPath");
+        $content = str_ireplace("ModuleName", $this->moduleName, $content);
+        
+        $modelDirectory = $this->modulePath("Models/");
 
         if (!File::isDirectory($modelDirectory)) {
             File::makeDirectory($modelDirectory, 0755, true);
@@ -455,7 +483,7 @@ class ModuleBuilder extends Command
      */
     protected function modulePath(string $relativePath): string
     {
-        return base_path("app/Modules/{$this->module}/$relativePath");
+        return base_path("app/Modules/{$this->moduleName}/$relativePath");
     }
 
     /**

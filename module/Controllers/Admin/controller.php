@@ -1,7 +1,9 @@
 <?php
 namespace App\ModuleName\Controllers\Admin;
 
-class ControllerName extends \AdminApiController
+use HZ\Illuminate\Organizer\Managers\AdminApiController; 
+
+class ControllerName extends AdminApiController
 {
     /**
      * Controller info

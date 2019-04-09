@@ -2,8 +2,9 @@
 namespace App\ModuleName\Controllers\Site;
 
 use Illuminate\Http\Request;
+use HZ\Illuminate\Organizer\Managers\ApiController;
 
-class ControllerName extends \ApiController
+class ControllerName extends ApiController
 {
     /**
      * Repository name
