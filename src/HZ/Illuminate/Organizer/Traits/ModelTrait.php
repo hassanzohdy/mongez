@@ -31,7 +31,7 @@ trait ModelTrait
             } 
             
             if ($model->updatedBy) {
-                $model->{$model->updatedBy} = $this->byUser();
+                $model->{$model->updatedBy} = $model->byUser();
             } 
 
             if ($model->deletedBy) {
@@ -43,7 +43,7 @@ trait ModelTrait
         // if so, then we will update the column for the current user id
         static::updating(function ($model) {
             if ($model->updatedBy) {
-                $model->{$model->updatedBy} = $this->byUser();
+                $model->{$model->updatedBy} = $model->byUser();
             } 
         });
 
@@ -51,7 +51,7 @@ trait ModelTrait
         // if so, then we will update the column for the current user id
         static::deleting(function ($model) {
             if ($model->deletedBy && $model->uses(SoftDeletes::class)) {
-                $model->{$model->deletedBy} = $this->byUser();
+                $model->{$model->deletedBy} = $model->byUser();
             } 
         });
     }

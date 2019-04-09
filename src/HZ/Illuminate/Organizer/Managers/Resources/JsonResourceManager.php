@@ -81,7 +81,7 @@ abstract class JsonResourceManager extends JsonResource
      * @param   \Illuminate\Http\Request  $request
      * @return  array
      */
-    public function toArray(Request $request)
+    public function toArray($request)
     {
         $this->request = $request;
 
