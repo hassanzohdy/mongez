@@ -213,7 +213,7 @@ class ModuleBuilder extends Command
             }
 
             // create the file
-            $filePath = "$controllerDirectory/$controllerName.php";
+            $filePath = "$controllerDirectory/{$controllerName}Controller.php";
 
             $this->createFile($filePath, $content, 'Controller');
         }
@@ -240,7 +240,7 @@ class ModuleBuilder extends Command
             }
 
             // create the file
-            $filePath = "$controllerDirectory/$controllerName.php";
+            $filePath = "$controllerDirectory/{$controllerName}Controller.php";
 
             $this->createFile($filePath, $content, 'Admin Controller');
         }
