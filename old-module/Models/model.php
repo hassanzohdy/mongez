@@ -1,4 +1,4 @@
 <?php
-namespace App\ModuleName\Models;
+namespace App\Models\ModelPath;
 
 class ModelName extends \Model {}

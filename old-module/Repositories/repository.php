@@ -1,9 +1,10 @@
 <?php
-namespace App\ModuleName\Repositories;
+namespace App\Repositories\RepositoryPath;
 
 use RepositoryManager;
-use App\ModuleName\Models\ModelPath as Model;
-use App\ModuleName\Resources\ResourcePath as Resource;
+use Illuminate\Http\Request;
+use App\Models\ModelPath as Model;
+use App\Http\Resources\ResourcePath as Resource;
 use HZ\Illuminate\Organizer\Contracts\Repositories\RepositoryInterface;
 
 class RepositoryNameRepository extends RepositoryManager implements RepositoryInterface
