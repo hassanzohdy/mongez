@@ -5,6 +5,7 @@ use App\Modules\ModuleName\{
     Models\ModelName as Model,
     Resources\ResourceName as Resource
 };
+
 use HZ\Illuminate\Organizer\{
     Contracts\Repositories\RepositoryInterface,
     Managers\Database\MongoDB\RepositoryManager
