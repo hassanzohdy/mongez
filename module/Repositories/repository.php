@@ -1,10 +1,14 @@
 <?php
 namespace App\Modules\ModuleName\Repositories;
 
-use App\Modules\ModuleName\Models\ModelName as Model;
-use App\Modules\ModuleName\Resources\ResourceName as Resource;
-use HZ\Illuminate\Organizer\Contracts\Repositories\RepositoryInterface;
-use HZ\Illuminate\Organizer\Managers\Database\DatabaseName\RepositoryManager;
+use App\Modules\ModuleName\{
+    Models\ModelName as Model,
+    Resources\ResourceName as Resource
+};
+use HZ\Illuminate\Organizer\{
+    Contracts\Repositories\RepositoryInterface,
+    Managers\Database\MongoDB\RepositoryManager
+};
 
 class RepositoryNameRepository extends RepositoryManager implements RepositoryInterface
 {
