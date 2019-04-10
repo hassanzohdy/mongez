@@ -1,5 +1,5 @@
 <?php
-namespace App\ModuleName\Controllers\Admin;
+namespace App\Modules\ModuleName\Controllers\Admin;
 
 use HZ\Illuminate\Organizer\Managers\AdminApiController; 
 

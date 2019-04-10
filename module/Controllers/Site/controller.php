@@ -1,5 +1,5 @@
 <?php
-namespace App\ModuleName\Controllers\Site;
+namespace App\Modules\ModuleName\Controllers\Site;
 
 use Illuminate\Http\Request;
 use HZ\Illuminate\Organizer\Managers\ApiController;
