@@ -181,6 +181,13 @@ abstract class Model extends BaseModel
      */
     protected function byUser()
     {
-        return (array) user()->info();
+        $user = user();
+        if (method_exists($user, 'sharedInfo')) {
+            $info = $user->sharedInfo();
+        } else {
+            $info = $user->info();
+        }
+        
+        return $info;
     } 
 }
