@@ -26,32 +26,32 @@ trait ModelTrait
         // before creating, we will check if the created_by column has value
         // if so, then we will update the column for the current user id
         static::creating(function ($model) {
-            if ($model->createdBy) {
-                $model->{$model->createdBy} = user()->id ?? 0;
+            if (static::CREATED_BY) {
+                $model->{static::CREATED_BY} = user()->id ?? 0;
             } 
             
-            if ($model->updatedBy) {
-                $model->{$model->updatedBy} = $model->byUser();
+            if (static::UPDATED_BY) {
+                $model->{static::UPDATED_BY} = $model->byUser();
             } 
 
-            if ($model->deletedBy) {
-                $model->{$model->deletedBy} = null;
+            if (static::DELETED_BY) {
+                $model->{static::DELETED_BY} = null;
             } 
         });
         
         // before updating, we will check if the updated_by column has value
         // if so, then we will update the column for the current user id
         static::updating(function ($model) {
-            if ($model->updatedBy) {
-                $model->{$model->updatedBy} = $model->byUser();
+            if (static::UPDATED_BY) {
+                $model->{static::UPDATED_BY} = $model->byUser();
             } 
         });
 
         // before deleting, we will check if the deleted_by column has value
         // if so, then we will update the column for the current user id
         static::deleting(function ($model) {
-            if ($model->deletedBy && $model->uses(SoftDeletes::class)) {
-                $model->{$model->deletedBy} = $model->byUser();
+            if (static::DELETED_BY && $model->uses(SoftDeletes::class)) {
+                $model->{static::DELETED_BY} = $model->byUser();
             } 
         });
     }

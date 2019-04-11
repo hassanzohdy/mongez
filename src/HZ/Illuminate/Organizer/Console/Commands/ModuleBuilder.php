@@ -127,14 +127,106 @@ class ModuleBuilder extends Command
     {
         $this->info('Creating controller file');
         $this->createController();
+
         $this->info('Creating resource file');
         $this->createResource();
+
         $this->info('Creating model file');
         $this->createModel();
-        $this->info('Creating repository file');
 
+        $this->info('Creating repository file');
         $this->createRepository();
+
+        $this->info('Generating routes files');
+        $this->createRoues();
+
         $this->info('Module has been created successfully');
+    }
+
+    /**
+     * Generate routes files
+     * 
+     * @return void
+     */
+    protected function createRoues()
+    {
+        $type = $this->option('type');
+
+        // create routes directory
+        $content = File::get($this->path("Controllers/Site/controller.php"));
+
+        $routesDirectory = $this->modulePath("routes");
+
+        if (!File::isDirectory($routesDirectory)) {
+            File::makeDirectory($routesDirectory, 0777, true);
+        }
+
+        // get the content of the api routes file
+        $apiRoutesFileContent = File::get(base_path('routes/api.php'));
+
+        $controller = $this->info['controller'];
+
+        $controllerName = basename($controller);
+
+        if (in_array($type, ['all', 'site'])) {
+            // generate the site routes file
+            $content = File::get($this->path("routes/site.php"));
+    
+            // replace controller name
+            $content = str_ireplace("ControllerName", "{$controllerName}Controller", $content);
+
+            // replace module name
+            $content = str_ireplace("ModuleName", "{$this->moduleName}", $content);
+
+            // replace route prefix
+            $content = str_ireplace("route-prefix", "{$this->module}", $content);
+
+            // create the route file
+            $filePath = $routesDirectory . '/site.php';
+
+            $this->createFile($filePath, $content, 'Site routes');
+
+            // add the routes file to the api routes file content
+            if (Str::contains($apiRoutesFileContent, '// end of site routes')) {
+                $apiRoutesFileContent = str_replace('// end of site routes', 
+"// {$this->moduleName} module
+include base_path('app/Modules/{$this->moduleName}/routes/site.php');
+
+// end of site routes", $apiRoutesFileContent);
+            }
+        }
+
+        if (in_array($type, ['all', 'admin'])) {
+            // generate the admin routes file
+            $content = File::get($this->path("routes/admin.php"));
+
+            // replace controller name
+            $content = str_ireplace("ControllerName", "{$controllerName}Controller", $content);
+
+            // replace module name
+            $content = str_ireplace("ModuleName", "{$this->moduleName}", $content);
+
+            // replace route prefix
+            $content = str_ireplace("route-prefix", "{$this->module}", $content);
+
+            // create the route file
+            $filePath = $routesDirectory . '/admin.php';
+
+            $this->createFile($filePath, $content, 'Admin routes');
+            // add the routes file to the api routes file content
+            if (Str::contains($apiRoutesFileContent, '// end of admin routes')) {
+                echo 12;
+                $apiRoutesFileContent = str_replace('// end of admin routes', 
+"// {$this->moduleName} module
+    include base_path('app/Modules/{$this->moduleName}/routes/admin.php');
+
+    // end of admin routes", $apiRoutesFileContent);
+            }
+        }
+
+        // echo($apiRoutesFileContent);
+
+        File::put(base_path('routes/api.php'), $apiRoutesFileContent);
     }
 
     /**
@@ -204,12 +296,10 @@ class ModuleBuilder extends Command
             // repository name 
             $content = str_ireplace('repo-name', $this->info['repositoryName'], $content);
 
-            $controllerDirectory = base_path("app/Http/Controllers/Api/Site/$controllerName.php");
-
             $controllerDirectory = $this->modulePath("Controllers/Site");
 
             if (!File::isDirectory($controllerDirectory)) {
-                File::makeDirectory($controllerDirectory, 0755, true);
+                File::makeDirectory($controllerDirectory, 0777, true);
             }
 
             // create the file
@@ -236,7 +326,7 @@ class ModuleBuilder extends Command
             $controllerDirectory = $this->modulePath("Controllers/Admin");
 
             if (!File::isDirectory($controllerDirectory)) {
-                File::makeDirectory($controllerDirectory, 0755, true);
+                File::makeDirectory($controllerDirectory, 0777, true);
             }
 
             // create the file
@@ -259,9 +349,7 @@ class ModuleBuilder extends Command
         $createFile = true;
         if (File::exists($filePath)) {
             $createFile = false;
-            if ($this->confirm($fileType . ' exists, override it?')) {
-                $createFile = true;
-            }
+            $createFile = $this->confirm($fileType . ' exists, override it?');
         }
 
         if ($createFile) {
@@ -324,7 +412,7 @@ class ModuleBuilder extends Command
         $resourceDirectory = $this->modulePath("Resources");
 
         if (!File::isDirectory($resourceDirectory)) {
-            File::makeDirectory($resourceDirectory, 0755, true);
+            File::makeDirectory($resourceDirectory, 0777, true);
         }
 
         $this->info['resourcePath'] = $resourcePath . '\\' . $resourceName;
@@ -391,7 +479,7 @@ class ModuleBuilder extends Command
         $repositoryDirectory = $this->modulePath("Repositories/");
 
         if (!File::isDirectory($repositoryDirectory)) {
-            File::makeDirectory($repositoryDirectory, 0755, true);
+            File::makeDirectory($repositoryDirectory, 0777, true);
         }
 
         // create the file
@@ -436,7 +524,7 @@ class ModuleBuilder extends Command
         $modelDirectory = $this->modulePath("Models/");
 
         if (!File::isDirectory($modelDirectory)) {
-            File::makeDirectory($modelDirectory, 0755, true);
+            File::makeDirectory($modelDirectory, 0777, true);
         }
 
         $this->info['modelPath'] = $modelPath . '\\' . $modelName;

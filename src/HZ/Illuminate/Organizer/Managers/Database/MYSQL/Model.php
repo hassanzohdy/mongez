@@ -12,25 +12,25 @@ class Model extends BaseModel
      * Created By column
      * Set it to false if this column doesn't exist in the table
      *
-     * @var string|bool
+     * @const string|bool
      */
-    protected $createdBy = 'created_by';
+    const CREATED_BY = 'created_by';
 
     /**
      * Updated By column
      * Set it to false if this column doesn't exist in the table
      *
-     * @var string|bool
+     * @const string|bool
      */
-    protected $updatedBy = 'updated_by';
+    const UPDATED_BY = 'updated_by';
 
     /**
      * Deleted By column
      * Set it to false if this column doesn't exist in the table
      *
-     * @var string|bool
+     * @const string|bool
      */
-    protected $deletedBy = 'deleted_by';
+    const DELETED_BY = 'deleted_by';
 
     /**
      * Disable guarded fields

@@ -12,6 +12,30 @@ abstract class Model extends BaseModel
     }
     
     /**
+     * Created By column
+     * Set it to false if this column doesn't exist in the table
+     *
+     * @const string|bool
+     */
+    const CREATED_BY = 'created_by';
+
+    /**
+     * Updated By column
+     * Set it to false if this column doesn't exist in the table
+     *
+     * @const string|bool
+     */
+    const UPDATED_BY = 'updated_by';
+
+    /**
+     * Deleted By column
+     * Set it to false if this column doesn't exist in the table
+     *
+     * @const string|bool
+     */
+    const DELETED_BY = 'deleted_by';
+
+    /**
      * The name of the "created at" column.
      *
      * @var string
