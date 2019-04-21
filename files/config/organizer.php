@@ -13,6 +13,38 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Module builder
+    |--------------------------------------------------------------------------
+    |
+    | Based on the settings that is provided here, the module builder will adjust its settings accordingly.
+    | Put your configurations based on your application flow
+    | 
+    | has-admin: if set to false, then Laravel Organizer will treat the application as a single application with no admin panel 
+    | 
+    */
+    'module-builder' => [
+        'has-admin' => true,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Admin options
+    |--------------------------------------------------------------------------
+    |
+    | The following options are applied on any request related to the AdminApiController or the /admin requests in general
+    | 
+    | returnOn options: single-record | all-records | none
+    | 
+    */
+    'admin' => [
+        'returnOn' => [
+            'store' => 'single-record',
+            'update' => 'single-record',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Repositories
     |--------------------------------------------------------------------------
     |

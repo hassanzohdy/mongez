@@ -604,6 +604,6 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
             $optionValue = "{$module}\\{$module}";
         }
 
-        $this->info[$option] = str_replace('/', '\\', $optionValue);
+        $this->info[$option] = Str::studly(str_replace('/', '\\', $optionValue));
     }
 }

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 /*
 |--------------------------------------------------------------------------
@@ -10,11 +10,10 @@
 | and "namespace", so don't edit it to add for example "api" as a prefix. 
 */
 Route::group([
-    'prefix' => '/route-prefix', 
     'namespace' => 'Modules\ModuleName\Controllers\Site',
 ], function () {
     // list records
-    Route::get('/list-route', 'ControllerName@index');
+    Route::get('/route-prefix', 'ControllerName@index');
     // one record 
-    Route::get('/list-route/{id}', 'ControllerName@show');
+    Route::get('/route-prefix/{id}', 'ControllerName@show');
 });

@@ -24,6 +24,10 @@ abstract class AdminApiController extends ApiController
         'records' => [
             'select' => [],
         ],
+        'returnOn' => [
+            'store' => 'single-record',
+            'update' => 'single-record',
+        ],
         'rules' => [
             'all' => [],
             'store' => [],
@@ -84,15 +88,10 @@ abstract class AdminApiController extends ApiController
             return $this->badRequest('not-found');
         }
 
-        if ($request->check_permission) {
-            $key = $request->check_permission;
-            $access = $this->user->canAccessKey($key);
-        }
-
-        $json['record'] = $this->repository->get($id);
-
-        return $access ? $this->success($json) :
-        $this->unauthorized('You Do not Have permission');
+        return $this->success([
+            'success' => true,
+            'record' => $this->repository->get($id),
+        ]);
     }
 
     /**
@@ -124,11 +123,15 @@ abstract class AdminApiController extends ApiController
 
         $model = $this->repository->create($request);
 
-        $response = [
-            'success' => true,
-            'record' => $this->repository->get($model->id),
-        ];
-        return $this->success($response);
+        $returnOnStore = $this->controllerInfo['returnOn']['store'] ?? config('organizer.admin.returnOn.store', 'single-record');
+
+        if ($returnOnStore == 'single-record') {
+            return $this->show($model->id, $request);
+        } elseif ($returnOnStore == 'all-records') {
+            return $this->index($request);
+        } else {
+            return $this->success();
+        }
     }
 
     /**
@@ -171,11 +174,15 @@ abstract class AdminApiController extends ApiController
 
         $this->repository->update($id, $request);
 
-        $response = [
-            'success' => true,
-        ];
+        $returnOnUpdate = $this->controllerInfo['returnOn']['update'] ?? config('organizer.admin.returnOn.update', 'single-record');
 
-        return $this->success($response);
+        if ($returnOnUpdate == 'single-record') {
+            return $this->show($id, $request);
+        } elseif ($returnOnUpdate == 'all-records') {
+            return $this->index($request);
+        } else {
+            return $this->success();
+        }
     }
 
     /**
