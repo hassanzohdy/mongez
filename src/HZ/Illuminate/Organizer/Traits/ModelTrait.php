@@ -27,7 +27,7 @@ trait ModelTrait
         // if so, then we will update the column for the current user id
         static::creating(function ($model) {
             if (static::CREATED_BY) {
-                $model->{static::CREATED_BY} = user()->id ?? 0;
+                $model->{static::CREATED_BY} = $model->byUser();
             } 
             
             if (static::UPDATED_BY) {

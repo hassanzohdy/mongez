@@ -1,5 +1,5 @@
 <?php
-namespace HZ\Illuminate\Organizer\Database\MYSQL\Managers;
+namespace HZ\Illuminate\Organizer\Managers\Database\MYSQL;
 
 use HZ\Illuminate\Organizer\Traits\ModelTrait;
 use Illuminate\Database\Eloquent\Model as BaseModel;

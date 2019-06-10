@@ -40,11 +40,17 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     /**
      * Get model for the given id
      * 
-     * @param  int $id
+     * @param  int|array $id
      * @return mixed
      */
-    public function getModel(int $id)
+    public function getModel($id)
     {
+        if (is_array($id)) {
+            $id = array_map('intval', $id);
+        } else {
+            $id = (int) $id;
+        }
+
         return $this->getByModel('id', $id);
     }
 
@@ -75,7 +81,7 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     {        
         $model = static::MODEL;
 
-        return $model::where($column, $value)->first();
+        return is_array($value) ? $model::whereIn($column, $value)->get() : $model::where($column, $value)->first();
     }
 
     /**

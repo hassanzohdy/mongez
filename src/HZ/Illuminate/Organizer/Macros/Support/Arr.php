@@ -13,7 +13,7 @@ class Arr
      */
     public static function remove()
     {
-        return function ($value, array $array, bool $removeFirstOnly = false): array {
+        return function (array $array, $value, bool $removeFirstOnly = false): array {
             foreach ($array as $key => $arrayValue) {
                 if ($value == $arrayValue) {
                     unset($array[$key]);
