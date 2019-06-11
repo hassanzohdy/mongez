@@ -17,6 +17,16 @@ trait ModelTrait
     }
 
     /**
+     * Get table name
+     * 
+     * @return string
+     */
+    public static function getTableName()
+    {
+        return (new static)->getTable();
+    }
+
+    /**
      * {@inheritDoc}
      */
     public static function boot()
@@ -31,7 +41,7 @@ trait ModelTrait
             } 
             
             if (static::UPDATED_BY) {
-                $model->{static::UPDATED_BY} = $model->byUser();
+                $model->{static::UPDATED_BY} = null;
             } 
 
             if (static::DELETED_BY) {

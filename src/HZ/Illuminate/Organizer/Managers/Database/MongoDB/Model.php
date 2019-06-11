@@ -12,30 +12,6 @@ abstract class Model extends BaseModel
     }
     
     /**
-     * Created By column
-     * Set it to false if this column doesn't exist in the table
-     *
-     * @const string|bool
-     */
-    const CREATED_BY = 'createdBy';
-
-    /**
-     * Updated By column
-     * Set it to false if this column doesn't exist in the table
-     *
-     * @const string|bool
-     */
-    const UPDATED_BY = 'updatedBy';
-
-    /**
-     * Deleted By column
-     * Set it to false if this column doesn't exist in the table
-     *
-     * @const string|bool
-     */
-    const DELETED_BY = 'deletedBy';
-
-    /**
      * The name of the "created at" column.
      *
      * @var string
@@ -55,6 +31,30 @@ abstract class Model extends BaseModel
      * @var string
      */
     const DELETED_AT = 'deletedAt';
+
+    /**
+     * Created By column
+     * Set it to false if this column doesn't exist in the table
+     *
+     * @var string|bool
+     */
+    protected $createdBy = 'createdBy';
+
+    /**
+     * Updated By column
+     * Set it to false if this column doesn't exist in the table
+     *
+     * @var string|bool
+     */
+    protected $updatedBy = 'updatedBy';
+
+    /**
+     * Deleted By column
+     * Set it to false if this column doesn't exist in the table
+     *
+     * @var string|bool
+     */
+    protected $deletedBy = 'deletedBy';
 
     /**
      * Disable guarded fields
@@ -143,16 +143,6 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * This method should return the info of the document that will be stored in another document, default to full info
-     * 
-     * @return array
-     */
-    public function sharedInfo()
-    {
-        return $this->getAttributes();
-    }
-
-    /**
      * {@inheritDoc}
      */
     public static function find($id)
@@ -163,64 +153,11 @@ abstract class Model extends BaseModel
     /**
      * Get user by id that will be used with created by, updated by and deleted by
      * 
-     * @return int
+     * @return mixed
      */
     protected function byUser()
     {
         $user = user();
-        if (! $user) return [];
-        if (method_exists($user, 'sharedInfo')) {
-            $info = $user->sharedInfo();
-        } else {
-            $info = $user->info();
-        }
-        
-        return $info;
-    }
-
-    /**
-     * Associate the given model|info to the given
-     * 
-     * @param   mixed $modelInfo
-     * @param   string $column
-     * @return  $this
-     */
-    public function associate($modelInfo, $column)
-    {
-        $values = $this->$column ?? [];
-        
-        if (is_array(($modelInfo))) {
-            $values[] = $modelInfo;
-        } elseif ($modelInfo instanceof BaseModel) {
-            $values[] = $modelInfo->sharedInfo();
-        }
-
-        $this->$column = $values;
-
-        return $this;
-    }
-
-    /**
-     * Disassociate the given data from the given column
-     * 
-     * @param   mixed $modelInfo
-     * @param   string $column
-     * @return  $this  
-     */
-    public function disassociate($modelInfo, $column)
-    {
-        $array = $this->$column ?? [];
-
-        $newArray = [];
-
-        foreach ($array as $value) {
-            if ($value['id'] == $modelInfo['id']) continue;
-
-            $newArray[] = $value;
-        }
-
-        $this->$column = $newArray;
-
-        return $this;
+        return $user ? $user->info() : null;
     } 
 }

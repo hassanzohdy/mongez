@@ -68,8 +68,8 @@ abstract class RepositoryManager implements RepositoryInterface
         'create' => 'onCreate',
         'save' => 'onSave',
         'update' => 'onUpdate',
-        'before-deleting' => 'beforeDeleting',
-        'delete' => 'onDelete',
+        'deleting' => 'onDeleting',
+        'deleted' => 'onDelete',
     ];
 
     /**
@@ -604,17 +604,15 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     public function delete(int $id): bool
     {
-        $modelName = static::MODEL;
-        
         $model = (static::MODEL)::find($id);
 
         if (! $model) return false;
 
-        if ($this->events->trigger("{$this->eventName}.before-deleting", $model, $id) === false) return false;
+        if ($this->events->trigger("{$this->eventName}.deleting", $model, $id) === false) return false;
 
         $model->delete();
 
-        $this->events->trigger("{$this->eventName}.delete", $model, $id);
+        $this->events->trigger("{$this->eventName}.deleted", $model, $id);
 
         return true;
     }
