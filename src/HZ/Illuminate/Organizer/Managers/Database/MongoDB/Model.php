@@ -36,25 +36,25 @@ abstract class Model extends BaseModel
      * Created By column
      * Set it to false if this column doesn't exist in the table
      *
-     * @var string|bool
+     * @const string|bool
      */
-    protected $createdBy = 'createdBy';
+    const CREATED_BY = 'createdBy';
 
     /**
      * Updated By column
      * Set it to false if this column doesn't exist in the table
      *
-     * @var string|bool
+     * @const string|bool
      */
-    protected $updatedBy = 'updatedBy';
+    const UPDATED_BY = 'updatedBy';
 
     /**
      * Deleted By column
      * Set it to false if this column doesn't exist in the table
      *
-     * @var string|bool
+     * @const string|bool
      */
-    protected $deletedBy = 'deletedBy';
+    const DELETED_BY = 'deletedBy';
 
     /**
      * Disable guarded fields

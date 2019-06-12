@@ -141,6 +141,33 @@ class ModuleBuilder extends Command
         $this->createRoues();
 
         $this->info('Module has been created successfully');
+        
+        $this->info('Updating configurations.');
+        $this->updateConfig();
+    }
+
+    /**
+     * Update configurations
+     *
+     * @return void
+     */
+    protected function updateConfig(): void 
+    {
+        if (! isset($this->info['repositoryName'])) return;
+
+        $config = File::get($organizerPath =  base_path('config/organizer.php'));
+
+        $replacementLine = '// Auto generated repositories here: DO NOT remove this line.';
+        
+        if (! Str::contains($config, $replacementLine)) return;
+
+        $repositoryClassName = basename($this->info['repository']);
+
+        $replacedString = "'{$this->info['repositoryName']}' => App\\Modules\\$repositoryClassName\\Repositories\\{$repositoryClassName}Repository::class,\n \t\t $replacementLine";
+
+        $updatedConfig =str_replace($replacementLine, $replacedString, $config);
+
+        File::put($organizerPath, $updatedConfig);
     }
 
     /**
@@ -456,7 +483,7 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
 
         if (!empty($this->info['data'])) {
             if (in_array('id', $this->info['data'])) {
-                $this->info['data'] = Arr::remove('id', $this->info['data']);
+                $this->info['data'] = Arr::remove($this->info['data'], 'id');
             }
 
             $dataList = "'" . implode("', '", $this->info['data']) . "'";

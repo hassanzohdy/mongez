@@ -55,8 +55,7 @@ return [
     'repositories' => [
         // add your repositories here  
         // 'repo-short-name' => RepositoryClassPath::class,
-        // for example
-        'users' => App\Modules\Users\Repositories\UsersRepository::class,
+        // Auto generated repositories here: DO NOT remove this line.   
     ],
     /*
     |--------------------------------------------------------------------------
