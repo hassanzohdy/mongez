@@ -160,4 +160,73 @@ abstract class Model extends BaseModel
         $user = user();
         return $user ? $user->info() : null;
     } 
+
+    /**
+     * Associate the given value to the given key
+     * 
+     * @param mixed $value
+     * @param string $key
+     * @return this
+     */
+    public function associate($value, $key)
+    {
+        $listOfValues = $this->$key;
+        if (is_array($value)) {
+            $value = (object) $value;
+        } elseif (get_parent_class($value) == self::class) {
+            $value = (object) $value->info();
+        }
+
+        if (empty($listOfValues)) {
+            $listOfValues = [];
+        }
+
+        if ($value->id) {
+            $exists = false;
+            foreach ($listOfValues as $key => $listValue) {
+                if ($value->id == $listValue['id']) {
+                    $listOfValues[$key] = $value;
+                    $exists = true;
+                    break;
+                }
+            }
+
+            if (! $exists) {
+                $listOfValues[] = $value;
+            }
+        } else {
+            $listOfValues[] = $value;
+        }
+
+        $this->$key = $listOfValues;
+
+        return $this;
+    }
+
+    /**
+     * Disassociate the given value to the given key
+     * 
+     * @param mixed $value
+     * @param string $key
+     * @return this
+     */
+    public function disassociate($value, $key)
+    {
+        $listOfValues = $this->$key;
+
+        $value = (object) $value;
+
+        if ($value->id) {
+            foreach ($listOfValues as $key => $listValue) {
+                if ($value->id == $listValue['id']) {
+                    unset($listOfValues[$key]);
+                    break;
+                }
+            }
+        }
+
+        $this->$key = array_values($listOfValues);
+
+        return $this;
+    }
 }
