@@ -4,7 +4,7 @@ namespace HZ\Illuminate\Organizer\Events;
 use App;
 use HZ\Illuminate\Organizer\Contracts\Events\EventsInterface;
 
-class Events implements EventsInterface 
+class Events implements EventsInterface
 {
     /**
      * Events List
@@ -20,26 +20,36 @@ class Events implements EventsInterface
      */
     protected $classesList = [];
 
+    /**
+     * An alias to trigger method
+     * 
+     * @see $this->trigger
+     */
+    public static function emit(...$args)
+    {
+        return $this->trigger(...$args);
+    }
+
     /** 
      * {@inheritDoc}
-    */
-    public function trigger(string $events, ...$callbackArguments) 
+     */
+    public function trigger(string $events, ...$callbackArguments)
     {
         foreach (explode(' ', $events) as $event) {
-            if (isset($this->eventsList[$event])) {
-                foreach ($this->eventsList[$event] as $callbackString) {
-                    if (! $this->isLoaded($callbackString)) {
-                        $this->load($callbackString);
-                    }
+            if (!isset($this->eventsList[$event])) continue;
 
-                    list($classObject, $method) = $this->get($callbackString);
-
-                    $return = $classObject->$method(...$callbackArguments);
-
-                    if ($return === false) return false;
-
-                    if (! is_null($return)) return $return;
+            foreach ($this->eventsList[$event] as $callbackString) {
+                if (!$this->isLoaded($callbackString)) {
+                    $this->load($callbackString);
                 }
+
+                list($classObject, $method) = $this->get($callbackString);
+
+                $return = $classObject->$method(...$callbackArguments);
+
+                if ($return === false) return false;
+
+                if (!is_null($return)) return $return;
             }
         }
 
@@ -88,27 +98,21 @@ class Events implements EventsInterface
     }
 
     /**
-     * An alias to trigger method
-     * 
-     * @see $this->trigger
-     */
-    public static function emit(...$args)
-    {
-        return $this->trigger(...$args);
-    }
-
-    /**
      * {@inherit}
      */
-    public function subscribe(string $events, string $class)
+    public function subscribe(string $events, $eventListener)
     {
         foreach (explode(' ', $events) as $event) {
-            if (! isset($this->eventsList[$event])) {
+            if (!isset($this->eventsList[$event])) {
                 $this->eventsList[$event] = [];
             }
 
-            if (! in_array($class, $this->eventsList[$event])) {
-                $this->eventsList[$event][] = $class;
+            if (is_array($eventListener)) {
+                $eventListener = implode('@', $eventListener);
+            }
+
+            if (!in_array($eventListener, $this->eventsList[$event])) {
+                $this->eventsList[$event][] = $eventListener;
             }
         }
     }

@@ -143,6 +143,16 @@ abstract class Model extends BaseModel
     }
 
     /**
+     * This method should return the info of the document that will be stored in another document, default to full info
+     * 
+     * @return array
+     */
+    public function sharedInfo()
+    {
+        return $this->getAttributes();
+    }
+
+    /**
      * {@inheritDoc}
      */
     public static function find($id)
@@ -158,47 +168,49 @@ abstract class Model extends BaseModel
     protected function byUser()
     {
         $user = user();
-        return $user ? $user->info() : null;
+        return $user ? $user->sharedInfo() : null;
     } 
 
     /**
      * Associate the given value to the given key
      * 
-     * @param mixed $value
-     * @param string $key
+     * @param mixed $modelInfo
+     * @param string $column
      * @return this
      */
-    public function associate($value, $key)
+    public function associate($modelInfo, $column)
     {
-        $listOfValues = $this->$key;
-        if (is_array($value)) {
-            $value = (object) $value;
-        } elseif (get_parent_class($value) == self::class) {
-            $value = (object) $value->info();
+        $listOfValues = $this->$column ?? [];
+        if (is_array($modelInfo)) {
+            $modelInfo = (object) $modelInfo;
+        } elseif ($modelInfo instanceof Model) {
+            $modelInfo = (object) $modelInfo->info();
         }
 
-        if (empty($listOfValues)) {
-            $listOfValues = [];
+        // if ($value->id) {
+        //     $exists = false;
+        //     foreach ($listOfValues as $key => $listValue) {
+        //         if ($value->id == $listValue['id']) {
+        //             $listOfValues[$key] = $value;
+        //             $exists = true;
+        //             break;
+        //         }
+        //     }
+
+        //     if (! $exists) {
+        //         $listOfValues[] = $value;
+        //     }
+        // } else {
+        //     $listOfValues[] = $value;
+        // }
+        
+        if (is_array(($modelInfo))) {
+            $listOfValues[] = $modelInfo;
+        } elseif ($modelInfo instanceof BaseModel) {
+            $listOfValues[] = $modelInfo->sharedInfo();
         }
 
-        if ($value->id) {
-            $exists = false;
-            foreach ($listOfValues as $key => $listValue) {
-                if ($value->id == $listValue['id']) {
-                    $listOfValues[$key] = $value;
-                    $exists = true;
-                    break;
-                }
-            }
-
-            if (! $exists) {
-                $listOfValues[] = $value;
-            }
-        } else {
-            $listOfValues[] = $value;
-        }
-
-        $this->$key = $listOfValues;
+        $this->$column = $listOfValues;
 
         return $this;
     }
@@ -206,26 +218,23 @@ abstract class Model extends BaseModel
     /**
      * Disassociate the given value to the given key
      * 
-     * @param mixed $value
-     * @param string $key
+     * @param mixed $modelInfo
+     * @param string $column
      * @return this
      */
-    public function disassociate($value, $key)
+    public function disassociate($modelInfo, $column)
     {
-        $listOfValues = $this->$key;
+        $array = $this->$column ?? [];
 
-        $value = (object) $value;
+        $newArray = [];
 
-        if ($value->id) {
-            foreach ($listOfValues as $key => $listValue) {
-                if ($value->id == $listValue['id']) {
-                    unset($listOfValues[$key]);
-                    break;
-                }
-            }
+        foreach ($array as $value) {
+            if ($value['id'] == $modelInfo['id']) continue;
+
+            $newArray[] = $value;
         }
 
-        $this->$key = array_values($listOfValues);
+        $this->$column = $newArray;
 
         return $this;
     }

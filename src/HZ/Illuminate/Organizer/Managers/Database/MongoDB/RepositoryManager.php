@@ -19,6 +19,17 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     }
     
     /**
+     * Adjust records that were fetched from database
+     *
+     * @param \Illuminate\Support\Collection $records
+     * @return \Illuminate\Support\Collection
+     */
+    protected function records(Collection $records): Collection
+    {
+        return $records;
+    }
+    
+    /**
      * {@inheritDoc}
      */
     public function onListing(Collection $records): Collection
@@ -37,6 +48,17 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
         return $this->getBy('id', $id);
     }
     
+    /**
+     * Pare the given arrayed value
+     *
+     * @param array $value
+     * @return mixed
+     */
+    protected function handleArrayableValue(array $value)
+    {
+        return $value;
+    }
+
     /**
      * Get model for the given id
      * 

@@ -151,6 +151,13 @@ abstract class RepositoryManager implements RepositoryInterface
     const DATA = [];
 
     /**
+     * Auto fill the following columns as arrays directly from the request
+     * 
+     * @const var
+     */
+    const ARRAYBLE_DATA = [];
+
+    /**
      * Auto save uploads in this list
      * If it's an indexed array, in that case the request key will be as database column name
      * If it's associated array, the key will be request key and the value will be the database column name 
@@ -421,7 +428,15 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     protected function records(Collection $records): Collection
     {
-        return $records;
+        return $records->map(function ($record) {
+            if (! empty(static::ARRAYBLE_DATA)) {
+                foreach (static::ARRAYBLE_DATA as $column) {
+                    $record[$column] = json_encode($record[$column]);
+                }
+            }
+
+            return $record;
+        });
     }
 
     /**
@@ -522,6 +537,12 @@ abstract class RepositoryManager implements RepositoryInterface
             }
         }
 
+        foreach (static::ARRAYBLE_DATA as $column) {
+            $value = array_filter((array) $request->$column);
+            $value = $this->handleArrayableValue($value);
+            $model->$column = $value;
+        }
+
         foreach (static::UPLOADS as $column => $name) {
             if (is_numeric($column)) {
                 $column = $name;
@@ -531,6 +552,17 @@ abstract class RepositoryManager implements RepositoryInterface
                 $model->$column = $request->$name->store(static::NAME);
             }
         }
+    }
+
+    /**
+     * Pare the given arrayed value
+     *
+     * @param array $value
+     * @return mixed
+     */
+    protected function handleArrayableValue(array $value)
+    {
+        return json_encode($value);
     }
 
     /**

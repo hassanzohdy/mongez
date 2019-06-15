@@ -21,8 +21,9 @@ abstract class AdminApiController extends ApiController
      */
     protected $controllerInfo = [
         'repository' => '',
-        'records' => [
+        'listOptions' => [
             'select' => [],
+            'filterBy' => [],
         ],
         'returnOn' => [
             'store' => 'single-record',
@@ -69,7 +70,15 @@ abstract class AdminApiController extends ApiController
      */
     protected function listOptions(Request $request): array
     {
-        return $this->controllerInfo('listOptions');
+        $listOptions = $this->controllerInfo('listOptions');
+
+        if (! empty($listOptions['filterBy'])) {
+            $filterByValues = $request->only($listOptions['filterBy']);
+            $listOptions = array_merge($listOptions, $filterByValues);
+            unset($listOptions['filterBy']);
+        }
+
+        return $listOptions;
     }
 
     /**

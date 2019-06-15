@@ -91,12 +91,6 @@ abstract class JsonResourceManager extends JsonResource
             $this->data[$column] = $this->$column ?? null;
         }
 
-        foreach (static::WHEN_AVAILABLE as $column) {
-            if (isset($this->$column)) {
-                $this->data[$column] = $this->$column;
-            }
-        }
-
         foreach (static::LOCALIZED as $column) {
             $this->data[$column] = $this->locale($column);
         }
@@ -155,10 +149,33 @@ abstract class JsonResourceManager extends JsonResource
                 'timestamp' => $this->$column->getTimestamp(),
             ];
         }
+        
+        foreach (static::WHEN_AVAILABLE as $column) {
+            $value = $this->$column ?? null;
+            $dataValue = $this->data[$column] ?? null;
+            
+            if (! $this->isEmptyValue($value) || ! $this->isEmptyValue($dataValue)) {
+                $this->data[$column] = $dataValue ?? $value;
+            } else {
+                unset($this->data[$column]);
+            }
+        }
 
         $this->extend($request);
 
         return $this->data;
+    }
+
+    /**
+     * Check if the given value is empty
+     * Empty value is an empty array or a null value.  
+     *
+     * @param  mixed $value
+     * @return boolean
+     */
+    protected function isEmptyValue($value): bool 
+    {
+        return  is_null($value) || is_array($value) && count($value) == 0;
     }
 
     /**

@@ -18,8 +18,8 @@ interface EventsInterface
      * Subscribe to the given event name, or in other words add event listener
      * 
      * @return  string $events
-     * @return  string $callback
+     * @return  string|array $callback
      * @return void
      */
-    public function subscribe(string $events, string $callback);
+    public function subscribe(string $events, $callback);
 }
