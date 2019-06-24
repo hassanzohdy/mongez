@@ -142,6 +142,9 @@ abstract class JsonResourceManager extends JsonResource
                 $this->$column = $this->$column->toDateTime();
             } elseif (is_int($this->$column)) {
                 $this->$column = new DateTime("@{$this->$column}");
+            } elseif ($this->$column instanceof Carbon) {
+            } elseif (is_array($this->$column) && isset($this->$column['date'])) {
+                $this->$column = new DateTime($this->$column['date']);
             }
 
             $this->data[$column] = [

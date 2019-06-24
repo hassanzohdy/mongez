@@ -242,7 +242,6 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
             $this->createFile($filePath, $content, 'Admin routes');
             // add the routes file to the api routes file content
             if (Str::contains($apiRoutesFileContent, '// end of admin routes')) {
-                echo 12;
                 $apiRoutesFileContent = str_replace('// end of admin routes', 
 "// {$this->moduleName} module
     include base_path('app/Modules/{$this->moduleName}/routes/admin.php');
@@ -610,7 +609,7 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
     {
         $this->setData('repository');
 
-        $this->info['repositoryName'] = strtolower(basename($this->info['repository']));
+        $this->info['repositoryName'] = Str::camel(basename($this->info['repository']));
     }
 
     /**

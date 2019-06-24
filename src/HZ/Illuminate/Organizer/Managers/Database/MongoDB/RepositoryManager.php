@@ -9,6 +9,14 @@ use HZ\Illuminate\Organizer\Managers\Database\MYSQL\RepositoryManager as BaseRep
 abstract class RepositoryManager extends BaseRepositoryManager implements RepositoryInterface
 {
     /**
+     * Set if the current repository uses a soft delete method or not
+     * This is mainly used in the where clause
+     * 
+     * @var bool
+     */
+    const USING_SOFT_DELETE = false;
+
+    /**
      * Get the table name that will be used in the query 
      * 
      * @return string
