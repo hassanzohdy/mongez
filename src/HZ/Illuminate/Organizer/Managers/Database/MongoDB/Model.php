@@ -8,9 +8,9 @@ use Jenssegers\Mongodb\Eloquent\Model as BaseModel;
 abstract class Model extends BaseModel
 {
     use ModelTrait {
-        boot as TraitBoot;
+    boot as TraitBoot;
     }
-    
+
     /**
      * The name of the "created at" column.
      *
@@ -62,16 +62,16 @@ abstract class Model extends BaseModel
      * @var array
      */
     protected $guarded = [];
-    
+
     /**
      * {@inheritDoc}
      */
-    public static function boot() 
+    public static function boot()
     {
         static::TraitBoot();
 
         // Create an auto increment id on creating new document
-         
+
         // before creating, we will check if the created_by column has value
         // if so, then we will update the column for the current user id
         static::creating(function ($model) {
@@ -94,7 +94,7 @@ abstract class Model extends BaseModel
 
         $collection = $this->getTable();
 
-        if (! $lastId) {
+        if (!$lastId) {
             $ids->insert([
                 'collection' => $collection,
                 'id' => $newId,
@@ -104,7 +104,7 @@ abstract class Model extends BaseModel
                 'id' => $newId
             ]);
         }
-        
+
         return $newId;
     }
 
@@ -115,7 +115,7 @@ abstract class Model extends BaseModel
      */
     public function getNextId(): int
     {
-        return ((int) $this->lastInsertId()) + 1;
+        return ((int)$this->lastInsertId()) + 1;
     }
 
     /**
@@ -123,7 +123,7 @@ abstract class Model extends BaseModel
      * 
      * @return  int
      */
-    public function lastInsertId(): int 
+    public function lastInsertId(): int
     {
         $ids = DB::collection('ids');
 
@@ -157,7 +157,7 @@ abstract class Model extends BaseModel
      */
     public static function find($id)
     {
-        return static::where('id', (int) $id)->first();
+        return static::where('id', (int)$id)->first();
     }
 
     /**
@@ -169,7 +169,7 @@ abstract class Model extends BaseModel
     {
         $user = user();
         return $user ? $user->sharedInfo() : null;
-    } 
+    }
 
     /**
      * Associate the given value to the given key
@@ -182,9 +182,9 @@ abstract class Model extends BaseModel
     {
         $listOfValues = $this->$column ?? [];
         if (is_array($modelInfo)) {
-            $modelInfo = (object) $modelInfo;
+            $modelInfo = (object)$modelInfo;
         } elseif ($modelInfo instanceof Model) {
-            $modelInfo = (object) $modelInfo->info();
+            $modelInfo = (object)$modelInfo->info();
         }
 
         // if ($value->id) {
@@ -203,11 +203,11 @@ abstract class Model extends BaseModel
         // } else {
         //     $listOfValues[] = $value;
         // }
-        
-        if (is_array(($modelInfo))) {
-            $listOfValues[] = $modelInfo;
-        } elseif ($modelInfo instanceof BaseModel) {
+
+        if ($modelInfo instanceof BaseModel) {
             $listOfValues[] = $modelInfo->sharedInfo();
+        } else {
+            $listOfValues[] = $modelInfo;
         }
 
         $this->$column = $listOfValues;
