@@ -40,7 +40,7 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     /**
      * {@inheritDoc}
      */
-    public function onListing(Collection $records): Collection
+    public function onList(Collection $records): Collection
     {
         return $records->map(function ($record) {
             $resource = static::RESOURCE;
