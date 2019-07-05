@@ -65,11 +65,15 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     const EVENTS_LIST = [
         'listing' => 'onListing',
+        'list' => 'onList',
+        'creating' => 'onCreating',
         'create' => 'onCreate',
+        'saving' => 'onSaving',
         'save' => 'onSave',
+        'updating' => 'onUpdating',
         'update' => 'onUpdate',
         'deleting' => 'onDeleting',
-        'deleted' => 'onDelete',
+        'delete' => 'onDelete',
     ];
 
     /**
@@ -332,11 +336,13 @@ abstract class RepositoryManager implements RepositoryInterface
         
         $this->orderBy(array_filter((array) $this->option('orderBy')));
         
+        $this->events->trigger("{$this->eventName}.listing", $this->query, $this);
+
         $records = $this->query->get();
 
         $records = $this->records($records);
 
-        $results = $this->events->trigger("{$this->eventName}.listing", $records);
+        $results = $this->events->trigger("{$this->eventName}.list", $records);
 
         if ($results instanceof Collection) {
             $records = $results;
@@ -490,6 +496,8 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $this->setData($model, $request);
 
+        $this->events->trigger("{$this->eventName}.saving {$this->eventName}.creating", $model, $request);
+
         $model->save();
 
         $this->events->trigger("{$this->eventName}.save {$this->eventName}.create", $model, $request);
@@ -509,6 +517,8 @@ abstract class RepositoryManager implements RepositoryInterface
         $this->setAutoData($model, $request);
 
         $this->setData($model, $request);
+
+        $this->events->trigger("{$this->eventName}.saving {$this->eventName}.updating", $model, $request, $oldModel);
 
         $model->save();
         
@@ -644,7 +654,7 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $model->delete();
 
-        $this->events->trigger("{$this->eventName}.deleted", $model, $id);
+        $this->events->trigger("{$this->eventName}.delete", $model, $id);
 
         return true;
     }
