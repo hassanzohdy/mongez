@@ -29,7 +29,9 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
     const RESOURCE = Resource::class;
 
     /**
-     * {@inheritDoc}
+     * Set the columns of the data that will be auto filled in the model
+     * 
+     * @const array
      */
     const DATA = [DATA_LIST];       
     
@@ -43,7 +45,31 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
     const UPLOADS = [UPLOADS_LIST];       
     
     /**
-     * {@inheritDoc}
+     * Filter by columns from the passed options directly
+     * 
+     * @const array
      */
     const FILTER_BY = [];
+
+    /**
+     * Set any extra data or columns that need more customizations
+     * 
+     * @param   mixed $model
+     * @param   \Illuminate\Http\Request $request
+     * @return  void
+     */
+    protected function setData($model, $request) 
+    {
+        // 
+    }
+    
+    /**
+     * Do any extra filtrations here
+     * 
+     * @return  void
+     */
+    protected function filter() 
+    {
+        // 
+    }
 }

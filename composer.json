@@ -3,7 +3,7 @@
     "description": "An organized structure for building a neat laravel application(s).",
     "keywords": ["laravel","organizer"],
     "license": "MIT",
-    "version": "1.4.8",
+    "version": "1.4.9",
     "authors": [
         {
             "name": "Hasan Zohdy",
