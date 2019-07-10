@@ -172,6 +172,42 @@ abstract class Model extends BaseModel
     }
 
     /**
+     * Re-associate the given document
+     * 
+     * @param   mixed $modelInfo
+     * @param   string $column
+     * @return $this
+     */
+    public function reassociate($modelInfo, $column)
+    {
+        $documents = $this->$column ?? [];
+
+        if (is_array($modelInfo)) {
+            $modelInfo = (object)$modelInfo;
+        } elseif ($modelInfo instanceof Model) {
+            $modelInfo = (object)$modelInfo->info();
+        }
+
+        $found = false;
+
+        foreach ($documents as $key => $document) {
+                if (isset($document['id']) && $document['id'] == $modelInfo->id) {
+                $documents[$key] = (array) $modelInfo;
+                $found = true;
+                break;
+            }
+        }
+
+        if (! $found) {
+            $documents[] = $modelInfo;
+        }
+
+        $this->$column = $documents;
+
+        return $this;
+    }
+
+    /**
      * Associate the given value to the given key
      * 
      * @param mixed $modelInfo
@@ -186,23 +222,6 @@ abstract class Model extends BaseModel
         } elseif ($modelInfo instanceof Model) {
             $modelInfo = (object)$modelInfo->info();
         }
-
-        // if ($value->id) {
-        //     $exists = false;
-        //     foreach ($listOfValues as $key => $listValue) {
-        //         if ($value->id == $listValue['id']) {
-        //             $listOfValues[$key] = $value;
-        //             $exists = true;
-        //             break;
-        //         }
-        //     }
-
-        //     if (! $exists) {
-        //         $listOfValues[] = $value;
-        //     }
-        // } else {
-        //     $listOfValues[] = $value;
-        // }
 
         if ($modelInfo instanceof BaseModel) {
             $listOfValues[] = $modelInfo->sharedInfo();
