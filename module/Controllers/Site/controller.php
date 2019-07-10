@@ -24,4 +24,14 @@ class ControllerName extends ApiController
             'records' => $this->repository->list($options),
         ]);
     }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public function show($id, Request $request)
+    {
+        return $this->success([
+            'record' => $this->repository->get($id),
+        ]);
+    }
 }

@@ -372,10 +372,11 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
      */
     protected function createFile($filePath, $content, $fileType)
     {
+        $filePath = str_replace('\\', '/', $filePath);
         $createFile = true;
         if (File::exists($filePath)) {
             $createFile = false;
-            $createFile = $this->confirm($fileType . ' exists, override it?');
+            $create11File = $this->confirm($fileType . ' exists, override it?');
         }
 
         if ($createFile) {
