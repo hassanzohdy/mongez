@@ -161,7 +161,7 @@ class ModuleBuilder extends Command
         
         if (! Str::contains($config, $replacementLine)) return;
 
-        $repositoryClassName = basename($this->info['repository']);
+        $repositoryClassName = basename(str_replace('\\', '/', $this->info['repository']));
 
         $replacedString = "'{$this->info['repositoryName']}' => App\\Modules\\$repositoryClassName\\Repositories\\{$repositoryClassName}Repository::class,\n \t\t $replacementLine";
 
@@ -184,16 +184,14 @@ class ModuleBuilder extends Command
 
         $routesDirectory = $this->modulePath("routes");
 
-        if (!File::isDirectory($routesDirectory)) {
-            File::makeDirectory($routesDirectory, 0777, true);
-        }
+        $this->checkDirectory($routesDirectory);
 
         // get the content of the api routes file
         $apiRoutesFileContent = File::get(base_path('routes/api.php'));
 
         $controller = $this->info['controller'];
 
-        $controllerName = basename($controller);
+        $controllerName = basename(str_replace('\\', '/', $controller));
 
         if (in_array($type, ['all', 'site'])) {
             // generate the site routes file
@@ -306,7 +304,7 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
     {
         $controller = $this->info['controller'];
 
-        $controllerName = basename($controller);
+        $controllerName = basename(str_replace('\\', '/', $controller));
 
         $controllerType = $this->option('type');
 
@@ -324,9 +322,7 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
 
             $controllerDirectory = $this->modulePath("Controllers/Site");
 
-            if (!File::isDirectory($controllerDirectory)) {
-                File::makeDirectory($controllerDirectory, 0777, true);
-            }
+            $this->checkDirectory($controllerDirectory);
 
             // create the file
             $filePath = "$controllerDirectory/{$controllerName}Controller.php";
@@ -351,9 +347,7 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
 
             $controllerDirectory = $this->modulePath("Controllers/Admin");
 
-            if (!File::isDirectory($controllerDirectory)) {
-                File::makeDirectory($controllerDirectory, 0777, true);
-            }
+            $this->checkDirectory($controllerDirectory);
 
             // create the file
             $filePath = "$controllerDirectory/{$controllerName}Controller.php";
@@ -373,10 +367,11 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
     protected function createFile($filePath, $content, $fileType)
     {
         $filePath = str_replace('\\', '/', $filePath);
+        
         $createFile = true;
         if (File::exists($filePath)) {
             $createFile = false;
-            $create11File = $this->confirm($fileType . ' exists, override it?');
+            $createFile = $this->confirm($fileType . ' exists, override it?');
         }
 
         if ($createFile) {
@@ -393,7 +388,7 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
     {
         $resource = $this->info['resource'];
 
-        $resourceName = basename($resource);
+        $resourceName = basename(str_replace('\\', '/', $resource));
 
         $resourcePath = dirname($resource);
 
@@ -438,9 +433,7 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
 
         $resourceDirectory = $this->modulePath("Resources");
 
-        if (!File::isDirectory($resourceDirectory)) {
-            File::makeDirectory($resourceDirectory, 0777, true);
-        }
+        $this->checkDirectory($resourceDirectory);
 
         $this->info['resourcePath'] = $resourcePath . '\\' . $resourceName;
 
@@ -457,7 +450,7 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
     {
         $repository = $this->info['repository'];
 
-        $repositoryName = basename($repository);
+        $repositoryName = basename(str_replace('\\', '/', $repository));
 
         $content = File::get($this->path("Repositories/repository.php"));
 
@@ -505,12 +498,24 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
 
         $repositoryDirectory = $this->modulePath("Repositories/");
 
-        if (!File::isDirectory($repositoryDirectory)) {
-            File::makeDirectory($repositoryDirectory, 0777, true);
-        }
+        $this->checkDirectory($repositoryDirectory);
 
         // create the file
         $this->createFile("$repositoryDirectory/{$repositoryName}Repository.php", $content, 'Repository');
+    }
+
+    /**
+     * Check if the given directory path is not created, if so then create one
+     * 
+     * @param  string $directoryPath
+     * @return  void
+     */
+    public function checkDirectory(string $directoryPath)
+    {
+        $directoryPath = str_replace('\\', '/', $directoryPath);
+        if (!File::isDirectory($directoryPath)) {
+            File::makeDirectory($directoryPath, 0777, true);
+        }
     }
 
     /**
@@ -522,7 +527,7 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
     {
         $model = $this->info['model'];
 
-        $modelName = basename($model);
+        $modelName = basename(str_replace('\\', '/', $model));
 
         $modelPath = dirname($model);
 
@@ -550,9 +555,7 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
         
         $modelDirectory = $this->modulePath("Models/");
 
-        if (!File::isDirectory($modelDirectory)) {
-            File::makeDirectory($modelDirectory, 0777, true);
-        }
+        $this->checkDirectory($modelDirectory);
 
         $this->info['modelPath'] = $modelPath . '\\' . $modelName;
         // create the file
@@ -610,7 +613,7 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
     {
         $this->setData('repository');
 
-        $this->info['repositoryName'] = Str::camel(basename($this->info['repository']));
+        $this->info['repositoryName'] = Str::camel(basename(str_replace('\\', '/', $this->info['repository'])));
     }
 
     /**
