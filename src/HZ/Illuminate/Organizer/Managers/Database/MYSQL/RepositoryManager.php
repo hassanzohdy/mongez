@@ -317,18 +317,22 @@ abstract class RepositoryManager implements RepositoryInterface
             }
         }
 
-        $this->filter();
-
         foreach (static::FILTER_BY as $column => $option) {
             if ($value = $this->option($option)) {
                 $column = is_numeric($column) ? $option : $column;
                 if (is_array($value)) {
+                    // make sure values are integers
+                    if ($column == 'id') {
+                        $value = array_map('intval', $value);
+                    }
                     $this->query->whereIn($column, $value);
                 } else {
-                    $this->query->where($column, $value);                
+                    $this->query->where($column, $value);
                 }
             }
         }
+
+        $this->filter();
 
         if ($this->select->isNotEmpty()) {
             $this->query->select(...$this->select->list());

@@ -43,6 +43,7 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     public function onList(Collection $records): Collection
     {
         return $records->map(function ($record) {
+            if ($this->option('as-model', true) === true) return $record;
             $resource = static::RESOURCE;
             return new $resource((object) $record);
         });
