@@ -1,19 +1,19 @@
 <?php
 namespace HZ\Illuminate\Organizer\Managers;
 
-use Validator;
-use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Validator;
 
 abstract class AdminApiController extends ApiController
 {
     /**
      * Repository object
-     * 
+     *
      * @var mixed
      */
     protected $repository;
-    
+
     /**
      * Controller repository
      *
@@ -43,8 +43,8 @@ abstract class AdminApiController extends ApiController
     public function __construct()
     {
         parent::__construct();
-     
-        if (! empty($this->controllerInfo['repository'])) {
+
+        if (!empty($this->controllerInfo['repository'])) {
             $this->repository = repo($this->controllerInfo['repository']);
         }
     }
@@ -72,7 +72,7 @@ abstract class AdminApiController extends ApiController
     {
         $listOptions = $this->controllerInfo('listOptions');
 
-        if (! empty($listOptions['filterBy'])) {
+        if (!empty($listOptions['filterBy'])) {
             $filterByValues = $request->only($listOptions['filterBy']);
             $listOptions = array_merge($listOptions, $filterByValues);
             unset($listOptions['filterBy']);
@@ -105,8 +105,8 @@ abstract class AdminApiController extends ApiController
 
     /**
      * Get value from controller info
-     * 
-     * @param  string $key 
+     *
+     * @param  string $key
      * @return mixed
      */
     protected function controllerInfo(string $key)
@@ -151,6 +151,18 @@ abstract class AdminApiController extends ApiController
      */
     public function destroy($id)
     {
+        $deletingValidationErrors = [];
+
+        if ($this->repository->hasDependenceDeletingTables()) {
+            $dependenceOnDeletingTables = $this->repository->getDependentOnDeletingTables();
+
+            $deletingValidationErrors = $this->validateBeforeDeleting($dependenceOnDeletingTables, $id);
+        }
+
+        if (!empty($deletingValidationErrors)) {
+            return $this->badRequest($deletingValidationErrors);
+        }
+
         $this->repository->delete((int) $id);
 
         $response = [
@@ -158,6 +170,46 @@ abstract class AdminApiController extends ApiController
         ];
 
         return $this->success($response);
+    }
+
+    /**
+     * Validate if this model has depended on another these tables .
+     *
+     * @param  array $dependenceOnDeletingTables
+     * @param  int   $modelId
+     * @return array $errors
+     */
+    public function validateBeforeDeleting($dependenceOnDeletingTables, $modelId)
+    {
+        $errors = [];
+
+        $isSoftDelete = $this->repository->isSoftDeleteUsed();
+
+        foreach ($dependenceOnDeletingTables as $table) {
+            $validationRules =
+            Rule::unique($table['tableName'], $table['key'])->where(function ($query) use ($isSoftDelete) {
+                if ($isSoftDelete) {
+                    $query->whereNull('deleted_at');
+                }
+            });
+
+            $validator = Validator::make(
+                [
+                    'id' => (int) $modelId,
+                ],
+                [
+                    'id' => $validationRules,
+                ],
+                [
+                    'unique' => $table['message'],
+                ]
+            );
+
+            if ($validator->fails()) {
+                $errors[] = $validator->errors();
+            }
+        }
+        return $errors;
     }
 
     /**
