@@ -153,10 +153,10 @@ abstract class AdminApiController extends ApiController
     {
         $deletingValidationErrors = [];
 
-        if ($this->repository->hasDependenceDeletingTables()) {
-            $dependenceOnDeletingTables = $this->repository->getDependentOnDeletingTables();
+        if ($this->repository->deleteHasDependence()) {
+            $deleteDependenceTables = $this->repository->deleteGetDependence();
 
-            $deletingValidationErrors = $this->validateBeforeDeleting($dependenceOnDeletingTables, $id);
+            $deletingValidationErrors = $this->validateBeforeDeleting($deleteDependenceTables, $id);
         }
 
         if (!empty($deletingValidationErrors)) {
@@ -175,17 +175,17 @@ abstract class AdminApiController extends ApiController
     /**
      * Validate if this model has depended on another these tables .
      *
-     * @param  array $dependenceOnDeletingTables
+     * @param  array $deleteDependenceTables
      * @param  int   $modelId
      * @return array $errors
      */
-    public function validateBeforeDeleting($dependenceOnDeletingTables, $modelId)
+    public function validateBeforeDeleting($deleteDependenceTables, $modelId): array
     {
         $errors = [];
 
         $isSoftDelete = $this->repository->isSoftDeleteUsed();
 
-        foreach ($dependenceOnDeletingTables as $table) {
+        foreach ($deleteDependenceTables as $table) {
             $validationRules =
             Rule::unique($table['tableName'], $table['key'])->where(function ($query) use ($isSoftDelete) {
                 if ($isSoftDelete) {

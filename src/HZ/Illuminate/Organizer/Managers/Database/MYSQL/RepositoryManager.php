@@ -226,7 +226,7 @@ abstract class RepositoryManager implements RepositoryInterface
      *
      * @param array
      */
-    protected $dependenciesDeletingTables = [];
+    protected $deleteDependenceTables = [];
 
     /**
      * Constructor
@@ -697,25 +697,25 @@ abstract class RepositoryManager implements RepositoryInterface
      *
      * @return bool
      */
-    public function hasDependenceDeletingTables()
+    public function deleteHasDependence(): bool 
     {
-        return !empty($this->dependenciesDeletingTables);
+        return !empty($this->deleteDependenceTables);
     }
     /**
      * Get model deleting depended tables
      *
      * @return array
      */
-    public function getDependentOnDeletingTables()
+    public function deleteGetDependence(): array
     {
-        return $this->dependenciesDeletingTables;
+        return $this->deleteDependenceTables;
     }
     /**
      * Check if soft delete used or not
      *
      * @return bool
      */
-    public function isSoftDeleteUsed()
+    public function isUsingSoftDelete(): bool
     {
         return static::USING_SOFT_DELETE;
     }
