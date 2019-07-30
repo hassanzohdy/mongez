@@ -75,7 +75,9 @@ abstract class Model extends BaseModel
         // before creating, we will check if the created_by column has value
         // if so, then we will update the column for the current user id
         static::creating(function ($model) {
-            $model->id = $model->nextId();
+            if (! $model->id) {
+                $model->id = $model->nextId();
+            }
         });
     }
 

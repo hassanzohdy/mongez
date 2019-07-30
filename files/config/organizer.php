@@ -75,5 +75,13 @@ return [
         Illuminate\Database\Query\Builder::class => HZ\Illuminate\Organizer\Macros\Database\Query\Builder::class,
         Illuminate\Database\Schema\Blueprint::class => HZ\Illuminate\Organizer\Macros\Database\Schema\Blueprint::class,
     ],
+    /*
+    |--------------------------------------------------------------------------
+    | Events list
+    |--------------------------------------------------------------------------
+    |
+    | Set list of events listeners that will be triggered later from its sources 
+    |
+    */
     'events' => [],
 ];

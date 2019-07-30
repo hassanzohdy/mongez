@@ -194,7 +194,7 @@ abstract class JsonResourceManager extends JsonResource
         if (is_array($collection)) {
             $collection = collect($collection)->map(function ($item) {
                 return (object) $item;
-            })->sortByDesc('id');
+            });
         }
 
         $this->data[$column] = $resource::collection($collection);

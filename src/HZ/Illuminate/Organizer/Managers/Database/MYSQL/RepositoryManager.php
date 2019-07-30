@@ -238,8 +238,8 @@ abstract class RepositoryManager implements RepositoryInterface
             $this->eventName = static::EVENT;
 
             if (! $this->eventName) {
-                $eventNameModelBased = basename(static::MODEL);
-    
+                $eventNameModelBased = basename(str_replace('\\', '/', static::MODEL));
+ 
                 $this->eventName = strtolower($eventNameModelBased);
 
                 $this->eventName = Str::plural($this->eventName);                       
@@ -338,7 +338,7 @@ abstract class RepositoryManager implements RepositoryInterface
             $this->query->select(...$this->select->list());
         }
         
-        $this->orderBy(array_filter((array) $this->option('orderBy')));
+        $this->orderBy($this->option('orderBy', [$this->column('id'), 'DESC']));
         
         $this->events->trigger("{$this->eventName}.listing", $this->query, $this);
 
@@ -419,14 +419,12 @@ abstract class RepositoryManager implements RepositoryInterface
     /**
      * Perform records ordering
      * 
-     * @return void
+     * @param   array|null $orderBy
+     * @return  void
      */
-    protected function orderBy(array $orderBy)
+    protected function orderBy($orderBy)
     {
-        if (empty($orderBy)) {
-            $orderBy = [$this->column('id'), 'DESC'];
-        }
-
+        if (! $orderBy) return;
         $this->query->orderBy(...$orderBy);
     }
     
