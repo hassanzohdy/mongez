@@ -151,6 +151,18 @@ abstract class AdminApiController extends ApiController
      */
     public function destroy($id)
     {
+        $deletingValidationErrors = [];
+
+        if ($this->repository->deleteHasDependence()) {
+            $deleteDependenceTables = $this->repository->deleteGetDependence();
+
+            $deletingValidationErrors = $this->validateBeforeDeleting($deleteDependenceTables, $id);
+        }
+
+        if (!empty($deletingValidationErrors)) {
+            return $this->badRequest($deletingValidationErrors);
+        }
+
         $this->repository->delete((int) $id);
 
         $response = [
@@ -158,6 +170,46 @@ abstract class AdminApiController extends ApiController
         ];
 
         return $this->success($response);
+    }
+
+    /**
+     * Validate if this model has depended on another these tables .
+     *
+     * @param  array $deleteDependenceTables
+     * @param  int   $modelId
+     * @return array $errors
+     */
+    public function validateBeforeDeleting($deleteDependenceTables, $modelId): array
+    {
+        $errors = [];
+
+        $isSoftDelete = $this->repository->isSoftDeleteUsed();
+
+        foreach ($deleteDependenceTables as $table) {
+            $validationRules =
+            Rule::unique($table['tableName'], $table['key'])->where(function ($query) use ($isSoftDelete) {
+                if ($isSoftDelete) {
+                    $query->whereNull('deleted_at');
+                }
+            });
+
+            $validator = Validator::make(
+                [
+                    'id' => (int) $modelId,
+                ],
+                [
+                    'id' => $validationRules,
+                ],
+                [
+                    'unique' => $table['message'],
+                ]
+            );
+
+            if ($validator->fails()) {
+                $errors[] = $validator->errors();
+            }
+        }
+        return $errors;
     }
 
     /**
