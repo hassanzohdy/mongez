@@ -701,7 +701,7 @@ abstract class RepositoryManager implements RepositoryInterface
      *
      * @return array
      */
-    public function deleteGetDependence(): array
+    public function getDeleteDependencies(): array
     {
         return $this->deleteDependenceTables;
     }

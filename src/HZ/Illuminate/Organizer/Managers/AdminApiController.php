@@ -154,7 +154,7 @@ abstract class AdminApiController extends ApiController
         $deletingValidationErrors = [];
 
         if ($this->repository->deleteHasDependence()) {
-            $deleteDependenceTables = $this->repository->deleteGetDependence();
+            $deleteDependenceTables = $this->repository->getDeleteDependencies();
 
             $deletingValidationErrors = $this->validateBeforeDeleting($deleteDependenceTables, $id);
         }
