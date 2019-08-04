@@ -151,25 +151,15 @@ abstract class AdminApiController extends ApiController
      */
     public function destroy($id)
     {
-
         if ($this->repository->deleteHasDependence()) {
-
-            $deletingValidationErrors = [];
-
             $deletingValidationErrors = $this->validateBeforeDeleting($this->repository->getDeleteDependencies(), $id);
-            
             if (!empty($deletingValidationErrors)) {
                 return $this->badRequest($deletingValidationErrors);
             }
         }
-
         $this->repository->delete((int) $id);
 
-        $response = [
-            'success' => true,
-        ];
-
-        return $this->success($response);
+        return $this->success();
     }
 
     /**
@@ -183,18 +173,24 @@ abstract class AdminApiController extends ApiController
     {
         $errors = [];
 
-        $isSoftDelete = $this->repository->isSoftDeleteUsed();
+        $isUsingSoftDelete = $this->repository->isUsingSoftDelete();
 
         foreach ($deleteDependenceTables as $table) {
-            $rules =
-            Rule::unique($table['tableName'],$table['key']);
-            if ($isSoftDelete){
+            
+            $rules = Rule::unique($table['tableName'],$table['key']);
+
+            if ($isUsingSoftDelete){
+
                 $validationRules = $rules->where(function ($query){
+
                     $query->whereNull('deleted_at');
+
                 });
             }
             $validationRules['data'][$table['tableName'].'_id']= (int)$modelId;
+
             $validationRules['rules'][$table['tableName'].'_id']= $rules;
+            
             $validationRules['messages']['unique.'.$table['tableName'].'_id']= $table['message'];
         }
         $validator = Validator::make($validationRules['data'],$validationRules['rules'],$validationRules['messages']);
