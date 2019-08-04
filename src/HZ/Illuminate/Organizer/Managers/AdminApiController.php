@@ -151,16 +151,16 @@ abstract class AdminApiController extends ApiController
      */
     public function destroy($id)
     {
-        $deletingValidationErrors = [];
 
         if ($this->repository->deleteHasDependence()) {
-            $deleteDependenceTables = $this->repository->getDeleteDependencies();
 
-            $deletingValidationErrors = $this->validateBeforeDeleting($deleteDependenceTables, $id);
-        }
+            $deletingValidationErrors = [];
 
-        if (!empty($deletingValidationErrors)) {
-            return $this->badRequest($deletingValidationErrors);
+            $deletingValidationErrors = $this->validateBeforeDeleting($this->repository->getDeleteDependencies(), $id);
+            
+            if (!empty($deletingValidationErrors)) {
+                return $this->badRequest($deletingValidationErrors);
+            }
         }
 
         $this->repository->delete((int) $id);
@@ -186,28 +186,21 @@ abstract class AdminApiController extends ApiController
         $isSoftDelete = $this->repository->isSoftDeleteUsed();
 
         foreach ($deleteDependenceTables as $table) {
-            $validationRules =
-            Rule::unique($table['tableName'], $table['key'])->where(function ($query) use ($isSoftDelete) {
-                if ($isSoftDelete) {
+            $rules =
+            Rule::unique($table['tableName'],$table['key']);
+            if ($isSoftDelete){
+                $validationRules = $rules->where(function ($query){
                     $query->whereNull('deleted_at');
-                }
-            });
-
-            $validator = Validator::make(
-                [
-                    'id' => (int) $modelId,
-                ],
-                [
-                    'id' => $validationRules,
-                ],
-                [
-                    'unique' => $table['message'],
-                ]
-            );
-
-            if ($validator->fails()) {
-                $errors[] = $validator->errors();
+                });
             }
+            $validationRules['data'][$table['tableName'].'_id']= (int)$modelId;
+            $validationRules['rules'][$table['tableName'].'_id']= $rules;
+            $validationRules['messages']['unique.'.$table['tableName'].'_id']= $table['message'];
+        }
+        $validator = Validator::make($validationRules['data'],$validationRules['rules'],$validationRules['messages']);
+
+        if ($validator->fails()) {
+            $errors[] = $validator->errors();
         }
         return $errors;
     }

@@ -711,7 +711,7 @@ abstract class RepositoryManager implements RepositoryInterface
      *
      * @return bool
      */
-    public function isUsingSoftDelete(): bool
+    public function isSoftDeleteUsed(): bool
     {
         return static::USING_SOFT_DELETE;
     }
