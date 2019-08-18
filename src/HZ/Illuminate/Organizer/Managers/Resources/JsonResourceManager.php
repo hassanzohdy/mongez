@@ -1,11 +1,12 @@
 <?php
+
 namespace HZ\Illuminate\Organizer\Managers\Resources;
 
 use DateTime;
 use MongoDB\BSON\UTCDateTime;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-abstract class JsonResourceManager extends JsonResource 
+abstract class JsonResourceManager extends JsonResource
 {
     /**
      * Request object
@@ -27,14 +28,14 @@ abstract class JsonResourceManager extends JsonResource
      * @const array
      */
     const DATA = [];
-    
+
     /**
      * Data that should be returned if exists
      * 
      * @const array
      */
     const WHEN_AVAILABLE = [];
-    
+
     /**
      * Set that columns that will be formatted as dates
      * it could be numeric array or associated array to set the date format for certain columns
@@ -42,14 +43,14 @@ abstract class JsonResourceManager extends JsonResource
      * @const array
      */
     const DATES = [];
-    
+
     /**
      * Data that has multiple values based on locale codes
      * 
      * @const array
      */
     const LOCALIZED = [];
-    
+
     /**
      * List of assets that will have a full url if available
      * 
@@ -85,30 +86,87 @@ abstract class JsonResourceManager extends JsonResource
     {
         $this->request = $request;
 
-        $this->data = [];
+        $this->collectData(static::DATA);
 
-        foreach (static::DATA as $column) {
+        $this->collectLocalized(static::LOCALIZED);
+
+        $this->collectAssets(static::ASSETS);
+
+        $this->collectCollectables(static::COLLECTABLE);
+
+        $this->collectResources(static::RESOURCES);
+
+        $this->collectDates(static::DATES);
+
+        $this->filterWhenAvailable(static::WHEN_AVAILABLE);
+
+        $this->extend($request);
+
+        return $this->data;
+    }
+
+    /**
+     * Collect mandatory data
+     *
+     * @param array $columns
+     * @return JsonResourceManager
+     */
+    public function collectData(array $columns): JsonResourceManager
+    {
+        foreach ($columns as $column) {
             $this->data[$column] = $this->$column ?? null;
         }
 
-        foreach (static::LOCALIZED as $column) {
+        return $this;
+    }
+
+    /**
+     * Collect localized data
+     *
+     * @param array $columns
+     * @return JsonResourceManager
+     */
+    public function collectLocalized(array $columns): JsonResourceManager
+    {
+        foreach ($columns as $column) {
             $this->data[$column] = $this->locale($column);
         }
 
-        foreach (static::ASSETS as $column) {
-            if (! isset($this->$column)) {
+        return $this;
+    }
+
+    /**
+     * Collect assets
+     *
+     * @param array $columns
+     * @return JsonResourceManager
+     */
+    public function collectAssets(array $columns): JsonResourceManager
+    {
+        foreach ($columns as $column) {
+            if (!isset($this->$column)) {
                 $this->data[$column] = null;
-                continue;    
+                continue;
             }
 
             $asset = $this->$column;
 
-            $this->data[$column] =  ! is_array($asset) ? url($asset) : array_map(function ($asset) {
+            $this->data[$column] =  !is_array($asset) ? url($asset) : array_map(function ($asset) {
                 return url($asset);
             }, $asset);
         }
+        return $this;
+    }
 
-        foreach (static::COLLECTABLE as $column => $resource) {
+    /**
+     * Collect Collectable data
+     *
+     * @param array $columns
+     * @return JsonResourceManager
+     */
+    public function collectCollectables(array $columns): JsonResourceManager
+    {
+        foreach ($columns as $column => $resource) {
             if (isset($this->$column)) {
                 $collection = $this->$column;
                 $this->collect($column, $resource, $collection);
@@ -117,7 +175,18 @@ abstract class JsonResourceManager extends JsonResource
             }
         }
 
-        foreach (static::RESOURCES as $column => $resource) {
+        return $this;
+    }
+
+    /**
+     * Collect resources data
+     *
+     * @param array $columns
+     * @return JsonResourceManager
+     */
+    public function collectResources(array $columns): JsonResourceManager
+    {
+        foreach ($columns as $column => $resource) {
             if (isset($this->$column)) {
                 $resourceData = $this->$column;
                 $this->data[$column] = new $resource((object) $resourceData);
@@ -126,23 +195,34 @@ abstract class JsonResourceManager extends JsonResource
             }
         }
 
-        foreach (static::DATES as $key => $column) {
-            $format = 'd-m-Y h:i:s a';
-            if (is_string($key)) {
-                $format = $column;
-                $column = $key; 
-            }
+        return $this;
+    }
 
-            if (! isset($this->$column)) {
+    /**
+     * Collect dates
+     *
+     * @param array $columns
+     * @return JsonResourceManage
+     */
+    public function collectDates(array $columns): JsonResourceManager
+    {
+        foreach ($columns as $key => $column) {
+            $format = 'd-m-Y h:i:s a';
+
+            if (!isset($this->$column)) {
                 $this->data[$column] = null;
                 continue;
+            }
+
+            if (is_string($key)) {
+                $format = $column;
+                $column = $key;
             }
 
             if ($this->$column instanceof UTCDateTime) {
                 $this->$column = $this->$column->toDateTime();
             } elseif (is_int($this->$column)) {
                 $this->$column = new DateTime("@{$this->$column}");
-            } elseif ($this->$column instanceof Carbon) {
             } elseif (is_array($this->$column) && isset($this->$column['date'])) {
                 $this->$column = new DateTime($this->$column['date']);
             }
@@ -152,21 +232,30 @@ abstract class JsonResourceManager extends JsonResource
                 'timestamp' => $this->$column->getTimestamp(),
             ];
         }
-        
-        foreach (static::WHEN_AVAILABLE as $column) {
+
+        return $this;
+    }
+
+    /**
+     * Filter when available data
+     *
+     * @param array $columns
+     * @return JsonResourceManager
+     */
+    public function filterWhenAvailable(array $columns): JsonResourceManager
+    {
+        foreach ($columns as $column) {
             $value = $this->$column ?? null;
             $dataValue = $this->data[$column] ?? null;
-            
-            if (! $this->isEmptyValue($value) || ! $this->isEmptyValue($dataValue)) {
+
+            if (!$this->isEmptyValue($value) || !$this->isEmptyValue($dataValue)) {
                 $this->data[$column] = $dataValue ?? $value;
             } else {
                 unset($this->data[$column]);
             }
         }
 
-        $this->extend($request);
-
-        return $this->data;
+        return $this;
     }
 
     /**
@@ -176,7 +265,7 @@ abstract class JsonResourceManager extends JsonResource
      * @param  mixed $value
      * @return boolean
      */
-    protected function isEmptyValue($value): bool 
+    protected function isEmptyValue($value): bool
     {
         return  is_null($value) || is_array($value) && count($value) == 0;
     }
@@ -189,7 +278,7 @@ abstract class JsonResourceManager extends JsonResource
      * @param   mixed $collection
      * @return  void
      */
-    protected function collect($column, $resource, $collection) 
+    protected function collect($column, $resource, $collection)
     {
         if (is_array($collection)) {
             $collection = collect($collection)->map(function ($item) {
@@ -197,7 +286,41 @@ abstract class JsonResourceManager extends JsonResource
             });
         }
 
-        $this->data[$column] = $resource::collection($collection);
+        $resourceDetails = null;
+
+        if (is_array($resource) && isset($resource['resource'])) {
+            $resourceDetails = $resource;
+            $resource = $resourceDetails['resource'];
+        }
+
+        $resources = $resource::collection($collection);
+
+        if ($resourceDetails) {
+            $resources->collection = $resources->collection->map(function (JsonResourceManager $resource) use ($resourceDetails) {
+                if (!empty($resourceDetails['append'])) {
+                    foreach ((array) $resourceDetails['append'] as $type => $columns) {
+                        switch ($type) {
+                            case 'data':
+                                $resource->collectData($columns);
+                                break;
+                            case 'dates':
+                                $resource->collectDates($columns);
+                                break;
+                            case 'assets':
+                                $resource->collectAssets($columns);
+                                break;
+                            case 'whenAvailable':
+                                $resource->filterWhenAvailable($columns);
+                                break;
+                        }
+                    }
+                }
+
+                return $resource;
+            });
+        }
+
+        $this->data[$column] = $resources;
     }
 
     /**
@@ -206,7 +329,8 @@ abstract class JsonResourceManager extends JsonResource
      * @param  \Request $request
      * @return array
      */
-    protected function extend($request) {}
+    protected function extend($request)
+    { }
 
     /**
      * Get name 

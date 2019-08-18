@@ -1,4 +1,5 @@
 <?php
+
 namespace HZ\Illuminate\Organizer\Managers\Database\MongoDB;
 
 use DB;
@@ -75,7 +76,7 @@ abstract class Model extends BaseModel
         // before creating, we will check if the created_by column has value
         // if so, then we will update the column for the current user id
         static::creating(function ($model) {
-            if (! $model->id) {
+            if (!$model->id) {
                 $model->id = $model->nextId();
             }
         });
@@ -117,7 +118,7 @@ abstract class Model extends BaseModel
      */
     public function getNextId(): int
     {
-        return ((int)$this->lastInsertId()) + 1;
+        return ((int) $this->lastInsertId()) + 1;
     }
 
     /**
@@ -159,7 +160,7 @@ abstract class Model extends BaseModel
      */
     public static function find($id)
     {
-        return static::where('id', (int)$id)->first();
+        return static::where('id', (int) $id)->first();
     }
 
     /**
@@ -185,22 +186,23 @@ abstract class Model extends BaseModel
         $documents = $this->$column ?? [];
 
         if (is_array($modelInfo)) {
-            $modelInfo = (object)$modelInfo;
+            $modelInfo = (object) $modelInfo;
         } elseif ($modelInfo instanceof Model) {
-            $modelInfo = (object)$modelInfo->info();
+            $modelInfo = (object) $modelInfo->info();
         }
 
         $found = false;
 
         foreach ($documents as $key => $document) {
-                if (isset($document['id']) && $document['id'] == $modelInfo->id) {
+            $document = (array) $document;
+            if (isset($document['id']) && $document['id'] == $modelInfo->id) {
                 $documents[$key] = (array) $modelInfo;
                 $found = true;
                 break;
             }
         }
 
-        if (! $found) {
+        if (!$found) {
             $documents[] = $modelInfo;
         }
 
@@ -220,9 +222,9 @@ abstract class Model extends BaseModel
     {
         $listOfValues = $this->$column ?? [];
         if (is_array($modelInfo)) {
-            $modelInfo = (object)$modelInfo;
+            $modelInfo = (object) $modelInfo;
         } elseif ($modelInfo instanceof Model) {
-            $modelInfo = (object)$modelInfo->info();
+            $modelInfo = (object) $modelInfo->info();
         }
 
         if ($modelInfo instanceof BaseModel) {
@@ -250,7 +252,9 @@ abstract class Model extends BaseModel
         $newArray = [];
 
         foreach ($array as $value) {
-            if ($value['id'] == $modelInfo['id']) continue;
+            $value = (array) $value;
+            
+            if (is_scalar($modelInfo) && $modelInfo != $value || $value['id'] == $modelInfo['id']) continue;
 
             $newArray[] = $value;
         }
