@@ -170,6 +170,48 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     const UPLOADS = [];       
     
+        /**
+     * Set the columns will be filled with single record of collection data
+     * 
+     * @const array
+     */
+    const DOCUMENT_DATA = [];
+    
+    /**
+     * Set the columns will be filled with array of records.
+     * 
+     * @const array
+     */
+    const MULTI_DOCUMENTS_DATA = [];
+    
+    /**
+     * Set columns of int data type.
+     * 
+     * @cont array  
+     */
+    const INTEGER_DATA = [];
+
+    /**
+     * Set columns of float data type.
+     * 
+     * @cont array  
+     */
+    const FLOAT_DATA = [];
+
+    /**
+     * Set columns of booleans data type.
+     * 
+     * @cont array  
+     */
+    const BOOLEAN_DATA = [];
+    
+    /**
+     * Set columns of int data type.
+     * 
+     * @cont array  
+     */
+    const WHEN_AVAILABLE_DATA = [];
+
     /**
      * This property will has the final table name that will be used
      * i.e if the TABLE_ALIAS is not empty, then this property will be the value of the TABLE_ALIAS
@@ -545,23 +587,109 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     protected function setAutoData($model, $request)
     {
+        
+        $this->setMainData($model,$request); 
+        
+        $this->setArraybleData($model,$request);
+
+        $this->setUploadsData($model,$request);
+
+        $this->setIntData($model,$request);
+
+        $this->setFloatData($model,$request);
+
+        $this->setBoolData($model,$request);
+        
+        $this->setDocumentData($model,$request);
+
+        $this->setMultiDocumentData($model,$request);
+    }
+
+    /**
+     * Set document data to column
+     *
+     * @param  \Model $model
+     * @param  \Request $request
+     * @return void     
+     */
+    protected function setDocumentData($model,$request)
+    {
+        foreach (static::DOCUMENT_DATA as $column => $documentModelClass)
+        {
+            $documentModel = $documentModelClass::find((int)$request->$column);
+
+            $model->$column = $documentModel ?$documentModel->sharedInfo():[];
+        }
+    }
+    
+    /**
+     * Set document data to column
+     *
+     * @param  \Model $model
+     * @param  \Request $request
+     * @return void     
+     */
+    protected function setMultiDocumentData($model,$request)
+    {
+        foreach (static::MULTI_DOCUMENTS_DATA as $column => $documentModelClass)
+        {
+            $documentModel = $documentModelClass::whereIn('id',array_map('intVal', $request->$column))->get();
+            
+            $model->$column = $documentModel->map(function ($record) {
+                return $record->sharedInfo();
+            })->toArray();
+        }
+    }
+    /**
+     * Set main data automatically from the DATA array
+     * 
+     * @param  \Model $model
+     * @param  \Request $request
+     * @return void  
+     */
+    protected function setMainData ($model,$request)
+    {
         foreach (static::DATA as $column) {
-            if ($column == 'password') {
-                $password = $request->password;
-                if ($password) {
-                    $model->password = bcrypt($password);
-                }
+            if (in_array($column,static::WHEN_AVAILABLE_DATA) && ! isset($request->$column)) continue;
+
+            if (!$request->$column) {
+                    $model->$column = null;
             } else {
-                $model->$column = $request->$column;
+                if ($column == 'password') {
+                    $password = $request->password;
+                    if ($password) {
+                        $model->password = bcrypt($password);
+                    } 
+                } else {
+                    $model->$column = $request->$column;
+                }
             }
         }
-
+    }
+    /**
+     * Set Arrayble data automatically from the DATA array
+     * 
+     * @param  \Model $model
+     * @param  \Request $request
+     * @return void  
+     */
+    protected function setArraybleData ($model,$request)
+    {
         foreach (static::ARRAYBLE_DATA as $column) {
             $value = array_filter((array) $request->$column);
             $value = $this->handleArrayableValue($value);
             $model->$column = $value;
         }
-
+    }
+    /**
+     * Set uploads data automatically from the DATA array
+     * 
+     * @param  \Model $model
+     * @param  \Request $request
+     * @return void  
+     */
+    protected function setUploadsData ($model,$request)
+    {
         foreach (static::UPLOADS as $column => $name) {
             if (is_numeric($column)) {
                 $column = $name;
@@ -573,6 +701,51 @@ abstract class RepositoryManager implements RepositoryInterface
         }
     }
 
+    /**
+     * Cast specific data automatically to int from the DATA array
+     * 
+     * @param  \Model $model
+     * @param  \Request $request
+     * @return void  
+     */
+    protected function setIntData ($model,$request)
+    {
+        foreach (static::INTEGER_DATA as $column) {
+            if (in_array($column,static::WHEN_AVAILABLE_DATA) && ! isset($request->$column)) continue;
+            $model->$column = (int)$request->$column;
+        }   
+    }
+
+    /**
+     * Cast specific data automatically to float from the DATA array
+     * 
+     * @param  \Model $model
+     * @param  \Request $request
+     * @return void  
+     */
+    protected function setFloatData ($model,$request)
+    {
+        foreach (static::INTEGER_DATA as $column) {
+            if (in_array($column,static::WHEN_AVAILABLE_DATA) && ! isset($request->$column)) continue;
+            $model->$column = (float)$request->$column;
+        }
+    }
+    
+    /**
+     * Cast specific data automatically to bool from the DATA array
+     * 
+     * @param  \Model $model
+     * @param  \Request $request
+     * @return void  
+     */
+    protected function setBoolData($model,$request)
+    {
+        foreach (static::INTEGER_DATA as $column) {
+            if (in_array($column,static::WHEN_AVAILABLE_DATA) && ! isset($request->$column)) continue;
+            $model->$column = (bool)$request->$column;
+        }
+    }
+    
     /**
      * Pare the given arrayed value
      *
