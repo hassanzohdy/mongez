@@ -585,10 +585,6 @@ abstract class RepositoryManager implements RepositoryInterface
         $this->setFloatData($model,$request);
 
         $this->setBoolData($model,$request);
-        
-        $this->setDocumentData($model,$request);
-
-        $this->setMultiDocumentData($model,$request);
     }
     
     /**

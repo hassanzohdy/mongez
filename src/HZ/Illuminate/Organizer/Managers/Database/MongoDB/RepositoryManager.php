@@ -164,6 +164,28 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     {
         return static::TABLE;
     }
+    
+    /**
+     * {@inheritDoc}
+     */
+    protected function setAutoData($model, $request) 
+    {
+        $this->setMainData($model,$request); 
+        
+        $this->setArraybleData($model,$request);
+
+        $this->setUploadsData($model,$request);
+
+        $this->setIntData($model,$request);
+
+        $this->setFloatData($model,$request);
+
+        $this->setBoolData($model,$request);
+        
+        $this->setDocumentData($model,$request);
+
+        $this->setMultiDocumentData($model,$request);
+    }
 
     /**
      * Set document data to column
