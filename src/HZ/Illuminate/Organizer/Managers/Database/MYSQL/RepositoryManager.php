@@ -573,7 +573,6 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     protected function setAutoData($model, $request)
     {
-        
         $this->setMainData($model,$request); 
         
         $this->setArraybleData($model,$request);
@@ -584,26 +583,8 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $this->setFloatData($model,$request);
 
-        $this->setBoolData($model,$request);
+        $this->setBoolData($model,$request);   
     }
-    
-    /**
-     * Set document data to column value.
-     *
-     * @param  \Model $model
-     * @param  \Request $request
-     * @return void     
-     */
-    protected function setDocumentData($model,$request) {} 
-    
-    /**
-     * Set Multi documents data to column value.
-     *
-     * @param  \Model $model
-     * @param  \Request $request
-     * @return void     
-     */
-    protected function setMultiDocumentData($model, $request) {}
 
     /**
      * Set main data automatically from the DATA array
