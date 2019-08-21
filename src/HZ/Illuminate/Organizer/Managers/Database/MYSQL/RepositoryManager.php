@@ -168,22 +168,8 @@ abstract class RepositoryManager implements RepositoryInterface
      * 
      * @const array
      */
-    const UPLOADS = [];       
-    
-        /**
-     * Set the columns will be filled with single record of collection data
-     * 
-     * @const array
-     */
-    const DOCUMENT_DATA = [];
-    
-    /**
-     * Set the columns will be filled with array of records.
-     * 
-     * @const array
-     */
-    const MULTI_DOCUMENTS_DATA = [];
-    
+    const UPLOADS = [];
+
     /**
      * Set columns of int data type.
      * 
@@ -604,42 +590,25 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $this->setMultiDocumentData($model,$request);
     }
-
-    /**
-     * Set document data to column
-     *
-     * @param  \Model $model
-     * @param  \Request $request
-     * @return void     
-     */
-    protected function setDocumentData($model,$request)
-    {
-        foreach (static::DOCUMENT_DATA as $column => $documentModelClass)
-        {
-            $documentModel = $documentModelClass::find((int)$request->$column);
-
-            $model->$column = $documentModel ?$documentModel->sharedInfo():[];
-        }
-    }
     
     /**
-     * Set document data to column
+     * Set document data to column value.
      *
      * @param  \Model $model
      * @param  \Request $request
      * @return void     
      */
-    protected function setMultiDocumentData($model,$request)
-    {
-        foreach (static::MULTI_DOCUMENTS_DATA as $column => $documentModelClass)
-        {
-            $documentModel = $documentModelClass::whereIn('id',array_map('intVal', $request->$column))->get();
-            
-            $model->$column = $documentModel->map(function ($record) {
-                return $record->sharedInfo();
-            })->toArray();
-        }
-    }
+    protected function setDocumentData($model,$request) {} 
+    
+    /**
+     * Set Multi documents data to column value.
+     *
+     * @param  \Model $model
+     * @param  \Request $request
+     * @return void     
+     */
+    protected function setMultiDocumentData($model, $request) {}
+
     /**
      * Set main data automatically from the DATA array
      * 
@@ -647,7 +616,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * @param  \Request $request
      * @return void  
      */
-    protected function setMainData ($model,$request)
+    protected function setMainData($model, $request)
     {
         foreach (static::DATA as $column) {
             if (in_array($column,static::WHEN_AVAILABLE_DATA) && ! isset($request->$column)) continue;
@@ -655,11 +624,8 @@ abstract class RepositoryManager implements RepositoryInterface
             if (!$request->$column) {
                     $model->$column = null;
             } else {
-                if ($column == 'password') {
-                    $password = $request->password;
-                    if ($password) {
-                        $model->password = bcrypt($password);
-                    } 
+                if ($column == 'password' && $request->password) {
+                    $model->password = bcrypt($request->password);
                 } else {
                     $model->$column = $request->$column;
                 }
@@ -673,7 +639,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * @param  \Request $request
      * @return void  
      */
-    protected function setArraybleData ($model,$request)
+    protected function setArraybleData($model, $request)
     {
         foreach (static::ARRAYBLE_DATA as $column) {
             $value = array_filter((array) $request->$column);
@@ -688,7 +654,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * @param  \Request $request
      * @return void  
      */
-    protected function setUploadsData ($model,$request)
+    protected function setUploadsData($model, $request)
     {
         foreach (static::UPLOADS as $column => $name) {
             if (is_numeric($column)) {
@@ -708,7 +674,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * @param  \Request $request
      * @return void  
      */
-    protected function setIntData ($model,$request)
+    protected function setIntData($model, $request)
     {
         foreach (static::INTEGER_DATA as $column) {
             if (in_array($column,static::WHEN_AVAILABLE_DATA) && ! isset($request->$column)) continue;
@@ -723,7 +689,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * @param  \Request $request
      * @return void  
      */
-    protected function setFloatData ($model,$request)
+    protected function setFloatData($model, $request)
     {
         foreach (static::INTEGER_DATA as $column) {
             if (in_array($column,static::WHEN_AVAILABLE_DATA) && ! isset($request->$column)) continue;
@@ -738,7 +704,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * @param  \Request $request
      * @return void  
      */
-    protected function setBoolData($model,$request)
+    protected function setBoolData($model, $request)
     {
         foreach (static::INTEGER_DATA as $column) {
             if (in_array($column,static::WHEN_AVAILABLE_DATA) && ! isset($request->$column)) continue;
