@@ -3,7 +3,7 @@
     "description": "An organized structure for building a neat laravel application(s).",
     "keywords": ["laravel","organizer"],
     "license": "MIT",
-    "version": "1.4.13",
+    "version": "1.4.14",
     "require": {
         "illuminate/support": "1.4.12"
     },
@@ -24,7 +24,8 @@
     "extra": {
         "laravel": {
             "providers": [
-                "HZ\\Illuminate\\Organizer\\Providers\\OrganizerServiceProvider"
+                "HZ\\Illuminate\\Organizer\\Providers\\OrganizerServiceProvider",
+                "HZ\\Illuminate\\Organizer\\Providers\\ConfigurationsProvider"
             ]
         }
     }
