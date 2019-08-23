@@ -3,8 +3,11 @@
 This project aims to make using Laravel framework more organized and extensible.
 
 # Table of contents
+- [Laravel Organizer](#laravel-organizer)
+- [Table of contents](#table-of-contents)
 - [Requirements](#requirements)
 - [Installation](#installation)
+- [Configurations](#configurations)
 - [Getting started](#getting-started)
 - [Documentation](#documentation)
 
@@ -17,9 +20,11 @@ Run the following Command in your cli.
 
 `composer require hassanzohdy/laravel-organizer`
 
-Once its done run the following command
+# Configurations
 
-`php vendor/hassanzohdy/laravel-organizer/organize`
+Once its done run the following command to create the `config/organizer.php` file.
+
+`php artisan vendor:publish --provider="HZ\Illuminate\Organizer\Providers\ConfigurationsProvider"`
 
 # Getting started
 Once the package is fully installed successfully, you will find the following files/directories in your application.
