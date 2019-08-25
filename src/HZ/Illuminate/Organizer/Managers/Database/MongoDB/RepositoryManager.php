@@ -132,11 +132,7 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     /**
      * {@inheritDoc}
      */
-    protected function setData($model, $request) 
-    {
-        $this->setDocumentData($model, $request);
-        $this->setMultiDocumentData($model, $request);
-    }
+    protected function setData($model, $request) {}
     
     /**
      * {@inheritDoc}
@@ -172,7 +168,13 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     /**
      * {@inheritDoc}
      */
-    protected function setAutoData($model, $request) {}
+    protected function setAutoData($model, $request) 
+    {
+        parent::setAutoData($model, $request);
+        // add the extra methods
+        $this->setDocumentData($model, $request);
+        $this->setMultiDocumentData($model, $request);        
+    }
 
     /**
      * Set document data to column
