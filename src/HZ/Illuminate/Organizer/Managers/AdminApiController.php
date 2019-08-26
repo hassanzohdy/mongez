@@ -24,6 +24,7 @@ abstract class AdminApiController extends ApiController
         'listOptions' => [
             'select' => [],
             'filterBy' => [],
+            'paginate' => null
         ],
         'returnOn' => [
             'store' => 'single-record',
@@ -58,7 +59,7 @@ abstract class AdminApiController extends ApiController
     public function index(Request $request)
     {
         $json['records'] = $this->repository->list($this->listOptions($request));
-
+        $json['pagination'] = $this->repository->getPaginateInfo();
         return $this->success($json);
     }
 

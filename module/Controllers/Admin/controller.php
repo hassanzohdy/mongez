@@ -14,6 +14,8 @@ class ControllerName extends AdminApiController
         'repository' => 'repo-name',
         'listOptions' => [
             'select' => [],
+            'filterBy' => [],
+            'paginate' => null, // if set null, it will be depend on repository paginate constant
         ],
         'rules' => [
             'all' => [],

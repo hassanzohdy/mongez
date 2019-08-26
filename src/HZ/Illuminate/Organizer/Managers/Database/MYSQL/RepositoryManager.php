@@ -199,6 +199,21 @@ abstract class RepositoryManager implements RepositoryInterface
     const WHEN_AVAILABLE_DATA = [];
 
     /**
+     * Number of items per page in pagination
+     * 
+     * @const int
+     */
+    const ITEMS_PER_PAGE = 15;
+
+    /**
+     * If pagination active or not
+     * if pagination value is set null, it will be depend on organize config value
+     * 
+     * @const boo
+     */
+    const PAGINATE = null;
+
+    /**
      * This property will has the final table name that will be used
      * i.e if the TABLE_ALIAS is not empty, then this property will be the value of the TABLE_ALIAS
      * otherwise it will be the value of the TABLE constant
@@ -255,6 +270,13 @@ abstract class RepositoryManager implements RepositoryInterface
      * @param array
      */
     protected $deleteDependenceTables = [];
+
+    /**
+     * Pagination info
+     * 
+     * @var array 
+     */
+    protected $paginationInfo = [];
     
     /**
      * Constructor
@@ -368,16 +390,29 @@ abstract class RepositoryManager implements RepositoryInterface
         }
 
         $this->filter();
-
-        if ($this->select->isNotEmpty()) {
-            $this->query->select(...$this->select->list());
-        }
         
         $this->orderBy($this->option('orderBy', [$this->column('id'), 'DESC']));
         
         $this->events->trigger("{$this->eventName}.listing", $this->query, $this);
-
-        $records = $this->query->get();
+        
+        $paginate = $this->option('paginate',static::PAGINATE);
+        
+        if ($paginate === true || $paginate === null && config('organizer.pagination') === true) {
+            $pageNumber = $this->option('page',1);
+            $itemPerPage = $this->option('itemsPerPage',static::ITEMS_PER_PAGE);
+            $returnedItems = ['*'];
+            if (!empty($this->select->list())){
+                $returnedItems = $this->select->list();
+            }
+            $data = $this->query->paginate($itemPerPage,$returnedItems,'page',$pageNumber);
+            $this->setPaginateInfo($data);  
+            $records = collect($data->items());
+        } else {
+            if ($this->select->isNotEmpty()) {
+                $this->query->select(...$this->select->list());
+            }     
+            $records = $this->query->get();
+        }
 
         $records = $this->records($records);
 
@@ -390,6 +425,32 @@ abstract class RepositoryManager implements RepositoryInterface
         return $records;
     }
     
+    /**
+     * Set pagination info from pagination data
+     * 
+     * @param object $data
+     * @return void
+     */
+    protected function setPaginateInfo($data)
+    {
+        $this->paginationInfo = [
+            'totalRecords' => $data->total(),
+            'numberOfPages' => $data->lastPage(),
+            'itemsPerPage' => $data->perPage(),
+            'currentPage' => $data->currentPage()
+        ];
+    }
+
+    /**
+     * Get pagination info
+     * 
+     * @return array $paginationInfo
+     */
+    public function getPaginateInfo(): array
+    {
+        return $this->paginationInfo;
+    }
+
     /**
      * Wrap the given model to its resource
      * 
@@ -555,6 +616,8 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $this->setData($model, $request);
 
+        $this->onUpdate($model, $request);
+        
         $this->events->trigger("{$this->eventName}.saving {$this->eventName}.updating", $model, $request, $oldModel);
 
         $model->save();

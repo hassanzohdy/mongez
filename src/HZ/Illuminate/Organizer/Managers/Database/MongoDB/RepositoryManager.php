@@ -177,6 +177,14 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     }
 
     /**
+     * {@inheritDoc} 
+     */
+    protected function column(string $column): string
+    {
+        return $column;
+    }
+
+    /**
      * Set document data to column
      *
      * @param  \Model $model
