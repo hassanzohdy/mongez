@@ -14,6 +14,20 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
      * @var bool
      */
     const USING_SOFT_DELETE = false;
+    
+    /**
+     * Set the columns will be filled with single record of collection data
+     * 
+     * @const array
+     */
+    const DOCUMENT_DATA = [];
+    
+    /**
+     * Set the columns will be filled with array of records.
+     * 
+     * @const array
+     */
+    const MULTI_DOCUMENTS_DATA = [];
 
     /**
      * Get the table name that will be used in the query 
@@ -148,5 +162,58 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     protected function columnTableName(): string 
     {
         return static::TABLE;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function setAutoData($model, $request) 
+    {
+        parent::setAutoData($model, $request);
+        // add the extra methods
+        $this->setDocumentData($model, $request);
+        $this->setMultiDocumentData($model, $request);        
+    }
+
+    /**
+     * {@inheritDoc} 
+     */
+    protected function column(string $column): string
+    {
+        return $column;
+    }
+
+    /**
+     * Set document data to column
+     *
+     * @param  \Model $model
+     * @param  \Request $request
+     * @return void     
+     */
+    protected function setDocumentData($model, $request)
+    {
+        foreach (static::DOCUMENT_DATA as $column => $documentModelClass) {
+            $documentModel = $documentModelClass::find((int)$request->$column);
+
+            $model->$column = $documentModel ?$documentModel->sharedInfo():[];
+        }
+    }
+    
+    /**
+     * Set Multi documents data to column value.
+     *
+     * @param  \Model $model
+     * @param  \Request $request
+     * @return void     
+     */
+    protected function setMultiDocumentData($model, $request)
+    {
+        foreach (static::MULTI_DOCUMENTS_DATA as $column => $documentModelClass) {
+            $documentModel = $documentModelClass::whereIn('id',array_map('intVal', $request->$column))->get();
+            
+            $model->$column = $documentModel->map(function ($record) {
+                return $record->sharedInfo();
+            })->toArray();
+        }
     }
 }

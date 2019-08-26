@@ -150,8 +150,8 @@ abstract class JsonResourceManager extends JsonResource
             }
 
             $asset = $this->$column;
-
-            $this->data[$column] =  !is_array($asset) ? url($asset) : array_map(function ($asset) {
+            
+            $this->data[$column] =  ! is_array($asset) ? url($asset) : array_map(function ($asset) {
                 return url($asset);
             }, $asset);
         }

@@ -168,8 +168,51 @@ abstract class RepositoryManager implements RepositoryInterface
      * 
      * @const array
      */
-    const UPLOADS = [];       
+    const UPLOADS = [];
+
+    /**
+     * Set columns of int data type.
+     * 
+     * @cont array  
+     */
+    const INTEGER_DATA = [];
+
+    /**
+     * Set columns of float data type.
+     * 
+     * @cont array  
+     */
+    const FLOAT_DATA = [];
+
+    /**
+     * Set columns of booleans data type.
+     * 
+     * @cont array  
+     */
+    const BOOLEAN_DATA = [];
     
+    /**
+     * Set columns of int data type.
+     * 
+     * @cont array  
+     */
+    const WHEN_AVAILABLE_DATA = [];
+
+    /**
+     * Number of items per page in pagination
+     * 
+     * @const int
+     */
+    const ITEMS_PER_PAGE = 15;
+
+    /**
+     * If pagination active or not
+     * if pagination value is set null, it will be depend on organize config value
+     * 
+     * @const boo
+     */
+    const PAGINATE = null;
+
     /**
      * This property will has the final table name that will be used
      * i.e if the TABLE_ALIAS is not empty, then this property will be the value of the TABLE_ALIAS
@@ -227,6 +270,13 @@ abstract class RepositoryManager implements RepositoryInterface
      * @param array
      */
     protected $deleteDependenceTables = [];
+
+    /**
+     * Pagination info
+     * 
+     * @var array 
+     */
+    protected $paginationInfo = [];
     
     /**
      * Constructor
@@ -340,16 +390,27 @@ abstract class RepositoryManager implements RepositoryInterface
         }
 
         $this->filter();
-
-        if ($this->select->isNotEmpty()) {
-            $this->query->select(...$this->select->list());
-        }
         
         $this->orderBy($this->option('orderBy', [$this->column('id'), 'DESC']));
         
         $this->events->trigger("{$this->eventName}.listing", $this->query, $this);
+        
+        $paginate = $this->option('paginate', static::PAGINATE);
+        
+        if ($paginate === true || $paginate === null && config('organizer.pagination') === true) {
+            $pageNumber = $this->option('page', 1);
+            $itemPerPage = $this->option('itemsPerPage', static::ITEMS_PER_PAGE);
+            $selectedColumns = !empty($this->select->list()) ? $this->select->list() : ['*'];
+            $data = $this->query->paginate($itemPerPage, $selectedColumns, 'page', $pageNumber);
+            $this->setPaginateInfo($data);  
+            $records = collect($data->items());
+        } else {
+            if ($this->select->isNotEmpty()) {
+                $this->query->select(...$this->select->list());
+            }
 
-        $records = $this->query->get();
+            $records = $this->query->get();
+        }
 
         $records = $this->records($records);
 
@@ -363,6 +424,32 @@ abstract class RepositoryManager implements RepositoryInterface
     }
     
     /**
+     * Set pagination info from pagination data
+     * 
+     * @param object $data
+     * @return void
+     */
+    protected function setPaginateInfo($data)
+    {
+        $this->paginationInfo = [
+            'totalRecords' => $data->total(),
+            'numberOfPages' => $data->lastPage(),
+            'itemsPerPage' => $data->perPage(),
+            'currentPage' => $data->currentPage()
+        ];
+    }
+
+    /**
+     * Get pagination info
+     * 
+     * @return array $paginationInfo
+     */
+    public function getPaginateInfo(): array
+    {
+        return $this->paginationInfo;
+    }
+
+    /**
      * Wrap the given model to its resource
      * 
      * @param \Model $model
@@ -372,6 +459,18 @@ abstract class RepositoryManager implements RepositoryInterface
     {
         $resource = static::RESOURCE;
         return new $resource($model);
+    }
+
+    /**
+     * Wrap the given collection into collection of resources
+     * 
+     * @param \Illuminate\Support\Collection $collection
+     * @return \JsonResource
+     */
+    public function wrapMany(Collection $collection) 
+    {
+        $resource = static::RESOURCE;
+        return $resource::collection($collection);
     }
 
     /**
@@ -527,6 +626,8 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $this->setData($model, $request);
 
+        $this->onUpdate($model, $request);
+        
         $this->events->trigger("{$this->eventName}.saving {$this->eventName}.updating", $model, $request, $oldModel);
 
         $model->save();
@@ -545,23 +646,66 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     protected function setAutoData($model, $request)
     {
+        $this->setMainData($model,$request); 
+        
+        $this->setArraybleData($model,$request);
+
+        $this->setUploadsData($model,$request);
+
+        $this->setIntData($model,$request);
+
+        $this->setFloatData($model,$request);
+
+        $this->setBoolData($model,$request);   
+    }
+
+    /**
+     * Set main data automatically from the DATA array
+     * 
+     * @param  \Model $model
+     * @param  \Request $request
+     * @return void  
+     */
+    protected function setMainData($model, $request)
+    {
         foreach (static::DATA as $column) {
-            if ($column == 'password') {
-                $password = $request->password;
-                if ($password) {
-                    $model->password = bcrypt($password);
-                }
+            if (in_array($column,static::WHEN_AVAILABLE_DATA) && ! isset($request->$column)) continue;
+
+            if (!$request->$column) {
+                    $model->$column = null;
             } else {
-                $model->$column = $request->$column;
+                if ($column == 'password' && $request->password) {
+                    $model->password = bcrypt($request->password);
+                } else {
+                    $model->$column = $request->$column;
+                }
             }
         }
-
+    }
+    /**
+     * Set Arrayble data automatically from the DATA array
+     * 
+     * @param  \Model $model
+     * @param  \Request $request
+     * @return void  
+     */
+    protected function setArraybleData($model, $request)
+    {
         foreach (static::ARRAYBLE_DATA as $column) {
             $value = array_filter((array) $request->$column);
             $value = $this->handleArrayableValue($value);
             $model->$column = $value;
         }
-
+    }
+    /**
+     * Set uploads data automatically from the DATA array
+     * 
+     * @param  \Model $model
+     * @param  \Request $request
+     * @return void  
+     */
+    protected function setUploadsData($model, $request)
+    {
         foreach (static::UPLOADS as $column => $name) {
             if (is_numeric($column)) {
                 $column = $name;
@@ -573,6 +717,51 @@ abstract class RepositoryManager implements RepositoryInterface
         }
     }
 
+    /**
+     * Cast specific data automatically to int from the DATA array
+     * 
+     * @param  \Model $model
+     * @param  \Request $request
+     * @return void  
+     */
+    protected function setIntData($model, $request)
+    {
+        foreach (static::INTEGER_DATA as $column) {
+            if (in_array($column,static::WHEN_AVAILABLE_DATA) && ! isset($request->$column)) continue;
+            $model->$column = (int)$request->$column;
+        }   
+    }
+
+    /**
+     * Cast specific data automatically to float from the DATA array
+     * 
+     * @param  \Model $model
+     * @param  \Request $request
+     * @return void  
+     */
+    protected function setFloatData($model, $request)
+    {
+        foreach (static::INTEGER_DATA as $column) {
+            if (in_array($column,static::WHEN_AVAILABLE_DATA) && ! isset($request->$column)) continue;
+            $model->$column = (float)$request->$column;
+        }
+    }
+    
+    /**
+     * Cast specific data automatically to bool from the DATA array
+     * 
+     * @param  \Model $model
+     * @param  \Request $request
+     * @return void  
+     */
+    protected function setBoolData($model, $request)
+    {
+        foreach (static::INTEGER_DATA as $column) {
+            if (in_array($column,static::WHEN_AVAILABLE_DATA) && ! isset($request->$column)) continue;
+            $model->$column = (bool)$request->$column;
+        }
+    }
+    
     /**
      * Pare the given arrayed value
      *
