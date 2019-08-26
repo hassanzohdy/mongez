@@ -84,5 +84,5 @@ return [
     |
     */
     'events' => [],
-    'pagination'=>true
+    'pagination' => true
 ];

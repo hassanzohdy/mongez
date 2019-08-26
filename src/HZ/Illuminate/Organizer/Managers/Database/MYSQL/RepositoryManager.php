@@ -395,22 +395,20 @@ abstract class RepositoryManager implements RepositoryInterface
         
         $this->events->trigger("{$this->eventName}.listing", $this->query, $this);
         
-        $paginate = $this->option('paginate',static::PAGINATE);
+        $paginate = $this->option('paginate', static::PAGINATE);
         
         if ($paginate === true || $paginate === null && config('organizer.pagination') === true) {
-            $pageNumber = $this->option('page',1);
-            $itemPerPage = $this->option('itemsPerPage',static::ITEMS_PER_PAGE);
-            $returnedItems = ['*'];
-            if (!empty($this->select->list())){
-                $returnedItems = $this->select->list();
-            }
-            $data = $this->query->paginate($itemPerPage,$returnedItems,'page',$pageNumber);
+            $pageNumber = $this->option('page', 1);
+            $itemPerPage = $this->option('itemsPerPage', static::ITEMS_PER_PAGE);
+            $selectedColumns = !empty($this->select->list()) ? $this->select->list() : ['*'];
+            $data = $this->query->paginate($itemPerPage, $selectedColumns, 'page', $pageNumber);
             $this->setPaginateInfo($data);  
             $records = collect($data->items());
         } else {
             if ($this->select->isNotEmpty()) {
                 $this->query->select(...$this->select->list());
-            }     
+            }
+
             $records = $this->query->get();
         }
 
@@ -461,6 +459,18 @@ abstract class RepositoryManager implements RepositoryInterface
     {
         $resource = static::RESOURCE;
         return new $resource($model);
+    }
+
+    /**
+     * Wrap the given collection into collection of resources
+     * 
+     * @param \Illuminate\Support\Collection $collection
+     * @return \JsonResource
+     */
+    public function wrapMany(Collection $collection) 
+    {
+        $resource = static::RESOURCE;
+        return $resource::collection($collection);
     }
 
     /**
