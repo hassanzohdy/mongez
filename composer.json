@@ -3,7 +3,11 @@
     "description": "An organized structure for building a neat laravel application(s).",
     "keywords": ["laravel","organizer"],
     "license": "MIT",
-    "version": "1.4.12",
+    "version": "1.4.16",
+    "require": {
+        "php": ">=7",
+        "illuminate/support": "5.6.x|5.7.x|5.8.x"
+    },
     "authors": [
         {
             "name": "Hasan Zohdy",
@@ -11,7 +15,7 @@
         }
     ],
     "autoload": {
-        "psr-0": {
+        "psr-4": {
             "HZ\\Illuminate\\Organizer\\": "src/"
         },
         "files": [

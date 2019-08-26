@@ -1,7 +1,6 @@
 <?php
 namespace HZ\Illuminate\Organizer\Managers\Database\MongoDB;
 
-use DB;
 use Illuminate\Support\Collection;
 use HZ\Illuminate\Organizer\Contracts\Repositories\RepositoryInterface;
 use HZ\Illuminate\Organizer\Managers\Database\MYSQL\RepositoryManager as BaseRepositoryManager;

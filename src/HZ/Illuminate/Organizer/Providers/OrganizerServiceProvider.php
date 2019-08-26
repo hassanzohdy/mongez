@@ -29,6 +29,8 @@ class OrganizerServiceProvider extends ServiceProvider
     public function boot()
     {
         //
+        $this->publishes([$this->configPath() => config_path('organizer.php')]);
+
         if ($this->app->runningInConsole()) {
             $this->commands([
                 ModuleBuilder::class,
@@ -44,10 +46,6 @@ class OrganizerServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        config([
-            'organizer.root' => realpath(__DIR__ . '/../../../../../'),
-        ]);
-
         $this->config = config('organizer');
 
         // register the repositories as singletones, only one instance in the entire application
@@ -67,6 +65,16 @@ class OrganizerServiceProvider extends ServiceProvider
             $this->manageDatabase();
         }
     }
+
+    /**
+     * Get config path
+     * 
+     * @return string
+     */
+    protected function configPath(): string 
+    {
+        return __DIR__ . '/../../../../../files/config/organizer.php';
+    } 
 
     /**
      * Register the events listeners

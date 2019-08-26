@@ -11,7 +11,7 @@ class Builder
      *
      * @return int
      */
-    public function nextId()
+    public function getNextId()
     {
         return function () {
             // if the form property doesn't exist, then it means we're executing this 
