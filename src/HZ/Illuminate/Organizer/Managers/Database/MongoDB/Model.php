@@ -9,7 +9,7 @@ use Jenssegers\Mongodb\Eloquent\Model as BaseModel;
 abstract class Model extends BaseModel
 {
     use ModelTrait {
-    boot as TraitBoot;
+        boot as TraitBoot;
     }
 
     /**
@@ -77,7 +77,7 @@ abstract class Model extends BaseModel
         // if so, then we will update the column for the current user id
         static::creating(function ($model) {
             if (!$model->id) {
-                $model->id = $model->nextId();
+                $model->id = static::nextId();
             }
         });
     }
@@ -87,15 +87,15 @@ abstract class Model extends BaseModel
      * 
      * @return int
      */
-    public function nextId(): int
+    public static function nextId(): int
     {
-        $newId = $this->getNextId();
+        $newId = static::getNextId();
 
         $lastId = $newId - 1;
 
         $ids = DB::collection('ids');
 
-        $collection = $this->getTable();
+        $collection = static::getTable();
 
         if (!$lastId) {
             $ids->insert([
@@ -116,9 +116,9 @@ abstract class Model extends BaseModel
      * 
      * @return int
      */
-    public function getNextId(): int
+    public static function getNextId(): int
     {
-        return ((int) $this->lastInsertId()) + 1;
+        return static::lastInsertId() + 1;
     }
 
     /**
@@ -126,11 +126,11 @@ abstract class Model extends BaseModel
      * 
      * @return  int
      */
-    public function lastInsertId(): int
+    public static function lastInsertId(): int
     {
         $ids = DB::collection('ids');
 
-        $info = $ids->where('collection', $this->getTable())->first();
+        $info = $ids->where('collection', (new static)->getTable())->first();
 
         return $info ? $info['id'] : 0;
     }
@@ -140,7 +140,7 @@ abstract class Model extends BaseModel
      * 
      * @return mixed
      */
-    public function info()
+    public function info(): array
     {
         return $this->getAttributes();
     }
@@ -150,7 +150,7 @@ abstract class Model extends BaseModel
      * 
      * @return array
      */
-    public function sharedInfo()
+    public function sharedInfo(): array
     {
         return $this->getAttributes();
     }
