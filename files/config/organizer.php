@@ -26,6 +26,20 @@ return [
         'has-admin' => true,
     ],
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Pagination configurations
+    |--------------------------------------------------------------------------
+    | Pagination configurations work with `list` method in any repository.
+    |    
+    | Any value listed below will be applied on all repositories unless repository/method-call override.   
+    */
+    'pagination' => [
+        'paginate' => true,
+        'itemsPerPage' => 15,
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Admin options
