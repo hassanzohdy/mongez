@@ -26,7 +26,6 @@ return [
         'has-admin' => true,
     ],
 
-
     /*
     |--------------------------------------------------------------------------
     | Pagination configurations
@@ -71,6 +70,7 @@ return [
         // 'repo-short-name' => RepositoryClassPath::class,
         // Auto generated repositories here: DO NOT remove this line.   
     ],
+
     /*
     |--------------------------------------------------------------------------
     | Macroable classes
@@ -98,5 +98,4 @@ return [
     |
     */
     'events' => [],
-    'pagination' => true
 ];
