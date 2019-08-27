@@ -35,6 +35,7 @@ class OrganizerServiceProvider extends ServiceProvider
             $this->commands([
                 ModuleBuilder::class,
                 DatabaseMaker::class,
+                CloneModuleBuilder::class,
             ]);
         }
     }
