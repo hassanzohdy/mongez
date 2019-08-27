@@ -1,4 +1,5 @@
 <?php
+
 namespace HZ\Illuminate\Organizer\Managers\Database\MongoDB;
 
 use Illuminate\Support\Collection;
@@ -14,16 +15,18 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
      * @var bool
      */
     const USING_SOFT_DELETE = false;
-    
+
     /**
      * Set the columns will be filled with single record of collection data
+     * i.e [country => CountryModel::class]
      * 
      * @const array
      */
     const DOCUMENT_DATA = [];
-    
+
     /**
      * Set the columns will be filled with array of records.
+     * i.e [tags => TagModel::class]
      * 
      * @const array
      */
@@ -34,11 +37,11 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
      * 
      * @return string
      */
-    protected function tableName(): string 
+    protected function tableName(): string
     {
         return static::TABLE;
     }
-    
+
     /**
      * Adjust records that were fetched from database
      *
@@ -49,7 +52,7 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     {
         return $records;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -67,9 +70,9 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
      */
     public function get(int $id)
     {
-        return $this->getBy('id', $id);
+        return $this->getBy('id', (int) $id);
     }
-    
+
     /**
      * Pare the given arrayed value
      *
@@ -105,7 +108,7 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
      * @param  mixed value
      * @return mixed
      */
-    public function getBy($column, $value) 
+    public function getBy($column, $value)
     {
         $resource = static::RESOURCE;
 
@@ -121,8 +124,8 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
      * @param  mixed value
      * @return mixed
      */
-    public function getByModel($column, $value) 
-    {        
+    public function getByModel($column, $value)
+    {
         $model = static::MODEL;
 
         return is_array($value) ? $model::whereIn($column, $value)->get() : $model::where($column, $value)->first();
@@ -131,17 +134,20 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     /**
      * {@inheritDoc}
      */
-    protected function setData($model, $request) {}
-    
+    protected function setData($model, $request)
+    { }
+
     /**
      * {@inheritDoc}
      */
-    protected function select() {} 
-    
+    protected function select()
+    { }
+
     /**
      * {@inheritDoc}
      */
-    protected function filter() {}  
+    protected function filter()
+    { }
 
     /**
      * Get the query handler
@@ -153,13 +159,13 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
         $model = static::MODEL;
         return $model::where('id', '!=', -1);
     }
-    
+
     /**
      * Get the table name that will be used in the rest of the query like select, where...etc
      * 
      * @return string
      */
-    protected function columnTableName(): string 
+    protected function columnTableName(): string
     {
         return static::TABLE;
     }
@@ -167,12 +173,12 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     /**
      * {@inheritDoc}
      */
-    protected function setAutoData($model, $request) 
+    protected function setAutoData($model, $request)
     {
         parent::setAutoData($model, $request);
         // add the extra methods
         $this->setDocumentData($model, $request);
-        $this->setMultiDocumentData($model, $request);        
+        $this->setMultiDocumentData($model, $request);
     }
 
     /**
@@ -193,12 +199,12 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     protected function setDocumentData($model, $request)
     {
         foreach (static::DOCUMENT_DATA as $column => $documentModelClass) {
-            $documentModel = $documentModelClass::find((int)$request->$column);
+            $documentModel = $documentModelClass::find((int) $request->$column);
 
-            $model->$column = $documentModel ?$documentModel->sharedInfo():[];
+            $model->$column = $documentModel ? $documentModel->sharedInfo() : [];
         }
     }
-    
+
     /**
      * Set Multi documents data to column value.
      *
@@ -209,11 +215,25 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     protected function setMultiDocumentData($model, $request)
     {
         foreach (static::MULTI_DOCUMENTS_DATA as $column => $documentModelClass) {
-            $documentModel = $documentModelClass::whereIn('id',array_map('intVal', $request->$column))->get();
-            
-            $model->$column = $documentModel->map(function ($record) {
+            $ids = array_map('intVal', $request->$column);
+            $records = $documentModelClass::whereIn('id', $ids)->get();
+
+            $records = $records->map(function ($record) {
                 return $record->sharedInfo();
             })->toArray();
+
+            // make sure it is stored in same order as sent from request
+            if (count($ids) > 1) {
+                $recordsValues = array_flip($ids);
+                usort($records, function ($recordA, $recordB) use ($recordsValues) {
+                    if ($recordsValues[$recordA['id']] === $recordsValues[$recordB['id']]) return 0;
+                    if ($recordsValues[$recordA['id']] < $recordsValues[$recordB['id']]) return -1;
+
+                    return 1;
+                });
+            }
+
+            $model->$column = $records;
         }
     }
 }

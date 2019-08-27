@@ -1,4 +1,5 @@
 <?php
+
 namespace HZ\Illuminate\Organizer\Console\Commands;
 
 use File;
@@ -14,45 +15,45 @@ class CloneModuleBuilder extends Command
     const AVAILABLE_MODULES = ['users'];
 
     /**
-    * The name and signature of the console command.
-    *
-    * @var string
-    */
-   protected $signature = 'clone:module {moduleName}';
-   
-   /**
-    * The console command description.
-    *
-    * @var string
-    */
-   protected $description = 'Clone Modules';
-   
-   /**
-    * Module name
-    * 
-    * @var string
-    */
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'clone:module {moduleName}';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Clone Modules';
+
+    /**
+     * Module name
+     * 
+     * @var string
+     */
     protected $moduleName;
-    
-   /**
-    * Execute the console command.
-    *
-    * @return mixed
-    */
-   public function handle()
-   {
+
+    /**
+     * Execute the console command.
+     *
+     * @return mixed
+     */
+    public function handle()
+    {
         $this->moduleName = $this->argument('moduleName');
 
-        if (!in_array($this->moduleName, static::AVAILABLE_MODULES)) {
-            $this->info('This module does not exits');
+        if (! in_array($this->moduleName, static::AVAILABLE_MODULES)) {
+            return $this->info('This module does not exits');
         }
 
         $modulePath = $this->modulePath();
 
         if ($this->checkDirectory($modulePath)) {
             $message = $this->confirm($this->moduleName . ' exists, Do you want to override it?');
-        
-            if (!$message) return;            
+
+            if (!$message) return;
         }
 
         $this->cloneModule();
@@ -65,8 +66,9 @@ class CloneModuleBuilder extends Command
      */
     protected function cloneModule()
     {
-        $modulePath = dirname(__DIR__, 6).'/'.'cloneable-modules/'.$this->moduleName;
-        File::copyDirectory($modulePath, base_path("app/Modules/" . $this->moduleName));     
+        $modulePath = dirname(__DIR__, 6) . '/' . 'cloneable-modules/' . $this->moduleName;
+        
+        File::copyDirectory($modulePath, base_path("app/Modules/" . $this->moduleName));
     }
 
     /**

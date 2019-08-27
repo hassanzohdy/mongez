@@ -84,10 +84,6 @@ class ModuleBuilder extends Command
 
         $this->moduleName = Str::studly($this->module);
 
-        $defaultDatabase = config('database.default');
-        
-        $this->databaseName = $defaultDatabase == 'mysql' ? 'MYSQL': 'MongoDB';
-
         $this->adjustOptionsValues();
     }
 
@@ -452,16 +448,15 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
 
         $repositoryName = basename(str_replace('\\', '/', $repository));
 
-        $content = File::get($this->path("Repositories/repository.php"));
+        $database = config('database.default');
+
+        $content = File::get($this->path("Repositories/{$database}-repository.php"));
 
         // replace repository name
         $content = str_ireplace("RepositoryName", "{$repositoryName}", $content);
 
         // replace module name
         $content = str_ireplace("ModuleName", $this->moduleName, $content);
-
-        // replace database name 
-        $content = str_replace('DatabaseName', $this->databaseName, $content);
 
         // replace model path
         $content = str_ireplace("ModelName", $this->info['modelName'], $content);
@@ -486,7 +481,6 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
         $content = str_ireplace("DATA_LIST", $dataList, $content);
 
         // uploads
-
         $uploadsList = '';
 
         if (!empty($this->info['uploads'])) {

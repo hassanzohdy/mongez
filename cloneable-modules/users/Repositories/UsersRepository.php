@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Modules\Users\Repositories;
 
 use Illuminate\Http\Request;
@@ -12,11 +13,11 @@ use HZ\Illuminate\Organizer\{
     Contracts\Repositories\RepositoryInterface,
     Managers\Database\MongoDB\RepositoryManager
 };
-use Illuminate\Support\Facades\Hash;
 
 class UsersRepository extends RepositoryManager implements RepositoryInterface
 {
-    use AccessToken;    
+    use AccessToken;
+
     /**
      * {@inheritDoc}
      */
@@ -31,7 +32,7 @@ class UsersRepository extends RepositoryManager implements RepositoryInterface
      * {@inheritDoc}
      */
     const RESOURCE = Resource::CLASS;
-    
+
     /**
      * {@inheritDoc}
      */
@@ -53,16 +54,19 @@ class UsersRepository extends RepositoryManager implements RepositoryInterface
      * {@inheritDoc}
      */
     const FILTER_BY = [];
+
     /**
      * {@inheritDoc}
      */
-    public $deleteDependenceTables= [];
+    public $deleteDependenceTables = [];
+
     /**
      * {@inheritDoc}
      */
     protected function setData($model, $request)
     {
-    }
+        // add additional data
+     }
 
     /**
      * {@inheritDoc}
@@ -72,5 +76,3 @@ class UsersRepository extends RepositoryManager implements RepositoryInterface
         $this->generateAccessToken($user, $request);
     }
 }
-
-

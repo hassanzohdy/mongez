@@ -141,23 +141,18 @@ abstract class RepositoryManager implements RepositoryInterface
     const TABLE_ALIAS = '';
 
     /**
-     * Filter by columns
-     * 
-     * @const array
-     */
-    const FILTER_BY = [];
-
-    /**
      * Auto fill the following columns directly from the request
      * 
-     * @const var
+     * @const array
      */
     const DATA = [];
 
     /**
      * Auto fill the following columns as arrays directly from the request
+     * It will encoded and stored as `JSON` format, 
+     * it will be also auto decoded on any database retrieval either from `list` or `get` methods
      * 
-     * @const var
+     * @const array
      */
     const ARRAYBLE_DATA = [];
 
@@ -171,14 +166,14 @@ abstract class RepositoryManager implements RepositoryInterface
     const UPLOADS = [];
 
     /**
-     * Set columns of int data type.
+     * Set columns list of integers values.
      * 
      * @cont array  
      */
     const INTEGER_DATA = [];
 
     /**
-     * Set columns of float data type.
+     * Set columns list of float values.
      * 
      * @cont array  
      */
@@ -192,26 +187,34 @@ abstract class RepositoryManager implements RepositoryInterface
     const BOOLEAN_DATA = [];
     
     /**
-     * Set columns of int data type.
+     * Add the column if and only if the value is passed in the request.
      * 
      * @cont array  
      */
     const WHEN_AVAILABLE_DATA = [];
 
     /**
-     * Number of items per page in pagination
+     * Filter by columns used with `list` method only
      * 
-     * @const int
+     * @const array
      */
-    const ITEMS_PER_PAGE = 15;
+    const FILTER_BY = [];
 
     /**
-     * If pagination active or not
-     * if pagination value is set null, it will be depend on organize config value
+     * Determine wether to use pagination in the `list` method
+     * if set null, it will depend on pagination configurations
      * 
-     * @const boo
+     * @const bool
      */
     const PAGINATE = null;
+
+    /**
+     * Number of items per page in pagination
+     * If set to null, then it will taken from pagination configurations
+     * 
+     * @const int|null
+     */
+    const ITEMS_PER_PAGE = null;
 
     /**
      * This property will has the final table name that will be used
@@ -326,10 +329,15 @@ abstract class RepositoryManager implements RepositoryInterface
     /**
      * {@inheritDoc}
      */
-    public function has(int $id): bool
-    {        
+    public function has($value, string $column = 'id'): bool
+    {   
+        if (is_numeric($value)) {
+            $value = (float) $value;
+        }     
+
         $model = static::MODEL;
-        return (bool) $model::find($id);
+        
+        return $model::where($column, $value)->exists();
     }
 
     /**
@@ -364,11 +372,11 @@ abstract class RepositoryManager implements RepositoryInterface
             $retrieveMode = $this->option(static::RETRIEVAL_MODE, static::DEFAULT_RETRIEVAL_MODE);
 
             if ($retrieveMode == static::RETRIEVE_ACTIVE_RECORDS) {
-                $deletedAtColumn = $this->table . '.' . static::DELETED_AT;
+                $deletedAtColumn = $this->column(static::DELETED_AT);
     
                 $this->query->whereNull($deletedAtColumn);    
             } elseif ($retrieveMode == static::RETRIEVE_DELETED_RECORDS) {
-                $deletedAtColumn = $this->table . '.' . static::DELETED_AT;
+                $deletedAtColumn = $this->column(static::DELETED_AT);
     
                 $this->query->whereNotNull($deletedAtColumn);    
             }
@@ -390,19 +398,30 @@ abstract class RepositoryManager implements RepositoryInterface
         }
 
         $this->filter();
+       
+        $defaultOrderBy = [];
+
+        if (! empty(static::DEFAULT_ORDER_BY)) {
+            $defaultOrderBy = [$this->column(static::DEFAULT_ORDER_BY[0]), static::DEFAULT_ORDER_BY[1]];
+        }
         
-        $this->orderBy($this->option('orderBy', [$this->column('id'), 'DESC']));
+        $this->orderBy($this->option('orderBy', $defaultOrderBy));
         
         $this->events->trigger("{$this->eventName}.listing", $this->query, $this);
         
         $paginate = $this->option('paginate', static::PAGINATE);
         
-        if ($paginate === true || $paginate === null && config('organizer.pagination') === true) {
+        if ($paginate === true || $paginate === null && config('organizer.pagination.paginate') === true) {
             $pageNumber = $this->option('page', 1);
-            $itemPerPage = $this->option('itemsPerPage', static::ITEMS_PER_PAGE);
+            
+            $itemPerPage = $this->option('itemsPerPage', static::ITEMS_PER_PAGE !== null ? static::ITEMS_PER_PAGE : config('organizer.pagination.itemsPerPage'));
+            
             $selectedColumns = !empty($this->select->list()) ? $this->select->list() : ['*'];
+            
             $data = $this->query->paginate($itemPerPage, $selectedColumns, 'page', $pageNumber);
+            
             $this->setPaginateInfo($data);  
+            
             $records = collect($data->items());
         } else {
             if ($this->select->isNotEmpty()) {
@@ -525,12 +544,13 @@ abstract class RepositoryManager implements RepositoryInterface
     /**
      * Perform records ordering
      * 
-     * @param   array|null $orderBy
+     * @param   array $orderBy
      * @return  void
      */
-    protected function orderBy($orderBy)
+    protected function orderBy(array $orderBy)
     {
-        if (! $orderBy) return;
+        if (empty($orderBy)) return;
+
         $this->query->orderBy(...$orderBy);
     }
     

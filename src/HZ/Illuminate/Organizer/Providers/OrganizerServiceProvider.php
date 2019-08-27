@@ -28,7 +28,6 @@ class OrganizerServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
         $this->publishes([$this->configPath() => config_path('organizer.php')]);
 
         if ($this->app->runningInConsole()) {

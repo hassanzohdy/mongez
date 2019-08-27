@@ -48,10 +48,11 @@ interface RepositoryInterface
     public function get(int $id);
     
     /**
-     * Determine whether the given id exists 
+     * Determine whether the given value exists 
      * 
-     * @param  int id
+     * @param  mixed    $value
+     * @param  string   $column
      * @return bool
      */
-    public function has(int $id): bool;
+    public function has($value, string $column): bool;
 }
