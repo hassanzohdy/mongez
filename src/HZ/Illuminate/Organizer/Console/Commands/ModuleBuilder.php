@@ -94,7 +94,7 @@ class ModuleBuilder extends Command
      */
     protected function adjustOptionsValues()
     {
-        $this->root = config('organizer.root');
+        $this->root = dirname(__DIR__, 6);
         $this->init();
         $this->create();
     }
@@ -132,6 +132,9 @@ class ModuleBuilder extends Command
 
         $this->info('Creating repository file');
         $this->createRepository();
+
+        $this->info('Creating database files');
+        $this->createDatabase();
 
         $this->info('Generating routes files');
         $this->createRoues();
@@ -322,7 +325,7 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
 
             // create the file
             $filePath = "$controllerDirectory/{$controllerName}Controller.php";
-
+            
             $this->createFile($filePath, $content, 'Controller');
         }
 
@@ -435,6 +438,44 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
 
         // create the file
         $this->createFile("$resourceDirectory/{$resourceName}.php", $content, 'Resource');
+    }
+    /**
+     * Create the database file
+     * 
+     * @return void
+     */
+    protected function createDatabase()
+    {
+        $databaseFile = strtolower(str::plural($this->moduleName));
+
+        $databaseDriver = config('database.default');     
+
+        $this->createSchema($databaseFile);
+    }
+
+    /**
+     * Create schema of table in mongo 
+     *
+     * @param string $dataFileName
+     * @return void 
+     */
+    protected function createSchema($databaseFileName)
+    {
+        $content = [
+            '_id' => "objectId",
+            'id'=>'int', 
+        ];
+        
+        foreach ($this->info['data'] as $schemaData) {
+            $content[$schemaData] = 'string';
+        }
+        
+        $path = $this->modulePath("database/migrations");
+
+        $this->checkDirectory($path);
+
+        $this->createFile("$path/{$databaseFileName}.json", json_encode($content, JSON_PRETTY_PRINT), 'Schema');
+    
     }
 
     /**

@@ -7,12 +7,13 @@ use Illuminate\Console\Command;
 
 class CloneModuleBuilder extends Command
 {
+
     /**
      * Set all available modules.
      * 
      * @const array
      */
-    const AVAILABLE_MODULES = ['users'];
+    const AVAILABLE_MODULES = ['Users'];
 
     /**
      * The name and signature of the console command.

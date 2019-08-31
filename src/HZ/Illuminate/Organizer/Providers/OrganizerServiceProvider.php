@@ -10,8 +10,8 @@ use HZ\Illuminate\Organizer\Events\Events;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use HZ\Illuminate\Organizer\Console\Commands\DatabaseMaker;
 use HZ\Illuminate\Organizer\Console\Commands\ModuleBuilder;
-use HZ\Illuminate\Organizer\Console\Commands\CloneModuleBuilder;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use HZ\Illuminate\Organizer\Console\Commands\CloneModuleBuilder;
 
 class OrganizerServiceProvider extends ServiceProvider
 {

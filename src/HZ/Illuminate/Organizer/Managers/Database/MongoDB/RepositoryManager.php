@@ -1,5 +1,4 @@
 <?php
-
 namespace HZ\Illuminate\Organizer\Managers\Database\MongoDB;
 
 use Illuminate\Support\Collection;
