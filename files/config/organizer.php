@@ -86,6 +86,7 @@ return [
         Illuminate\Support\Arr::class => HZ\Illuminate\Organizer\Macros\Support\Arr::class,
         Illuminate\Http\Request::class => HZ\Illuminate\Organizer\Macros\Http\Request::class,
         Illuminate\Support\Collection::class => HZ\Illuminate\Organizer\Macros\Support\Collection::class,
+        Illuminate\Filesystem\Filesystem::class => HZ\Illuminate\Organizer\Macros\FileSystem\FileSystem::class,
         Illuminate\Database\Query\Builder::class => HZ\Illuminate\Organizer\Macros\Database\Query\Builder::class,
         Illuminate\Database\Schema\Blueprint::class => HZ\Illuminate\Organizer\Macros\Database\Schema\Blueprint::class,
     ],

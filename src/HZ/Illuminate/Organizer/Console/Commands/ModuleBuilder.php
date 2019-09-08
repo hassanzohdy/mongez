@@ -6,6 +6,7 @@ use Exception;
 use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
 use Illuminate\Console\Command;
+use HZ\Illuminate\Organizer\Helpers\Mongez;
 
 class ModuleBuilder extends Command
 {
@@ -138,6 +139,8 @@ class ModuleBuilder extends Command
 
         $this->info('Generating routes files');
         $this->createRoues();
+        
+        $this->setModuleToFile();
 
         $this->info('Module has been created successfully');
         
@@ -439,18 +442,47 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
         // create the file
         $this->createFile("$resourceDirectory/{$resourceName}.php", $content, 'Resource');
     }
-    /**
+    
+    /** 
      * Create the database file
      * 
      * @return void
      */
     protected function createDatabase()
     {
-        $databaseFile = strtolower(str::plural($this->moduleName));
-
+        $databaseFileName = strtolower(str::plural($this->moduleName));
+        $path = $this->modulePath("database/migrations");
+        $this->checkDirectory($path);
+        
         $databaseDriver = config('database.default');     
+        if ($databaseDriver == 'mongodb') {
+            $this->createSchema($databaseFileName, $path);
+        }
+        $this->createMigration($databaseFileName, $databaseDriver);
+    }
 
-        $this->createSchema($databaseFile);
+    /**
+     * Create migration file of table in mysql 
+     *
+     * @param string $dataFileName
+     * @return void 
+     */
+    protected function createMigration($databaseFileName, $databaseDriver)
+    {
+        $path = 'app/modules/'.$this->moduleName.'/database/migrations';
+        // dd($this->path("Migrations/mongodb-migration.php"));
+        $content = File::get($this->path("Migrations/".$databaseDriver."-migration.php"));
+        $content = str_ireplace("TableName", "{$databaseFileName}", $content);
+        if (isset($this->info['data'])) {
+            $schema = '';
+            foreach ($this->info['data'] as $data){
+                $schema .= "\n\n\$table->string('$data');\n\n";
+            }
+            $content = str_ireplace("Table-Schema", $schema, $content);
+        }        
+        $databaseFileName = date('Y_m_d_His').'_'.$databaseFileName;
+
+        $this->createFile("$path/{$databaseFileName}.php",$content, 'Migration');
     }
 
     /**
@@ -459,23 +491,23 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
      * @param string $dataFileName
      * @return void 
      */
-    protected function createSchema($databaseFileName)
+    protected function createSchema($databaseFileName, $path)
     {
-        $content = [
+        $defaultContent = [
             '_id' => "objectId",
             'id'=>'int', 
         ];
-        
-        foreach ($this->info['data'] as $schemaData) {
-            $content[$schemaData] = 'string';
-        }
-        
-        $path = $this->modulePath("database/migrations");
 
-        $this->checkDirectory($path);
+        $customData = $this->info['data'] ?? [];
+
+        unset($customData['id'], $customData['_id']);
+
+        $customData = array_fill_keys($customData, 'string');
+
+        $content = array_merge($defaultContent, $customData);
+        
 
         $this->createFile("$path/{$databaseFileName}.json", json_encode($content, JSON_PRETTY_PRINT), 'Schema');
-    
     }
 
     /**
@@ -670,5 +702,18 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
         }
 
         $this->info[$option] = Str::studly(str_replace('/', '\\', $optionValue));
+    }
+
+    /**
+     * Set module name to config file.
+     * 
+     * @return void
+     */
+    protected function setModuleToFile() 
+    {
+        $content = Mongez::getStored('modules');
+        $content [] = $this->moduleName;
+        Mongez::setStored('modules', $content);
+        Mongez::updateStorageFile();
     }
 }
