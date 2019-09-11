@@ -63,7 +63,7 @@ class EngezRepository extends Command implements EngezInterface
         }
 
         if (! in_array($this->info['moduleName'], $availableModules)) {
-            return $this->missingRequiredOption('This module does not available in your modules');
+            return $this->missingRequiredOption('This module is not available');
         }
     }
 
@@ -73,9 +73,7 @@ class EngezRepository extends Command implements EngezInterface
      * @return void
      */
     public function init()
-    {
-        $this->root = Mongez::packagePath();
-        
+    {        
         $this->info['repository'] = Str::studly($this->argument('repository'));
         $this->info['moduleName'] = Str::studly($this->option('module'));
 

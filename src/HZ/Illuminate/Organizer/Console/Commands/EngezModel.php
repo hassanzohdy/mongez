@@ -62,11 +62,11 @@ class EngezModel extends Command implements EngezInterface
         $availableModules = Mongez::getStored('modules');
         
         if (! $this->option('module')) {
-            return $this->info('the module name is required');
+            return $this->info('module option is required');
         }
 
         if (! in_array($this->info['moduleName'], $availableModules)) {
-            return $this->info('This module does not exits');
+            return $this->info('This module is not available');
         }
     }
 
@@ -77,8 +77,6 @@ class EngezModel extends Command implements EngezInterface
      */
     public function init()
     {
-        $this->root = Mongez::packagePath();
-
         $this->databaseName = config('database.default');
 
         $this->info['modelName'] = Str::studly($this->argument('model'));

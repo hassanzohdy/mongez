@@ -68,7 +68,7 @@ class CloneModuleBuilder extends Command
      */
     protected function cloneModule()
     {
-        $modulePath = Mongez::packagePath('/' . 'cloneable-modules/' . $this->moduleName);
+        $modulePath = Mongez::packagePath('cloneable-modules/' . $this->moduleName);
         
         File::copyDirectory($modulePath, base_path("app/Modules/" . $this->moduleName));
     }

@@ -77,7 +77,7 @@ class EngezController extends Command implements EngezInterface
         }
         
         if (! in_array($this->info['moduleName'], $availableModules)) {
-            return $this->missingRequiredOption('This module does not available in your modules');
+            return $this->missingRequiredOption('This module is not available');
         }
 
         if (! in_array($this->info['type'], static::CONTROLLER_TYPES)) {
@@ -92,7 +92,7 @@ class EngezController extends Command implements EngezInterface
      */
     public function init()
     {
-        $this->root = Mongez::packagePath();
+        // $this->root = Mongez::packagePath();
 
         $this->info['controllerName'] = Str::studly($this->argument('controller'));
         $this->info['moduleName'] = Str::studly($this->option('module'));

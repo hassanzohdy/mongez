@@ -39,7 +39,7 @@ class EngezMigration extends Command
         $this->module = Str::studly($this->argument('moduleName'));
         
         if (! $this->validateModuleName()) {
-            return $this->missingRequiredOption('This module does not available in your modules');
+            return $this->missingRequiredOption('This module is not available');
         }
         
         $this->makeMigrationFile();
@@ -66,8 +66,8 @@ class EngezMigration extends Command
     {
         $fileName = strtolower(str::plural($this->module));
 
-        $path = "app\\Modules\\{$this->module}\\database\\migrations";
-
+        $path = app_path("Modules\\{$this->module}\\database\\migrations");
+        
         $fileName = date('Y_m_d_His') . '_' . $fileName;
 
         Artisan::call('make:migration', ['name' => $fileName, '--table' => $fileName, '--path' => $path]);
