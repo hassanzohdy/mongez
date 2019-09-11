@@ -1,18 +1,18 @@
 <?php
 namespace HZ\Illuminate\Organizer\Console\Commands;
 
-use File;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
+use HZ\Illuminate\Organizer\Helpers\Mongez;
 
-class MongezMigrate extends Command
+class EngezMigrate extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'make:mongez-migrate {--path=}';
+    protected $signature = 'engez:migrate {--path=}';
 
     /**
      * The console command description.
@@ -45,9 +45,9 @@ class MongezMigrate extends Command
         if ($this->option('module') ) {
             $this->availableModules = explode(',', $this->argument('module'));
         } else {
-            $availableModulesFilePath = storage_path('mongez/mongez.json');
-            $this->availableModules = File::getJson($availableModulesFilePath)['modules'];
+            $this->availableModules = Mongez::getStored('modules');
         }
+
         $this->generateModulesPaths();
         $this->makeMigrate();
     }

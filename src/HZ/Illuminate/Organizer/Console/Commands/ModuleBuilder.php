@@ -6,10 +6,13 @@ use Exception;
 use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Artisan;
 use HZ\Illuminate\Organizer\Helpers\Mongez;
+use HZ\Illuminate\Organizer\Traits\Console\EngezTrait;
 
 class ModuleBuilder extends Command
 {
+    use EngezTrait;
     /**
      * Controller types
      * 
@@ -84,6 +87,8 @@ class ModuleBuilder extends Command
         $this->module = $this->argument('moduleName');
 
         $this->moduleName = Str::studly($this->module);
+        
+        $this->info['moduleName'] = $this->moduleName;
 
         $this->adjustOptionsValues();
     }
@@ -95,7 +100,6 @@ class ModuleBuilder extends Command
      */
     protected function adjustOptionsValues()
     {
-        $this->root = dirname(__DIR__, 6);
         $this->init();
         $this->create();
     }
@@ -122,6 +126,8 @@ class ModuleBuilder extends Command
      */
     protected function create()
     {
+        $this->setModuleToFile();
+        
         $this->info('Creating controller file');
         $this->createController();
 
@@ -138,9 +144,7 @@ class ModuleBuilder extends Command
         $this->createDatabase();
 
         $this->info('Generating routes files');
-        $this->createRoues();
-        
-        $this->setModuleToFile();
+        $this->createRoutes();
 
         $this->info('Module has been created successfully');
         
@@ -177,7 +181,7 @@ class ModuleBuilder extends Command
      * 
      * @return void
      */
-    protected function createRoues()
+    protected function createRoutes()
     {
         $type = $this->option('type');
 
@@ -281,7 +285,7 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
         $this->setData('controller');
 
         $controller = $this->info['controller'];
-
+        
         $controllerPath = $this->option('path'); // the parent directory inside the Api directory
 
         if ($controllerPath) {
@@ -304,81 +308,12 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
      */
     protected function createController()
     {
-        $controller = $this->info['controller'];
-
-        $controllerName = basename(str_replace('\\', '/', $controller));
-
-        $controllerType = $this->option('type');
-
-        if (in_array($controllerType, ['all', 'site'])) {
-            $content = File::get($this->path("Controllers/Site/controller.php"));
-
-            // replace controller name
-            $content = str_ireplace("ControllerName", "{$controllerName}Controller", $content);
-
-            // replace module name
-            $content = str_ireplace("ModuleName", $this->moduleName, $content);
-
-            // repository name 
-            $content = str_ireplace('repo-name', $this->info['repositoryName'], $content);
-
-            $controllerDirectory = $this->modulePath("Controllers/Site");
-
-            $this->checkDirectory($controllerDirectory);
-
-            // create the file
-            $filePath = "$controllerDirectory/{$controllerName}Controller.php";
-            
-            $this->createFile($filePath, $content, 'Controller');
-        }
-
-        if (in_array($controllerType, ['all', 'admin'])) {
-            // admin controller
-            $this->info('Creating admin controller...');
-
-            $content = File::get($this->path("Controllers/Admin/controller.php"));
-
-            // replace controller name
-            $content = str_ireplace("ControllerName", "{$controllerName}Controller", $content);
-
-            // replace module name
-            $content = str_ireplace("ModuleName", $this->moduleName, $content);
-
-            // repository name 
-            $content = str_ireplace('repo-name', $this->info['repositoryName'], $content);
-
-            $controllerDirectory = $this->modulePath("Controllers/Admin");
-
-            $this->checkDirectory($controllerDirectory);
-
-            // create the file
-            $filePath = "$controllerDirectory/{$controllerName}Controller.php";
-
-            $this->createFile($filePath, $content, 'Admin Controller');
-        }
-    }
-
-    /**
-     * Create the file
-     * 
-     * @param  string $filePath
-     * @param  string $content
-     * $param  string $fileType
-     * @return void
-     */
-    protected function createFile($filePath, $content, $fileType)
-    {
-        $filePath = str_replace('\\', '/', $filePath);
-        
-        $createFile = true;
-        if (File::exists($filePath)) {
-            $createFile = false;
-            $createFile = $this->confirm($fileType . ' exists, override it?');
-        }
-
-        if ($createFile) {
-            File::put($filePath, $content);
-        }
+        Artisan::call('engez:controller',[
+            'controller' => $this->info['controller'],
+            '--module' => $this->moduleName,
+            '--repository' => $this->info['repositoryName'],  
+            'type' => $this->option('type'), 
+        ]);
     }
 
     /**
@@ -387,60 +322,12 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
      * @return void
      */
     protected function createResource()
-    {
-        $resource = $this->info['resource'];
-
-        $resourceName = basename(str_replace('\\', '/', $resource));
-
-        $resourcePath = dirname($resource);
-
-        $content = File::get($this->path("Resources/resource.php"));
-
-        // make it singular 
-        $resourceName = Str::singular($resourceName);
-
-        // share it
-        $this->info['resourceName'] = $resourceName;
-
-        // replace resource name
-        $content = str_ireplace("ResourceName", "{$resourceName}", $content);
-
-        // replace module name
-        $content = str_ireplace("ModuleName", $this->moduleName, $content);
-
-        $dataList = '';
-
-        if (!empty($this->info['data'])) {
-            // add the id to the list if not provided
-            if (!in_array('id', $this->info['data'])) {
-                array_unshift($this->info['data'], 'id');
-            }
-
-            $dataList = "'" . implode("', '", $this->info['data']) . "'";
-        }
-
-        // replace resource data
-        $content = str_ireplace("DATA_LIST", $dataList, $content);
-
-        // check for assets 
-
-        $assetsList = '';
-
-        if (!empty($this->info['uploads'])) {
-            $assetsList = "'" . implode("', '", $this->info['uploads']) . "'";
-        }
-
-        // replace resource data
-        $content = str_ireplace("ASSETS_LIST", $assetsList, $content);
-
-        $resourceDirectory = $this->modulePath("Resources");
-
-        $this->checkDirectory($resourceDirectory);
-
-        $this->info['resourcePath'] = $resourcePath . '\\' . $resourceName;
-
-        // create the file
-        $this->createFile("$resourceDirectory/{$resourceName}.php", $content, 'Resource');
+    {    
+        Artisan::call('engez:resource', [
+            'resource' => $this->info['resource'],
+            '--module' => $this->moduleName,
+            '--data'   => $this->option('data'),
+        ]); 
     }
     
     /** 
@@ -452,12 +339,14 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
     {
         $databaseFileName = strtolower(str::plural($this->moduleName));
         $path = $this->modulePath("database/migrations");
-        $this->checkDirectory($path);
+        $this->checkDirectory($path);        
         
         $databaseDriver = config('database.default');     
+        
         if ($databaseDriver == 'mongodb') {
             $this->createSchema($databaseFileName, $path);
         }
+        
         $this->createMigration($databaseFileName, $databaseDriver);
     }
 
@@ -470,18 +359,18 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
     protected function createMigration($databaseFileName, $databaseDriver)
     {
         $path = 'app/modules/'.$this->moduleName.'/database/migrations';
-        // dd($this->path("Migrations/mongodb-migration.php"));
         $content = File::get($this->path("Migrations/".$databaseDriver."-migration.php"));
         $content = str_ireplace("TableName", "{$databaseFileName}", $content);
+
         if (isset($this->info['data'])) {
             $schema = '';
             foreach ($this->info['data'] as $data){
                 $schema .= "\n\n\$table->string('$data');\n\n";
             }
             $content = str_ireplace("Table-Schema", $schema, $content);
-        }        
+        }
+                
         $databaseFileName = date('Y_m_d_His').'_'.$databaseFileName;
-
         $this->createFile("$path/{$databaseFileName}.php",$content, 'Migration');
     }
 
@@ -517,72 +406,10 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
      */
     protected function createRepository()
     {
-        $repository = $this->info['repository'];
-
-        $repositoryName = basename(str_replace('\\', '/', $repository));
-
-        $database = config('database.default');
-
-        $content = File::get($this->path("Repositories/{$database}-repository.php"));
-
-        // replace repository name
-        $content = str_ireplace("RepositoryName", "{$repositoryName}", $content);
-
-        // replace module name
-        $content = str_ireplace("ModuleName", $this->moduleName, $content);
-
-        // replace model path
-        $content = str_ireplace("ModelName", $this->info['modelName'], $content);
-
-        // replace resource path
-        $content = str_ireplace("ResourceName", $this->info['resourceName'], $content);
-
-        // repository name 
-        $content = str_ireplace('repo-name', $this->info['repositoryName'], $content);
-
-        $dataList = '';
-
-        if (!empty($this->info['data'])) {
-            if (in_array('id', $this->info['data'])) {
-                $this->info['data'] = Arr::remove($this->info['data'], 'id');
-            }
-
-            $dataList = "'" . implode("', '", $this->info['data']) . "'";
-        }
-
-        // replace repository data
-        $content = str_ireplace("DATA_LIST", $dataList, $content);
-
-        // uploads
-        $uploadsList = '';
-
-        if (!empty($this->info['uploads'])) {
-            $uploadsList = "'" . implode("', '", $this->info['uploads']) . "'";
-        }
-
-        // replace repository data
-        $content = str_ireplace("UPLOADS_LIST", $uploadsList, $content);
-
-        $repositoryDirectory = $this->modulePath("Repositories/");
-
-        $this->checkDirectory($repositoryDirectory);
-
-        // create the file
-        $this->createFile("$repositoryDirectory/{$repositoryName}Repository.php", $content, 'Repository');
-    }
-
-    /**
-     * Check if the given directory path is not created, if so then create one
-     * 
-     * @param  string $directoryPath
-     * @return  void
-     */
-    public function checkDirectory(string $directoryPath)
-    {
-        $directoryPath = str_replace('\\', '/', $directoryPath);
-        if (!File::isDirectory($directoryPath)) {
-            File::makeDirectory($directoryPath, 0777, true);
-        }
+        Artisan::call('engez:repository',[
+            'repository' => $this->info['repositoryName'],
+            '--module' => $this->moduleName,
+        ]);
     }
 
     /**
@@ -596,48 +423,15 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
 
         $modelName = basename(str_replace('\\', '/', $model));
 
-        $modelPath = dirname($model);
-
-        $modelPath = array_map(function ($segment) {
-            return Str::singular($segment);
-        }, explode('\\', $modelPath));
-
-        $modelPath = implode('\\', $modelPath);
-
-        $content = File::get($this->path("Models/model.php"));
-
         // make it singular 
         $modelName = Str::singular($modelName);
 
         $this->info['modelName'] = $modelName;
 
-        // replace model name
-        $content = str_ireplace("ModelName", "{$modelName}", $content);
-
-        // replace database name 
-        $content = str_replace('DatabaseName', $this->databaseName, $content);
-
-        // replace module name
-        $content = str_ireplace("ModuleName", $this->moduleName, $content);
-        
-        $modelDirectory = $this->modulePath("Models/");
-
-        $this->checkDirectory($modelDirectory);
-
-        $this->info['modelPath'] = $modelPath . '\\' . $modelName;
-        // create the file
-        $this->createFile("$modelDirectory/{$modelName}.php", $content, 'Model');
-    }
-
-    /**
-     * Get relative path to base path
-     * 
-     * @param  string $path
-     * @return string 
-     */
-    protected function path($path)
-    {
-        return $this->root . '/module/' . $path;
+        Artisan::call('engez:model',[
+            'model' => $this->info['model'],
+            '--module' => $this->moduleName,   
+        ]);
     }
 
     /**
@@ -658,17 +452,6 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
     protected function initResource()
     {
         $this->setData('resource');
-    }
-
-    /**
-     * Get the final path of the module for the given relative path
-     * 
-     * @param   string $relativePath
-     * @return  string 
-     */
-    protected function modulePath(string $relativePath): string
-    {
-        return base_path("app/Modules/{$this->moduleName}/$relativePath");
     }
 
     /**
@@ -700,7 +483,7 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
             // get it from the module name
             $optionValue = "{$module}\\{$module}";
         }
-
+    
         $this->info[$option] = Str::studly(str_replace('/', '\\', $optionValue));
     }
 

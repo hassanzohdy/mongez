@@ -1,19 +1,19 @@
 <?php
 namespace HZ\Illuminate\Organizer\Console\Commands;
 
-use File;
 use Illuminate\Support\Str;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
+use HZ\Illuminate\Organizer\Helpers\Mongez;
 
-class MongezMigration extends Command
+class EngezMigration extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'make:mongez-migration {moduleName}';
+    protected $signature = 'engez:migration {moduleName}';
 
     /**
      * The console command description.
@@ -37,9 +37,11 @@ class MongezMigration extends Command
     public function handle()
     {
         $this->module = Str::studly($this->argument('moduleName'));
-        if (!$this->validateModuleName()) {
-            return $this->info('This module does not exits');
+        
+        if (! $this->validateModuleName()) {
+            return $this->missingRequiredOption('This module does not available in your modules');
         }
+        
         $this->makeMigrationFile();
     }
 
@@ -50,9 +52,7 @@ class MongezMigration extends Command
      */
     protected function validateModuleName()
     {
-        $availableModulesFilePath = storage_path() . '\mongez' . '\mongez.json';
-
-        $availableModules = File::getJson($availableModulesFilePath);
+        $availableModules = Mongez::getStored('modules');
 
         return in_array($this->module, $availableModules['modules']);
     }

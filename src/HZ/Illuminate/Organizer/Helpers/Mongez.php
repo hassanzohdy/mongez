@@ -135,4 +135,15 @@ class Mongez
     {
         static::setStorageFileContent(static::$mongezContent);
     }
+
+    /**
+     * Get the package path
+     * 
+     * @param string $path 
+     * @return string
+     */
+    public static function packagePath($path='')
+    {
+        return dirname(__DIR__, 5) . $path;
+    }
 }

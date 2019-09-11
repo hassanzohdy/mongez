@@ -1,20 +1,24 @@
 <?php
 namespace HZ\Illuminate\Organizer\Providers;
 
-use File;
 use Closure;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Artisan;
 use HZ\Illuminate\Organizer\Events\Events;
 use HZ\Illuminate\Organizer\Helpers\Mongez;
 use Illuminate\Database\Query\Builder as QueryBuilder;
-use HZ\Illuminate\Organizer\Console\Commands\MongezSeeder;
+use HZ\Illuminate\Organizer\Console\Commands\EngezModel;
+use HZ\Illuminate\Organizer\Console\Commands\EngezMigrate;
 use HZ\Illuminate\Organizer\Console\Commands\DatabaseMaker;
 use HZ\Illuminate\Organizer\Console\Commands\ModuleBuilder;
-use HZ\Illuminate\Organizer\Console\Commands\MongezMigrate;
+use HZ\Illuminate\Organizer\Console\Commands\EngezResource;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
-use HZ\Illuminate\Organizer\Console\Commands\MongezMigration;
+use HZ\Illuminate\Organizer\Console\Commands\EngezMigration;
+use HZ\Illuminate\Organizer\Console\Commands\EngezController;
+use HZ\Illuminate\Organizer\Console\Commands\EngezRepository;
+
 use HZ\Illuminate\Organizer\Console\Commands\CloneModuleBuilder;
 
 class OrganizerServiceProvider extends ServiceProvider
@@ -37,11 +41,14 @@ class OrganizerServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->commands([
-                MongezSeeder::class,
-                DatabaseMaker::class,
+                EngezModel::class,
                 ModuleBuilder::class,
-                MongezMigrate::class,
-                MongezMigration::class,
+                EngezMigrate::class,
+                DatabaseMaker::class,
+                EngezMigration::class,
+                EngezController::class,
+                EngezRepository::class,
+                EngezResource::class, 
                 CloneModuleBuilder::class,
             ]);
 
@@ -52,11 +59,10 @@ class OrganizerServiceProvider extends ServiceProvider
             if ($database != 'mongodb') return;
             
             if (Mongez::getStored('installed') === null) {
-                $path = dirname(__DIR__, 1);
-                $path .= '\Database\migrations\mongodb';
+                $path = Mongez::packagePath('src\HZ\Illuminate\Organizer\Database\migrations\mongodb');
                 Mongez::setStored('installed', true);
                 Mongez::updateStorageFile('installed', true);
-                \Artisan::call('migrate', ['--path' => $path]);
+                Artisan::call('migrate', ['--path' => $path]);
             }
         }
     }
