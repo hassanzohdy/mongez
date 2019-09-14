@@ -59,7 +59,10 @@ abstract class AdminApiController extends ApiController
     public function index(Request $request)
     {
         $json['records'] = $this->repository->list($this->listOptions($request));
-        $json['pagination'] = $this->repository->getPaginateInfo();
+        
+        if ($this->repository->getPaginateInfo()) {
+            $json['paginationInfo'] = $this->repository->getPaginateInfo();            
+        }
         return $this->success($json);
     }
 
