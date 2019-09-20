@@ -2,6 +2,8 @@
 namespace HZ\Illuminate\Organizer\Macros\Http;
 
 use Str;
+use App;
+use Illuminate\Routing\Route;
 
 class Request
 {

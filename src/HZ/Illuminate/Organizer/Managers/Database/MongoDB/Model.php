@@ -95,7 +95,7 @@ abstract class Model extends BaseModel
 
         $ids = DB::collection('ids');
 
-        $collection = static::getTable();
+        $collection = (new static)->getTable();
 
         if (!$lastId) {
             $ids->insert([

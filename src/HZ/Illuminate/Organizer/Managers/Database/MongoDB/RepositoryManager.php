@@ -50,14 +50,6 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
      */
     protected function records(Collection $records): Collection
     {
-        return $records;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function onList(Collection $records): Collection
-    {
         return $records->map(function ($record) {
             if ($this->option('as-model', false) === true) return $record;
             $resource = static::RESOURCE;

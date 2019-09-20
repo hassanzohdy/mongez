@@ -54,7 +54,7 @@ abstract class JsonResourceManager extends JsonResource
     /**
      * List of assets that will have a full url if available
      * 
-     * @cosnt array
+     * @const array
      */
     const ASSETS = [];
 
@@ -77,6 +77,13 @@ abstract class JsonResourceManager extends JsonResource
     const COLLECTABLE = [];
 
     /**
+     * Assets function for generating full url
+     * 
+     * @var string
+     */
+    protected $assetsUrlFunction;
+
+    /**
      * Transform the resource into an array.
      *
      * @param   \Illuminate\Http\Request  $request
@@ -86,6 +93,10 @@ abstract class JsonResourceManager extends JsonResource
     {
         $this->request = $request;
 
+        if (! $this->assetsUrlFunction) {
+            $this->assetsUrlFunction = config('organizer.resources.assets', 'url');
+        }
+        
         $this->collectData(static::DATA);
 
         $this->collectLocalized(static::LOCALIZED);
@@ -151,8 +162,8 @@ abstract class JsonResourceManager extends JsonResource
 
             $asset = $this->$column;
             
-            $this->data[$column] =  ! is_array($asset) ? url($asset) : array_map(function ($asset) {
-                return url($asset);
+            $this->data[$column] =  !is_array($asset) ? call_user_func($this->assetsUrlFunction, $asset) : array_map(function ($asset) {
+                return call_user_func($this->assetsUrlFunction, $asset);
             }, $asset);
         }
         return $this;
@@ -356,5 +367,25 @@ abstract class JsonResourceManager extends JsonResource
     public function info()
     {
         return $this->toArray(request());
+    }
+    /**
+     * Set more data from outside the resource
+     * 
+     * @param   string $key
+     * @param   mixed $value
+     */
+    public function set(string $key, $value)
+    {
+        $this->data[$key] = $value;
+    }
+
+    /**
+     * Append the given key from the resource to the data array
+     * 
+     * @param   string $key
+     */
+    public function append(string $key)
+    {
+        $this->set($key, $this->$key);
     }
 }

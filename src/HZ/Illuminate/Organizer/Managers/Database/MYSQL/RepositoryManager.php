@@ -1,4 +1,5 @@
 <?php
+
 namespace HZ\Illuminate\Organizer\Managers\Database\MYSQL;
 
 use DB;
@@ -141,6 +142,14 @@ abstract class RepositoryManager implements RepositoryInterface
     const TABLE_ALIAS = '';
 
     /**
+     * Set the default order by for the repository
+     * i.e ['id', 'DESC']
+     * 
+     * @const array
+     */
+    const ORDER_BY = [];
+
+    /**
      * Auto fill the following columns directly from the request
      * 
      * @const array
@@ -185,7 +194,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * @cont array  
      */
     const BOOLEAN_DATA = [];
-    
+
     /**
      * Add the column if and only if the value is passed in the request.
      * 
@@ -266,7 +275,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * @param array
      */
     protected $options = [];
-    
+
     /**
      * Dependency tables of deleting
      *
@@ -280,7 +289,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * @var array 
      */
     protected $paginationInfo = [];
-    
+
     /**
      * Constructor
      * 
@@ -294,19 +303,19 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $this->user = user();
 
-        if (! empty(static::EVENTS_LIST)) {
+        if (!empty(static::EVENTS_LIST)) {
             $this->eventName = static::EVENT;
 
-            if (! $this->eventName) {
+            if (!$this->eventName) {
                 $eventNameModelBased = basename(str_replace('\\', '/', static::MODEL));
- 
+
                 $this->eventName = strtolower($eventNameModelBased);
 
-                $this->eventName = Str::plural($this->eventName);                       
+                $this->eventName = Str::plural($this->eventName);
             }
 
             // register events
-            $this->registerEvents();    
+            $this->registerEvents();
         }
     }
 
@@ -317,7 +326,7 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     protected function registerEvents()
     {
-        if (! $this->eventName) return;
+        if (!$this->eventName) return;
 
         foreach (static::EVENTS_LIST as $eventName => $methodCallback) {
             if (method_exists($this, $methodCallback)) {
@@ -330,13 +339,13 @@ abstract class RepositoryManager implements RepositoryInterface
      * {@inheritDoc}
      */
     public function has($value, string $column = 'id'): bool
-    {   
+    {
         if (is_numeric($value)) {
             $value = (float) $value;
-        }     
+        }
 
         $model = static::MODEL;
-        
+
         return $model::where($column, $value)->exists();
     }
 
@@ -358,7 +367,7 @@ abstract class RepositoryManager implements RepositoryInterface
     /**
      * {@inheritDoc}
      */
-    public function list(array $options): Collection 
+    public function list(array $options): Collection
     {
         $this->setOptions($options);
 
@@ -373,12 +382,12 @@ abstract class RepositoryManager implements RepositoryInterface
 
             if ($retrieveMode == static::RETRIEVE_ACTIVE_RECORDS) {
                 $deletedAtColumn = $this->column(static::DELETED_AT);
-    
-                $this->query->whereNull($deletedAtColumn);    
+
+                $this->query->whereNull($deletedAtColumn);
             } elseif ($retrieveMode == static::RETRIEVE_DELETED_RECORDS) {
                 $deletedAtColumn = $this->column(static::DELETED_AT);
-    
-                $this->query->whereNotNull($deletedAtColumn);    
+
+                $this->query->whereNotNull($deletedAtColumn);
             }
         }
 
@@ -398,30 +407,30 @@ abstract class RepositoryManager implements RepositoryInterface
         }
 
         $this->filter();
-       
+
         $defaultOrderBy = [];
 
-        if (! empty(static::DEFAULT_ORDER_BY)) {
-            $defaultOrderBy = [$this->column(static::DEFAULT_ORDER_BY[0]), static::DEFAULT_ORDER_BY[1]];
+        if (!empty(static::ORDER_BY)) {
+            $defaultOrderBy = [$this->column(static::ORDER_BY[0]), static::ORDER_BY[1]];
         }
-        
+
         $this->orderBy($this->option('orderBy', $defaultOrderBy));
-        
+
         $this->events->trigger("{$this->eventName}.listing", $this->query, $this);
-        
+
         $paginate = $this->option('paginate', static::PAGINATE);
-        
+
         if ($paginate === true || $paginate === null && config('organizer.pagination.paginate') === true) {
             $pageNumber = $this->option('page', 1);
-            
+
             $itemPerPage = $this->option('itemsPerPage', static::ITEMS_PER_PAGE !== null ? static::ITEMS_PER_PAGE : config('organizer.pagination.itemsPerPage'));
-            
+
             $selectedColumns = !empty($this->select->list()) ? $this->select->list() : ['*'];
-            
+
             $data = $this->query->paginate($itemPerPage, $selectedColumns, 'page', $pageNumber);
-            
-            $this->setPaginateInfo($data);  
-            
+
+            $this->setPaginateInfo($data);
+
             $records = collect($data->items());
         } else {
             if ($this->select->isNotEmpty()) {
@@ -437,11 +446,11 @@ abstract class RepositoryManager implements RepositoryInterface
 
         if ($results instanceof Collection) {
             $records = $results;
-        }    
+        }
 
         return $records;
     }
-    
+
     /**
      * Set pagination info from pagination data
      * 
@@ -474,7 +483,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * @param \Model $model
      * @return \JsonResource
      */
-    public function wrap($model) 
+    public function wrap($model)
     {
         $resource = static::RESOURCE;
         return new $resource($model);
@@ -486,7 +495,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * @param \Illuminate\Support\Collection $collection
      * @return \JsonResource
      */
-    public function wrapMany(Collection $collection) 
+    public function wrapMany(Collection $collection)
     {
         $resource = static::RESOURCE;
         return $resource::collection($collection);
@@ -508,21 +517,33 @@ abstract class RepositoryManager implements RepositoryInterface
     }
 
     /**
+     * Get new model object
+     * 
+     * @return Model 
+     */
+    public function newModel()
+    {
+        $modelName = static::MODEL;
+
+        return new $modelName;
+    }
+
+    /**
      * Get the table name that will be used in the query 
      * 
      * @return string
      */
-    protected function tableName(): string 
+    protected function tableName(): string
     {
         return static::TABLE_ALIAS ? static::TABLE . ' as ' . static::TABLE_ALIAS : static::TABLE;
     }
-    
+
     /**
      * Get the table name that will be used in the rest of the query like select, where...etc
      * 
      * @return string
      */
-    protected function columnTableName(): string 
+    protected function columnTableName(): string
     {
         return static::TABLE_ALIAS ?: static::TABLE;
     }
@@ -532,7 +553,7 @@ abstract class RepositoryManager implements RepositoryInterface
      *
      * @return void
      */
-    abstract protected function filter(); 
+    abstract protected function filter();
 
     /**
      * Manage Selected Columns
@@ -553,7 +574,7 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $this->query->orderBy(...$orderBy);
     }
-    
+
     /**
      * Adjust records that were fetched from database
      *
@@ -563,7 +584,7 @@ abstract class RepositoryManager implements RepositoryInterface
     protected function records(Collection $records): Collection
     {
         return $records->map(function ($record) {
-            if (! empty(static::ARRAYBLE_DATA)) {
+            if (!empty(static::ARRAYBLE_DATA)) {
                 foreach (static::ARRAYBLE_DATA as $column) {
                     $record[$column] = json_encode($record[$column]);
                 }
@@ -595,7 +616,7 @@ abstract class RepositoryManager implements RepositoryInterface
         $this->options = $options;
 
         $selectColumns = (array) $this->option('select');
-        
+
         $this->select = new Select($selectColumns);
     }
 
@@ -646,12 +667,10 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $this->setData($model, $request);
 
-        $this->onUpdate($model, $request);
-        
         $this->events->trigger("{$this->eventName}.saving {$this->eventName}.updating", $model, $request, $oldModel);
 
         $model->save();
-        
+
         $this->events->trigger("{$this->eventName}.save {$this->eventName}.update", $model, $request, $oldModel);
 
         return $model;
@@ -666,17 +685,17 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     protected function setAutoData($model, $request)
     {
-        $this->setMainData($model,$request); 
-        
-        $this->setArraybleData($model,$request);
+        $this->setMainData($model, $request);
 
-        $this->setUploadsData($model,$request);
+        $this->setArraybleData($model, $request);
 
-        $this->setIntData($model,$request);
+        $this->setUploadsData($model, $request);
 
-        $this->setFloatData($model,$request);
+        $this->setIntData($model, $request);
 
-        $this->setBoolData($model,$request);   
+        $this->setFloatData($model, $request);
+
+        $this->setBoolData($model, $request);
     }
 
     /**
@@ -689,10 +708,10 @@ abstract class RepositoryManager implements RepositoryInterface
     protected function setMainData($model, $request)
     {
         foreach (static::DATA as $column) {
-            if (in_array($column,static::WHEN_AVAILABLE_DATA) && ! isset($request->$column)) continue;
+            if (in_array($column, static::WHEN_AVAILABLE_DATA) && !isset($request->$column)) continue;
 
             if (!$request->$column) {
-                    $model->$column = null;
+                $model->$column = null;
             } else {
                 if ($column == 'password' && $request->password) {
                     $model->password = bcrypt($request->password);
@@ -747,9 +766,9 @@ abstract class RepositoryManager implements RepositoryInterface
     protected function setIntData($model, $request)
     {
         foreach (static::INTEGER_DATA as $column) {
-            if (in_array($column,static::WHEN_AVAILABLE_DATA) && ! isset($request->$column)) continue;
-            $model->$column = (int)$request->$column;
-        }   
+            if (in_array($column, static::WHEN_AVAILABLE_DATA) && !isset($request->$column)) continue;
+            $model->$column = (int) $request->$column;
+        }
     }
 
     /**
@@ -762,11 +781,11 @@ abstract class RepositoryManager implements RepositoryInterface
     protected function setFloatData($model, $request)
     {
         foreach (static::INTEGER_DATA as $column) {
-            if (in_array($column,static::WHEN_AVAILABLE_DATA) && ! isset($request->$column)) continue;
-            $model->$column = (float)$request->$column;
+            if (in_array($column, static::WHEN_AVAILABLE_DATA) && !isset($request->$column)) continue;
+            $model->$column = (float) $request->$column;
         }
     }
-    
+
     /**
      * Cast specific data automatically to bool from the DATA array
      * 
@@ -776,12 +795,12 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     protected function setBoolData($model, $request)
     {
-        foreach (static::INTEGER_DATA as $column) {
-            if (in_array($column,static::WHEN_AVAILABLE_DATA) && ! isset($request->$column)) continue;
-            $model->$column = (bool)$request->$column;
+        foreach (static::BOOLEAN_DATA as $column) {
+            if (in_array($column, static::WHEN_AVAILABLE_DATA) && !isset($request->$column)) continue;
+            $model->$column = (bool) $request->$column;
         }
     }
-    
+
     /**
      * Pare the given arrayed value
      *
@@ -833,7 +852,7 @@ abstract class RepositoryManager implements RepositoryInterface
         // 2- Indexed array: it means we will get the value from the request object
         // i.e ['name', 'email'] then it will get it like: 
         // $model->name = $request->name and so on  
-        
+
         foreach ($columns as $key => $value) {
             if (is_string($key)) {
                 $model->$key = $value;
@@ -866,7 +885,7 @@ abstract class RepositoryManager implements RepositoryInterface
     {
         $model = (static::MODEL)::find($id);
 
-        if (! $model) return false;
+        if (!$model) return false;
 
         if ($this->events->trigger("{$this->eventName}.deleting", $model, $id) === false) return false;
 
@@ -891,16 +910,16 @@ abstract class RepositoryManager implements RepositoryInterface
         }
 
         // return $this->query->$method(...$args);
-        
+
         return $this->marcoableMethods($method, $args);
     }
-    
+
     /**
      * Check if model has deleting depended tables.
      *
      * @return bool
      */
-    public function deleteHasDependence(): bool 
+    public function deleteHasDependence(): bool
     {
         return !empty($this->deleteDependenceTables);
     }
@@ -914,7 +933,7 @@ abstract class RepositoryManager implements RepositoryInterface
     {
         return $this->deleteDependenceTables;
     }
-    
+
     /**
      * Check if soft delete used or not
      *

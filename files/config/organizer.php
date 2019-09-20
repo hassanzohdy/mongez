@@ -1,14 +1,32 @@
 <?php
 
 return [
-    /**
-     * This is mainly used to override the max key length
-     * @visit https://laravel-news.com/laravel-5-4-key-too-long-error
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Database options
+    |--------------------------------------------------------------------------
+    | 
+    | These are the `resource` options that can be used with any `Resource` class
+    | The `assets` option defines the generating `url` for any asset, by default is `url()`
+    |
+    */
     'database' => [
         'mysql' => [
             'defaultStringLength' => 191,
         ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Resources options
+    |--------------------------------------------------------------------------
+    | 
+    | These are the `resource` options that can be used with any `Resource` class
+    | The `assets` option defines the generating `url` for any asset, by default is `url()`
+    |
+    */
+    'resources' => [
+        'assets' => 'url',
     ],
 
     /*
