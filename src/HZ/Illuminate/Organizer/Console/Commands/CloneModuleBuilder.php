@@ -1,9 +1,9 @@
 <?php
-
 namespace HZ\Illuminate\Organizer\Console\Commands;
 
 use File;
 use Illuminate\Console\Command;
+use HZ\Illuminate\Organizer\Helpers\Mongez;
 
 class CloneModuleBuilder extends Command
 {
@@ -19,7 +19,7 @@ class CloneModuleBuilder extends Command
      *
      * @var string
      */
-    protected $signature = 'clone:module {moduleName}';
+    protected $signature = 'clone:module {module}';
 
     /**
      * The console command description.
@@ -42,7 +42,7 @@ class CloneModuleBuilder extends Command
      */
     public function handle()
     {
-        $this->moduleName = $this->argument('moduleName');
+        $this->moduleName = $this->argument('module');
 
         if (! in_array($this->moduleName, static::AVAILABLE_MODULES)) {
             return $this->info('This module does not exits');
@@ -57,6 +57,8 @@ class CloneModuleBuilder extends Command
         }
 
         $this->cloneModule();
+
+        return $this->info('Module cloned successfully');
     }
 
     /**
@@ -66,7 +68,7 @@ class CloneModuleBuilder extends Command
      */
     protected function cloneModule()
     {
-        $modulePath = dirname(__DIR__, 6) . '/' . 'cloneable-modules/' . $this->moduleName;
+        $modulePath = Mongez::packagePath('cloneable-modules/' . $this->moduleName);
         
         File::copyDirectory($modulePath, base_path("app/Modules/" . $this->moduleName));
     }

@@ -1,22 +1,31 @@
 <?php
 namespace HZ\Illuminate\Organizer\Providers;
 
-use App;
 use Closure;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Artisan;
 use HZ\Illuminate\Organizer\Events\Events;
+use HZ\Illuminate\Organizer\Helpers\Mongez;
 use Illuminate\Database\Query\Builder as QueryBuilder;
+use HZ\Illuminate\Organizer\Console\Commands\EngezModel;
+use HZ\Illuminate\Organizer\Console\Commands\EngezMigrate;
 use HZ\Illuminate\Organizer\Console\Commands\DatabaseMaker;
 use HZ\Illuminate\Organizer\Console\Commands\ModuleBuilder;
+use HZ\Illuminate\Organizer\Console\Commands\EngezResource;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use HZ\Illuminate\Organizer\Console\Commands\EngezMigration;
+use HZ\Illuminate\Organizer\Console\Commands\EngezController;
+use HZ\Illuminate\Organizer\Console\Commands\EngezRepository;
+
+use HZ\Illuminate\Organizer\Console\Commands\CloneModuleBuilder;
 
 class OrganizerServiceProvider extends ServiceProvider
 {
     /**
      * Startup config
-     * 
+     *
      * @var array
      */
     protected $config = [];
@@ -32,10 +41,29 @@ class OrganizerServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->commands([
+                EngezModel::class,
                 ModuleBuilder::class,
+                EngezMigrate::class,
                 DatabaseMaker::class,
+                EngezMigration::class,
+                EngezController::class,
+                EngezRepository::class,
+                EngezResource::class, 
                 CloneModuleBuilder::class,
             ]);
+
+            Mongez::init();
+            
+            $database = config('database.default');
+        
+            if ($database != 'mongodb') return;
+            
+            if (Mongez::getStored('installed') === null) {
+                $path = Mongez::packagePath('src\HZ\Illuminate\Organizer\Database\migrations\mongodb');
+                Mongez::setStored('installed', true);
+                Mongez::updateStorageFile('installed', true);
+                Artisan::call('migrate', ['--path' => $path]);
+            }
         }
     }
 
@@ -50,10 +78,10 @@ class OrganizerServiceProvider extends ServiceProvider
 
         // register the repositories as singletones, only one instance in the entire application
         foreach ((array) config('organizer.repositories') as $repositoryClass) {
-            App::singleton($repositoryClass);
+            $this->app->singleton($repositoryClass);
         }
 
-        App::singleton(Events::class);
+        $this->app->singleton(Events::class);
 
         // register macros
         $this->registerMacros();
@@ -68,22 +96,22 @@ class OrganizerServiceProvider extends ServiceProvider
 
     /**
      * Get config path
-     * 
+     *
      * @return string
      */
-    protected function configPath(): string 
+    protected function configPath(): string
     {
         return __DIR__ . '/../../../../../files/config/organizer.php';
-    } 
+    }
 
     /**
      * Register the events listeners
-     * 
+     *
      * @return void
      */
     protected function registerEventsListeners()
     {
-        $events = App::make(Events::class);
+        $events = $this->app->make(Events::class);
 
         foreach ((array) config('organizer.events') as $eventName => $eventListeners) {
             $eventListeners = (array) $eventListeners;
@@ -92,15 +120,17 @@ class OrganizerServiceProvider extends ServiceProvider
             }
         }
     }
-    
+
     /**
      * Register all macros
-     * 
-     * @return void 
+     *
+     * @return void
      */
     protected function registerMacros()
     {
-        if (empty($this->config['macros'])) return;
+        if (empty($this->config['macros'])) {
+            return;
+        }
 
         $macros = (array) $this->config['macros'];
 
@@ -121,7 +151,7 @@ class OrganizerServiceProvider extends ServiceProvider
 
     /**
      * Manage database options
-     * 
+     *
      * @return void
      */
     public function manageDatabase()
