@@ -4,11 +4,12 @@ namespace HZ\Illuminate\Organizer\Console\Commands;
 use File;
 use Exception;
 use Illuminate\Support\Str;
-use Illuminate\Support\Arr;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use HZ\Illuminate\Organizer\Helpers\Mongez;
 use HZ\Illuminate\Organizer\Traits\Console\EngezTrait;
+use HZ\Illuminate\Organizer\Helpers\docs\postman\Postman;
+use HZ\Illuminate\Organizer\Helpers\docs\markdown\MarkDown;
 
 class ModuleBuilder extends Command
 {
@@ -145,8 +146,12 @@ class ModuleBuilder extends Command
 
         $this->info('Generating routes files');
         $this->createRoutes();
+        
+        $this->info('Generating Module Postman File');
+        $this->generatePostmanModule();
 
-        $this->info('Module has been created successfully');
+        $this->info('Generating Module Docs');
+        $this->generateModuleDocs();
         
         $this->info('Updating configurations.');
         $this->updateConfig();
@@ -360,6 +365,7 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
     {
         $path = 'app/modules/'.$this->moduleName.'/database/migrations';
         $content = File::get($this->path("Migrations/".$databaseDriver."-migration.php"));
+        
         $content = str_ireplace("TableName", "{$databaseFileName}", $content);
 
         if (isset($this->info['data'])) {
@@ -498,5 +504,47 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
         $content [] = $this->moduleName;
         Mongez::setStored('modules', $content);
         Mongez::updateStorageFile();
+    }
+
+    /**
+     * Generate module postman
+     *   
+     * @return void
+     */
+    protected function generatePostmanModule()
+    {
+        $data = [];
+        if (isset($this->info['data'])) $data = $this->info['data'];
+
+        $postman =  new Postman([            
+            'moduleName' => $this->info['modelName'],
+            'data'       => $data
+        ]);
+
+        $path = $this->modulePath($this->info['moduleName']);
+
+        $content = $postman->getContent();
+        $this->createFile("$path.json", $content, 'PostmanFile');
+    }
+    
+    /**
+     * Generate module documentation
+     *   
+     * @return void
+     */
+    protected function generateModuleDocs()
+    {
+        $data = [];
+        if (isset($this->info['data'])) $data = $this->info['data'];
+
+        $postman =  new MarkDown([            
+            'moduleName' => $this->info['modelName'],
+            'data'       => $data
+        ]);
+
+        $path = $this->modulePath($this->info['moduleName']);
+        
+        $content = $postman->getContent();
+        $this->createFile("$path.md", $content, 'Docs');
     }
 }

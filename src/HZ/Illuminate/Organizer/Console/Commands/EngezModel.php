@@ -16,7 +16,7 @@ class EngezModel extends Command implements EngezInterface
      *
      * @var string
      */
-    protected $signature = 'engez:model {model} {--module=}';
+    protected $signature = 'engez:model {model} {--module=} {--data=}';
 
     /**
      * The console command description.
@@ -49,6 +49,11 @@ class EngezModel extends Command implements EngezInterface
         $this->init();
         $this->validateArguments();   
         $this->create();
+
+        if ($this->databaseName == 'mongodb' && $this->option('data')) {
+            $this->createSchema();
+        }
+
         $this->info('Model created successfully');
     }
     
@@ -126,6 +131,33 @@ class EngezModel extends Command implements EngezInterface
         $this->info['modelPath'] = $modelPath . '\\' . $modelName;
         // create the file
         $this->createFile("$modelDirectory/{$modelName}.php", $content, 'Model');
+    }
+    
+    /**
+     * Create schema of table in mongo 
+     *
+     * @param string $dataFileName
+     * @return void 
+     */
+    protected function createSchema()
+    {
+        $defaultContent = [
+            '_id' => "objectId",
+            'id'=>'int', 
+        ];
+        
+        $databaseFileName = strtolower(str::plural($this->info['moduleName']));
+        
+        $path = $this->modulePath("database/migrations");
+        
+        $customData = explode(',', $this->option('data')) ?? [];
+        
+        unset($customData['id'], $customData['_id']);
 
-    }    
+        $customData = array_fill_keys($customData, 'string');
+        
+        $content = array_merge($defaultContent, $customData);   
+
+        $this->createFile("$path/{$databaseFileName}.json", json_encode($content, JSON_PRETTY_PRINT), 'Schema');
+    }
 }

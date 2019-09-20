@@ -92,8 +92,6 @@ class EngezController extends Command implements EngezInterface
      */
     public function init()
     {
-        // $this->root = Mongez::packagePath();
-
         $this->info['controllerName'] = Str::studly($this->argument('controller'));
         $this->info['moduleName'] = Str::studly($this->option('module'));
         $this->info['type'] = $this->argument('type');
