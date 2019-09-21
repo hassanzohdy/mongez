@@ -3,7 +3,7 @@
     "description": "A Robust application handler for building neat laravel application(s).",
     "keywords": ["laravel","mongez"],
     "license": "MIT",
-    "version": "1.5.1",
+    "version": "1.5.2",
     "require": {
         "php": ">=7",
         "illuminate/support": "5.6.x|5.7.x|5.8.x|6.0.x",
@@ -20,7 +20,7 @@
             "HZ\\Illuminate\\Mongez\\": "src/"
         },
         "files": [
-            "src/HZ/Illuminate/Mongez/Helpers/functions.php"
+            "src/Helpers/functions.php"
         ]
     },
     "extra": {
