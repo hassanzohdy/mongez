@@ -36,8 +36,6 @@ class MongezServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->publishes([$this->configPath() => config_path('mongez.php')]);
-
         if ($this->app->runningInConsole()) {
             $this->commands([
                 EngezModel::class,
@@ -73,6 +71,8 @@ class MongezServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->publishes([$this->configPath() => config_path('mongez.php')]);
+
         $this->config = config('mongez');
 
         // register the repositories as singletones, only one instance in the entire application
