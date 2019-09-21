@@ -27,7 +27,7 @@ class Mongez
      * @const array
      */
     const MONGEZ_STORAGE_FILE_DEfAULT_CONTENT = [
-        'installed' => null,
+        'installed' => true,
         'modules' => [],
     ];
 
@@ -54,12 +54,28 @@ class Mongez
     public static function init()
     {
         static::$mongezFilePath = static::getMongezStorageDirectory() . '/' . static::MONGEZ_STORAGE_FILE_NAME;           
+    }
 
-        if (!File::isDirectory(static::getMongezStorageDirectory())) {
-            File::MakeDirectory(static::getMongezStorageDirectory(), 0777);
-            
-            static::setStorageFileContent(static::MONGEZ_STORAGE_FILE_DEfAULT_CONTENT); 
-        }
+    /**
+     * Check if package is installed
+     * 
+     * @return bool
+     */
+    public static function isInstalled(): bool
+    {
+        return File::isFile(static::$mongezFilePath);
+    }
+
+    /**
+     * Prepare the package for the first time 
+     * 
+     * @return void
+     */
+    public static function install()
+    {
+        File::MakeDirectory(static::getMongezStorageDirectory(), 0777);
+
+        File::put(static::getMongezStorageFilePath(), json_encode(static::MONGEZ_STORAGE_FILE_DEfAULT_CONTENT, JSON_PRETTY_PRINT));             
     }
 
     /**

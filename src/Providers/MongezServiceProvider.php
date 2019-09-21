@@ -1,4 +1,5 @@
 <?php
+
 namespace HZ\Illuminate\Mongez\Providers;
 
 use Closure;
@@ -23,6 +24,23 @@ use HZ\Illuminate\Mongez\Console\Commands\CloneModuleBuilder;
 class MongezServiceProvider extends ServiceProvider
 {
     /**
+     * Commands list of the package
+     *
+     * @const array
+     */
+    const COMMANDS_LIST = [
+        EngezModel::class,
+        EngezMigrate::class,
+        ModuleBuilder::class,
+        EngezResource::class,
+        DatabaseMaker::class,
+        EngezMigration::class,
+        EngezController::class,
+        EngezRepository::class,
+        CloneModuleBuilder::class,
+    ];
+
+    /**
      * Startup config
      *
      * @var array
@@ -36,32 +54,17 @@ class MongezServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        if ($this->app->runningInConsole()) {
-            $this->commands([
-                EngezModel::class,
-                EngezMigrate::class,
-                ModuleBuilder::class,
-                EngezResource::class, 
-                DatabaseMaker::class,
-                EngezMigration::class,
-                EngezController::class,
-                EngezRepository::class,
-                CloneModuleBuilder::class,
-            ]);
+        if (!$this->app->runningInConsole()) return;
 
-            Mongez::init();
-            
-            $database = config('database.default');
-        
-            if ($database != 'mongodb') return;
-            
-            if (Mongez::getStored('installed') === null) {
-                $path = Mongez::packagePath('src\HZ\Illuminate\Mongez\Database\migrations\mongodb');
-                Mongez::setStored('installed', true);
-                Mongez::updateStorageFile('installed', true);
-                Artisan::call('migrate', ['--path' => $path]);
-            }
-        }
+        // register commands
+        $this->commands(static::COMMANDS_LIST);
+
+        // Initialize Mongez 
+        Mongez::init();
+
+        if (! Mongez::isInstalled()) {
+            $this->prepareForFirstTime();
+        }        
     }
 
     /**
@@ -76,7 +79,7 @@ class MongezServiceProvider extends ServiceProvider
         $this->config = config('mongez');
 
         // register the repositories as singletones, only one instance in the entire application
-        foreach ((array) config('mongez.repositories') as $repositoryClass) {
+        foreach ($this->config('repositories', []) as $repositoryClass) {
             $this->app->singleton($repositoryClass);
         }
 
@@ -91,6 +94,36 @@ class MongezServiceProvider extends ServiceProvider
             // manage database options
             $this->manageDatabase();
         }
+    }
+
+    /**
+     * Prepare the package for first time installation
+     * 
+     * @return void
+     */
+    private function prepareForFirstTime()
+    {
+        Mongez::install();
+
+        $database = config('database.default');
+
+        if ($database != 'mongodb') return;
+
+        $path = Mongez::packagePath('src/Database/migrations/mongodb');
+
+        Artisan::call('migrate', ['--path' => $path]);
+    }
+
+    /**
+     * Get config value from the mongez config file
+     * 
+     * @param  string $key
+     * @param  mixed  $default
+     * @return mixed
+     */
+    private function config(string $key, $default = null)
+    {
+        return Arr::get($this->config, $key, $default);
     }
 
     /**
@@ -112,7 +145,7 @@ class MongezServiceProvider extends ServiceProvider
     {
         $events = $this->app->make(Events::class);
 
-        foreach ((array) config('mongez.events') as $eventName => $eventListeners) {
+        foreach ($this->config('events', []) as $eventName => $eventListeners) {
             $eventListeners = (array) $eventListeners;
             foreach ($eventListeners as $eventListener) {
                 $events->subscribe($eventName, $eventListener);
@@ -127,13 +160,7 @@ class MongezServiceProvider extends ServiceProvider
      */
     protected function registerMacros()
     {
-        if (empty($this->config['macros'])) {
-            return;
-        }
-
-        $macros = (array) $this->config['macros'];
-
-        foreach ($macros as $original => $mixin) {
+        foreach ($this->config('macros', []) as $original => $mixin) {
             $mixinObject = new $mixin;
             $original::mixin($mixinObject);
 
