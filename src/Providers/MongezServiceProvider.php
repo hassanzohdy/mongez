@@ -14,11 +14,10 @@ use HZ\Illuminate\Mongez\Console\Commands\EngezMigrate;
 use HZ\Illuminate\Mongez\Console\Commands\DatabaseMaker;
 use HZ\Illuminate\Mongez\Console\Commands\ModuleBuilder;
 use HZ\Illuminate\Mongez\Console\Commands\EngezResource;
-use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use HZ\Illuminate\Mongez\Console\Commands\EngezMigration;
 use HZ\Illuminate\Mongez\Console\Commands\EngezController;
 use HZ\Illuminate\Mongez\Console\Commands\EngezRepository;
-
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use HZ\Illuminate\Mongez\Console\Commands\CloneModuleBuilder;
 
 class MongezServiceProvider extends ServiceProvider
@@ -42,13 +41,13 @@ class MongezServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 EngezModel::class,
-                ModuleBuilder::class,
                 EngezMigrate::class,
+                ModuleBuilder::class,
+                EngezResource::class, 
                 DatabaseMaker::class,
                 EngezMigration::class,
                 EngezController::class,
                 EngezRepository::class,
-                EngezResource::class, 
                 CloneModuleBuilder::class,
             ]);
 
@@ -101,7 +100,7 @@ class MongezServiceProvider extends ServiceProvider
      */
     protected function configPath(): string
     {
-        return __DIR__ . '/../../../../../files/config/mongez.php';
+        return Mongez::packagePath('files/config/mongez.php');
     }
 
     /**

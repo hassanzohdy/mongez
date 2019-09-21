@@ -46,7 +46,8 @@ class Mongez
     protected static $mongezContent;
 
     /**
-     * Make mongez directory.
+     * Prepare the Mongez Console
+     * Create Mongez storage directory.
      *
      * @return void
      */
@@ -144,6 +145,6 @@ class Mongez
      */
     public static function packagePath($path='')
     {
-        return dirname(__DIR__, 5) . $path;
+        return dirname(__DIR__, 2) . '/' . ltrim($path, '/');
     }
 }
