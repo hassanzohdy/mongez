@@ -1,7 +1,7 @@
 <?php
 namespace App\Modules\Users\Events;
 
-use HZ\Illuminate\Organizer\Traits\RepositoryTrait;
+use HZ\Illuminate\Mongez\Traits\RepositoryTrait;
 use App\Modules\Tasks\Repositories\TasksRepository;
 
 class Tasks

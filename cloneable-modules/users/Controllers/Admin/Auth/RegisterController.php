@@ -3,7 +3,7 @@ namespace App\Modules\Users\Controllers\Admin\Auth;
 
 use Validator;
 use Illuminate\Http\Request;
-use HZ\Illuminate\Organizer\Managers\ApiController;
+use HZ\Illuminate\Mongez\Managers\ApiController;
 
 class RegisterController extends ApiController
 {

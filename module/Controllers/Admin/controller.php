@@ -1,7 +1,7 @@
 <?php
 namespace App\Modules\ModuleName\Controllers\Admin;
 
-use HZ\Illuminate\Organizer\Managers\AdminApiController; 
+use HZ\Illuminate\Mongez\Managers\AdminApiController; 
 
 class ControllerName extends AdminApiController
 {

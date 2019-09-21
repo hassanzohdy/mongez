@@ -1,7 +1,7 @@
 <?php
 namespace App\Modules\ModuleName\Resources;
 
-use HZ\Illuminate\Organizer\Managers\Resources\JsonResourceManager;
+use HZ\Illuminate\Mongez\Managers\Resources\JsonResourceManager;
 
 class ResourceName extends JsonResourceManager 
 {

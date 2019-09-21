@@ -6,7 +6,7 @@ use App\Modules\ModuleName\{
     Resources\ResourceName as Resource
 };
 
-use HZ\Illuminate\Organizer\{
+use HZ\Illuminate\Mongez\{
     Contracts\Repositories\RepositoryInterface,
     Managers\Database\MYSQL\RepositoryManager
 };
