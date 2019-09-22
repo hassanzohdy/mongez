@@ -185,20 +185,24 @@ abstract class Model extends BaseModel
     {
         $documents = $this->$column ?? [];
 
-        if (is_array($modelInfo)) {
-            $modelInfo = (object) $modelInfo;
-        } elseif ($modelInfo instanceof Model) {
-            $modelInfo = (object) $modelInfo->info();
+        if ($modelInfo instanceof Model) {
+            $modelInfo = $modelInfo->sharedInfo();
         }
 
         $found = false;
 
         foreach ($documents as $key => $document) {
-            $document = (array) $document;
-            if (isset($document['id']) && $document['id'] == $modelInfo->id) {
-                $documents[$key] = (array) $modelInfo;
+            if (is_scalar($document) && $document === $modelInfo) {
+                $documents[$key] = $modelInfo;
                 $found = true;
                 break;
+            } else {
+                $document = (array) $document;
+                if (isset($document['id']) && $document['id'] == $modelInfo['id']) {
+                    $documents[$key] = $modelInfo;
+                    $found = true;
+                    break;
+                }
             }
         }
 
@@ -221,13 +225,8 @@ abstract class Model extends BaseModel
     public function associate($modelInfo, $column)
     {
         $listOfValues = $this->$column ?? [];
-        if (is_array($modelInfo)) {
-            $modelInfo = (object) $modelInfo;
-        } elseif ($modelInfo instanceof Model) {
-            $modelInfo = (object) $modelInfo->info();
-        }
 
-        if ($modelInfo instanceof BaseModel) {
+        if ($modelInfo instanceof Model) {
             $listOfValues[] = $modelInfo->sharedInfo();
         } else {
             $listOfValues[] = $modelInfo;
@@ -252,9 +251,12 @@ abstract class Model extends BaseModel
         $newArray = [];
 
         foreach ($array as $value) {
-            $value = (array) $value;
-            
-            if (is_scalar($modelInfo) && $modelInfo != $value || $value['id'] == $modelInfo['id']) continue;
+            if (
+                is_scalar($modelInfo) && $modelInfo === $value ||
+                is_array($value) && isset($value['id']) && $value['id'] == $modelInfo['id']
+            ) {
+                continue;
+            }
 
             $newArray[] = $value;
         }

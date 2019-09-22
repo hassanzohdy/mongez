@@ -68,6 +68,24 @@ class MongezServiceProvider extends ServiceProvider
     }
 
     /**
+     * Prepare the package for first time installation
+     * 
+     * @return void
+     */
+    private function prepareForFirstTime()
+    {
+        Mongez::install();
+
+        $database = config('database.default');
+
+        if ($database != 'mongodb') return;
+
+        $path = Mongez::packagePath('src/Database/migrations/mongodb');
+
+        Artisan::call('migrate', ['--path' => $path]);
+    }
+
+    /**
      * Register any application services.
      *
      * @return void
@@ -94,24 +112,6 @@ class MongezServiceProvider extends ServiceProvider
             // manage database options
             $this->manageDatabase();
         }
-    }
-
-    /**
-     * Prepare the package for first time installation
-     * 
-     * @return void
-     */
-    private function prepareForFirstTime()
-    {
-        Mongez::install();
-
-        $database = config('database.default');
-
-        if ($database != 'mongodb') return;
-
-        $path = Mongez::packagePath('src/Database/migrations/mongodb');
-
-        Artisan::call('migrate', ['--path' => $path]);
     }
 
     /**
