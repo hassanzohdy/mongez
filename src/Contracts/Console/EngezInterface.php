@@ -1,6 +1,5 @@
 <?php       
 namespace HZ\Illuminate\Mongez\Contracts\Console;
-
 interface EngezInterface
 {
     /**
