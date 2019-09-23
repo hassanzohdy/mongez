@@ -352,8 +352,8 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
     {
         $databaseFileName = strtolower(str::plural($this->moduleName));
 
+        // Create Schema only in monogo database
         $databaseDriver = config('database.default');     
-        
         if ($databaseDriver == 'mongodb') {
             $this->createSchema($databaseFileName);
         }

@@ -121,6 +121,7 @@ class EngezMigration extends Command implements EngezInterface
                 unset($this->info['index'][array_search($singleIndexData, $this->info['index'])]);
             }
         }
+        
         $allData = array_filter(array_merge($this->info['data'], $this->info['uploads']));
 
         if (! empty($allData)) {
