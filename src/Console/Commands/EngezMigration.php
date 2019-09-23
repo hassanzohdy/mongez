@@ -123,7 +123,7 @@ class EngezMigration extends Command implements EngezInterface
         }
         $allData = array_filter(array_merge($this->info['data'], $this->info['uploads']));
 
-        if (!empty($allData)) {
+        if (! empty($allData)) {
             $schema = '';
             $tabs = "\n" . str_repeat("\t", 3);
             foreach ($allData as $data) {
