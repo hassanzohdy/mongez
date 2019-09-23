@@ -15,6 +15,7 @@ class TableName extends Migration
     {
         Schema::create('TableName', function (Blueprint $table) {
             $table->loggers();
+            $table->int('id')->unique();
             
             // Table-Schema
 

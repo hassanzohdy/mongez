@@ -16,7 +16,7 @@ class EngezMigration extends Command implements EngezInterface
      *
      * @var string
      */
-    protected $signature = 'engez:migration {moduleName} {--data=} {--index=} {--unique=}';
+    protected $signature = 'engez:migration {moduleName} {--data=} {--uploads=} {--index=} {--unique=}';
 
     /**
      * The console command description.
@@ -64,7 +64,8 @@ class EngezMigration extends Command implements EngezInterface
         $this->info['moduleName'] = Str::studly($this->argument('moduleName'));        
         $this->info['index'] =  [];
         $this->info['unique'] =  [];
-        
+        $this->info['uploads'] = [];
+
         if ($this->hasOption('index')) {
             $this->info['index'] = explode(',', $this->option('index'));
         }
@@ -75,6 +76,10 @@ class EngezMigration extends Command implements EngezInterface
 
         if ($this->hasOption('data')) {
             $this->info['data'] = explode(',', $this->option('data'));
+        }
+
+        if ($this->hasOption('uploads')) {
+            $this->info['uploads'] = explode(',', $this->option('uploads'));
         }
     }
 
@@ -116,11 +121,12 @@ class EngezMigration extends Command implements EngezInterface
                 unset($this->info['index'][array_search($singleIndexData, $this->info['index'])]);
             }
         }
+        $allData = array_filter(array_merge($this->info['data'], $this->info['uploads']));
 
-        if (isset($this->info['data'])) {
+        if (!empty($allData)) {
             $schema = '';
             $tabs = "\n" . str_repeat("\t", 3);
-            foreach ($this->info['data'] as $data) {
+            foreach ($allData as $data) {
                 $dataSchema = "{$tabs}\$table->string('$data');";
 
                 if (in_array($data, $this->info['index'])) {
