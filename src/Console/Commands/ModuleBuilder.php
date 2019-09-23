@@ -91,6 +91,14 @@ class ModuleBuilder extends Command
         
         $this->info['moduleName'] = $this->moduleName;
 
+        // check if the module directory exists
+        // if so, throw error
+        
+        if (File::isDirectory($this->modulePath(''))) {
+            Command::error('This module already exits');
+            die();
+        }
+
         $this->adjustOptionsValues();
     }
 
@@ -363,24 +371,30 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
      */
     protected function createMigration()
     {
+        $migrationsOptions = [
+            'moduleName' => $this->moduleName, 
+        ];
+
         $indexedData = '';
         $uniqueData  = '';
         $data = '';
-        if ($this->option('index')) {
+        
+        if ($this->hasOption('index')) {
             $indexedData = $this->option('index');
+            $migrationsOptions['--index'] = $indexedData;
         }
-        if ($this->option('unique')) {
+        
+        if ($this->hasOption('unique')) {
             $uniqueData = $this->option('unique');
+            $migrationsOptions['--unique'] = $uniqueData;
         }
-        if ($this->option('data')) {
+        
+        if ($this->hasOption('data')) {
             $data = $this->option('data');
+            $migrationsOptions['--data'] = $data;
         }
-        Artisan::call('engez:migration', [
-            'moduleName' => $this->moduleName, 
-            '--data'    => $data,
-            '--index' => $indexedData, 
-            '--unique' => $uniqueData
-        ]);   
+
+        Artisan::call('engez:migration', $migrationsOptions);   
     }
 
     /**
@@ -520,7 +534,7 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
         if (isset($this->info['data'])) $data = $this->info['data'];
 
         $postman =  new Postman([            
-            'moduleName' => $this->info['modelName'],
+            'modelName' => $this->info['modelName'],
             'data'       => $data
         ]);
 

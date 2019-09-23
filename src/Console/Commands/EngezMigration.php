@@ -65,15 +65,15 @@ class EngezMigration extends Command implements EngezInterface
         $this->info['index'] =  [];
         $this->info['unique'] =  [];
         
-        if ($this->option('index')) {
+        if ($this->hasOption('index')) {
             $this->info['index'] = explode(',', $this->option('index'));
         }
 
-        if ($this->option('unique')) {
+        if ($this->hasOption('unique')) {
             $this->info['unique'] = explode(',', $this->option('unique'));
         }
 
-        if ($this->option('data')) {
+        if ($this->hasOption('data')) {
             $this->info['data'] = explode(',', $this->option('data'));
         }
     }
