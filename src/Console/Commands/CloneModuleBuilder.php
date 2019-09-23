@@ -1,10 +1,10 @@
 <?php
-namespace HZ\Illuminate\Organizer\Console\Commands;
+namespace HZ\Illuminate\Mongez\Console\Commands;
 
 use File;
 use Illuminate\Support\Str;
 use Illuminate\Console\Command;
-use HZ\Illuminate\Organizer\Helpers\Mongez;
+use HZ\Illuminate\Mongez\Helpers\Mongez;
 class CloneModuleBuilder extends Command
 {
     /**

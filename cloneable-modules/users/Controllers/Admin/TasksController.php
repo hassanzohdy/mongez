@@ -2,7 +2,7 @@
 namespace App\Modules\Users\Controllers\Admin;
 
 use Illuminate\Http\Request;
-use HZ\Illuminate\Organizer\Managers\ApiController;
+use HZ\Illuminate\Mongez\Managers\ApiController;
 
 class TasksController extends ApiController
 {

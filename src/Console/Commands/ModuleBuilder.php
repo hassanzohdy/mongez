@@ -6,10 +6,10 @@ use Exception;
 use Illuminate\Support\Str;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
-use HZ\Illuminate\Organizer\Helpers\Mongez;
-use HZ\Illuminate\Organizer\Helpers\Console\Postman;
-use HZ\Illuminate\Organizer\Helpers\Console\Markdown;
-use HZ\Illuminate\Organizer\Traits\Console\EngezTrait;
+use HZ\Illuminate\Mongez\Helpers\Mongez;
+use HZ\Illuminate\Mongez\Helpers\Console\Postman;
+use HZ\Illuminate\Mongez\Helpers\Console\Markdown;
+use HZ\Illuminate\Mongez\Traits\Console\EngezTrait;
 
 class ModuleBuilder extends Command
 {

@@ -1,11 +1,11 @@
 <?php
-namespace HZ\Illuminate\Organizer\Helpers\Console\Postman;
+namespace HZ\Illuminate\Mongez\Helpers\Console\Postman;
 
 use File;
 use Illuminate\Support\Str;
 use function GuzzleHttp\json_encode;
 use function GuzzleHttp\json_decode;
-use HZ\Illuminate\Organizer\Traits\Console\EngezTrait;
+use HZ\Illuminate\Mongez\Traits\Console\EngezTrait;
 
 class Postman
 {
