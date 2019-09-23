@@ -152,17 +152,17 @@ class ModuleBuilder extends Command
         $this->info('Creating database files');
         $this->createDatabase();
 
-        $this->info('Generating routes files');
-        $this->createRoutes();
+        // $this->info('Generating routes files');
+        // $this->createRoutes();
         
-        $this->info('Generating Module Postman File');
+        // $this->info('Generating Module Postman File');
         $this->generatePostmanModule();
 
-        $this->info('Generating Module Docs');
+        // $this->info('Generating Module Docs');
         $this->generateModuleDocs();
         
-        $this->info('Updating configurations.');
-        $this->updateConfig();
+        // $this->info('Updating configurations.');
+        // $this->updateConfig();
     }
 
     /**
@@ -351,14 +351,12 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
     protected function createDatabase()
     {
         $databaseFileName = strtolower(str::plural($this->moduleName));
-        $path = $this->modulePath("database/migrations");
-        $this->checkDirectory($path);        
-        
+
         $databaseDriver = config('database.default');     
         
-        if ($databaseDriver == 'mongodb') {
-            $this->createSchema($databaseFileName, $path);
-        }
+        // if ($databaseDriver == 'mongodb') {
+            $this->createSchema($databaseFileName);
+        // }
         
         $this->createMigration();
     }
@@ -394,6 +392,11 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
             $migrationsOptions['--data'] = $data;
         }
 
+        if ($this->hasOption('uploads')) {
+            $uploads = $this->option('uploads');
+            $migrationsOptions['--uploads'] = $uploads;
+        }
+
         Artisan::call('engez:migration', $migrationsOptions);   
     }
 
@@ -403,8 +406,11 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
      * @param string $dataFileName
      * @return void 
      */
-    protected function createSchema($databaseFileName, $path)
+    protected function createSchema($databaseFileName)
     {
+        $path = $this->modulePath("database/migrations/schema");
+        $this->checkDirectory($path);        
+        
         $defaultContent = [
             '_id' => "objectId",
             'id'=>'int', 
@@ -412,13 +418,16 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
 
         $customData = $this->info['data'] ?? [];
 
+        $uploadsData = $this->info['uploads'] ?? [];
+
         unset($customData['id'], $customData['_id']);
 
         $customData = array_fill_keys($customData, 'string');
 
-        $content = array_merge($defaultContent, $customData);
-        
+        $uploadsData = array_fill_keys($uploadsData, 'string');
 
+        $content = array_merge($defaultContent, $customData, $uploadsData);
+        
         $this->createFile("$path/{$databaseFileName}.json", json_encode($content, JSON_PRETTY_PRINT), 'Schema');
     }
 
@@ -538,10 +547,13 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
             'data'       => $data
         ]);
 
-        $path = $this->modulePath($this->info['moduleName']);
+        $path = $this->modulePath("docs");
+        $this->checkDirectory($path);
 
+        $fileName = strtolower($this->info['moduleName']).'.postman.json';    
         $content = $postman->getContent();
-        $this->createFile("$path.json", $content, 'PostmanFile');
+
+        $this->createFile("{$path}/{$fileName}", $content, 'PostmanFile');
     }
     
     /**
@@ -559,9 +571,8 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
             'data'       => $data
         ]);
 
-        $path = $this->modulePath($this->info['moduleName']);
-        
+        $path = $this->modulePath("docs");
         $content = $postman->getContent();
-        $this->createFile("$path.md", $content, 'Docs');
+        $this->createFile("{$path}/README.md", $content, 'Docs');
     }
 }
