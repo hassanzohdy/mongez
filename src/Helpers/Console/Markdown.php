@@ -1,13 +1,11 @@
 <?php
-namespace HZ\Illuminate\Mongez\Helpers\docs\markdown;
+namespace HZ\Illuminate\Mongez\Helpers\Console\Markdown;
 
 use File;
 use Illuminate\Support\Str;
 use HZ\Illuminate\Mongez\Traits\Console\EngezTrait;
-use function GuzzleHttp\json_decode;
-use function GuzzleHttp\json_encode;
 
-class MarkDown
+class Markdown
 {
     use EngezTrait;
     
@@ -37,21 +35,32 @@ class MarkDown
      * 
      * @param array $data  
      */
-    public function __construct($data)
+    public function __construct(array $data)
     {
-        $this->moduleName = $data['moduleName'];
-        $this->data = $data['data']; 
-        $this->setMarkDown();
+        $this->prepareData($data); 
+        $this->init();
     }
 
+    /**
+     * prepare and set needed data.
+     * 
+     * @param array $data
+     * @return void
+     */
+    protected function prepareData($data)
+    {
+        $this->moduleName = $data['moduleName'];
+        $this->data = $data['data'];
+    }
+    
     /**
      * Set Postman details. 
      * 
      * @return void
      */
-    protected function setMarkDown() 
+    protected function init() 
     {   
-        $content = File::get($this->path("Docs/moduleDocs/README.md"));
+        $content = File::get($this->path("docs/module-docs.md"));
         
         // replace postman name
         $content = str_ireplace("moduleName", $this->moduleName, $content);
@@ -61,14 +70,12 @@ class MarkDown
         
         $content = str_ireplace("routeName", strtolower(str::plural($this->moduleName)), $content);
         
-        $data = '{
-';
-        foreach ($this->data as $key)
-        {
-            $data .= '"'.$key.'"'.' : '.'"text",
-';
+        $data = '{'.PHP_EOL;
+        
+        foreach ($this->data as $key) {
+            $data .= '"'.$key.'"'.' : '.'"text",'.PHP_EOL;
         }
-        $data.='}';
+        $data .= '}';
         
         $content = str_ireplace("data", $data, $content);
 
