@@ -6,10 +6,10 @@ use Exception;
 use Illuminate\Support\Str;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
-use HZ\Illuminate\Mongez\Helpers\Mongez;
-use HZ\Illuminate\Mongez\Traits\Console\EngezTrait;
-use HZ\Illuminate\Mongez\Helpers\docs\postman\Postman;
-use HZ\Illuminate\Mongez\Helpers\docs\markdown\MarkDown;
+use HZ\Illuminate\Organizer\Helpers\Mongez;
+use HZ\Illuminate\Organizer\Helpers\Console\Postman;
+use HZ\Illuminate\Organizer\Helpers\Console\Markdown;
+use HZ\Illuminate\Organizer\Traits\Console\EngezTrait;
 
 class ModuleBuilder extends Command
 {
@@ -59,7 +59,7 @@ class ModuleBuilder extends Command
      *
      * @var string
      */
-    protected $signature = 'make:module 
+    protected $signature = 'engez:module 
                                        {moduleName}
                                        {--controller=}
                                        {--type=all}
@@ -352,7 +352,7 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
             $this->createSchema($databaseFileName, $path);
         }
         
-        $this->createMigration($databaseFileName, $databaseDriver);
+        $this->createMigration();
     }
 
     /**
@@ -361,23 +361,26 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
      * @param string $dataFileName
      * @return void 
      */
-    protected function createMigration($databaseFileName, $databaseDriver)
+    protected function createMigration()
     {
-        $path = 'app/modules/'.$this->moduleName.'/database/migrations';
-        $content = File::get($this->path("Migrations/".$databaseDriver."-migration.php"));
-        
-        $content = str_ireplace("TableName", "{$databaseFileName}", $content);
-
-        if (isset($this->info['data'])) {
-            $schema = '';
-            foreach ($this->info['data'] as $data){
-                $schema .= "\n\n\$table->string('$data');\n\n";
-            }
-            $content = str_ireplace("Table-Schema", $schema, $content);
+        $indexedData = '';
+        $uniqueData  = '';
+        $data = '';
+        if ($this->option('index')) {
+            $indexedData = $this->option('index');
         }
-                
-        $databaseFileName = date('Y_m_d_His').'_'.$databaseFileName;
-        $this->createFile("$path/{$databaseFileName}.php",$content, 'Migration');
+        if ($this->option('unique')) {
+            $uniqueData = $this->option('unique');
+        }
+        if ($this->option('data')) {
+            $data = $this->option('data');
+        }
+        Artisan::call('engez:migration', [
+            'moduleName' => $this->moduleName, 
+            '--data'    => $data,
+            '--index' => $indexedData, 
+            '--unique' => $uniqueData
+        ]);   
     }
 
     /**

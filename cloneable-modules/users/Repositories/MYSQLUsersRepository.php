@@ -9,7 +9,7 @@ use App\Modules\Users\{
     Resources\User as Resource
 };
 
-use HZ\Illuminate\Mongez\{
+use HZ\Illuminate\Organizer\{
     Contracts\Repositories\RepositoryInterface,
     Managers\Database\MYSQL\RepositoryManager
 };

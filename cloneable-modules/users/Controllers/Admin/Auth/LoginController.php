@@ -4,7 +4,7 @@ namespace App\Modules\Users\Controllers\Admin\Auth;
 use Auth;
 use Validator;
 use Illuminate\Http\Request;
-use HZ\Illuminate\Mongez\Managers\ApiController;
+use HZ\Illuminate\Organizer\Managers\ApiController;
 use function GuzzleHttp\json_encode;
 
 class LoginController extends ApiController

@@ -1,7 +1,7 @@
 <?php
 namespace App\Modules\Users\Resources;
 
-use HZ\Illuminate\Mongez\Managers\Resources\JsonResourceManager;
+use HZ\Illuminate\Organizer\Managers\Resources\JsonResourceManager;
 
 class Notification extends JsonResourceManager
 {

@@ -2,7 +2,7 @@
 namespace App\Modules\Users\Controllers\Admin;
 
 use Illuminate\Http\Request;
-use HZ\Illuminate\Mongez\Managers\ApiController;
+use HZ\Illuminate\Organizer\Managers\ApiController;
 
 class MeController extends ApiController
 {
