@@ -2,10 +2,10 @@
 namespace HZ\Illuminate\Mongez\Helpers\Console;
 
 use File;
+use Illuminate\Support\Str;
 use function GuzzleHttp\json_decode;
 use function GuzzleHttp\json_encode;
 use HZ\Illuminate\Mongez\Traits\Console\EngezTrait;
-use Illuminate\Support\Str;
 
 class Postman
 {
