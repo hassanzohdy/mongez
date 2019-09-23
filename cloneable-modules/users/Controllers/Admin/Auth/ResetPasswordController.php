@@ -2,7 +2,7 @@
 namespace App\Modules\Users\Controllers\Admin\Auth;
 
 use Illuminate\Http\Request;
-use HZ\Illuminate\Organizer\Managers\ApiController;
+use HZ\Illuminate\Mongez\Managers\ApiController;
 
 class ResetPasswordController extends ApiController
 {    

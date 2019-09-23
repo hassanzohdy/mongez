@@ -1,12 +1,13 @@
 {
-    "name": "hassanzohdy/laravel-organizer",
-    "description": "An organized structure for building a neat laravel application(s).",
-    "keywords": ["laravel","organizer"],
+    "name": "hassanzohdy/mongez",
+    "description": "A Robust application handler for building neat laravel application(s).",
+    "keywords": ["laravel","mongez"],
     "license": "MIT",
-    "version": "1.4.22",
+    "version": "1.5.6",
     "require": {
         "php": ">=7",
-        "illuminate/support": "5.6.x|5.7.x|5.8.x"
+        "illuminate/support": "5.6.x|5.7.x|5.8.x|6.0.x",
+        "barryvdh/laravel-cors": "^0.11.4"
     },
     "authors": [
         {
@@ -16,16 +17,16 @@
     ],
     "autoload": {
         "psr-4": {
-            "HZ\\Illuminate\\Organizer\\": "src/"
+            "HZ\\Illuminate\\Mongez\\": "src/"
         },
         "files": [
-            "src/HZ/Illuminate/Organizer/Helpers/functions.php"
+            "src/Helpers/functions.php"
         ]
     },
     "extra": {
         "laravel": {
             "providers": [
-                "HZ\\Illuminate\\Organizer\\Providers\\OrganizerServiceProvider"
+                "HZ\\Illuminate\\Mongez\\Providers\\MongezServiceProvider"
             ]
         }
     }

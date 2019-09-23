@@ -1,9 +1,9 @@
-﻿# Laravel Organizer
+﻿# Mongez
 
 This project aims to make using Laravel framework more organized and extensible.
 
 # Table of contents
-- [Laravel Organizer](#laravel-organizer)
+- [Mongez](#mongez)
 - [Table of contents](#table-of-contents)
 - [Requirements](#requirements)
 - [Installation](#installation)
@@ -17,15 +17,15 @@ This project aims to make using Laravel framework more organized and extensible.
 
 Run the following Command in your cli.
 
-`composer require hassanzohdy/laravel-organizer`
+`composer require hassanzohdy/mongez`
 
 # Configurations
 
-Once its done run the following command to create the `config/organizer.php` file.
+Once its done run the following command to create the `config/mongez.php` file.
 
-`php artisan vendor:publish --provider="HZ\Illuminate\Organizer\Providers\OrganizerServiceProvider"`
+`php artisan vendor:publish --provider="HZ\Illuminate\Mongez\Providers\MongezServiceProvider"`
 
 
 # Documentation
 
-See full documentation in the [wiki page](https://github.com/hassanzohdy/laravel-organizer/wiki).
+See full documentation in the [wiki page](https://github.com/hassanzohdy/mongez/wiki).
