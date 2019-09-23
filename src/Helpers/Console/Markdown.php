@@ -1,5 +1,5 @@
 <?php
-namespace HZ\Illuminate\Mongez\Helpers\Console\Markdown;
+namespace HZ\Illuminate\Mongez\Helpers\Console;
 
 use File;
 use Illuminate\Support\Str;
