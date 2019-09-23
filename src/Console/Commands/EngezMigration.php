@@ -1,12 +1,12 @@
 <?php
-namespace HZ\Illuminate\Organizer\Console\Commands;
+namespace HZ\Illuminate\Mongez\Console\Commands;
 
 use File;
 use Illuminate\Support\Str;
 use Illuminate\Console\Command;
-use HZ\Illuminate\Organizer\Helpers\Mongez;
-use HZ\Illuminate\Organizer\Traits\Console\EngezTrait;
-use HZ\Illuminate\Organizer\Contracts\Console\EngezInterface;
+use HZ\Illuminate\Mongez\Helpers\Mongez;
+use HZ\Illuminate\Mongez\Traits\Console\EngezTrait;
+use HZ\Illuminate\Mongez\Contracts\Console\EngezInterface;
 
 class EngezMigration extends Command implements EngezInterface
 {

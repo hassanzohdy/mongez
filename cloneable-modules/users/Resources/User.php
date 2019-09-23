@@ -3,7 +3,7 @@ namespace App\Modules\Users\Resources;
 
 use App\Modules\Tasks\Resources\Task;
 use App\Modules\Departments\Resources\Department;
-use HZ\Illuminate\Organizer\Managers\Resources\JsonResourceManager;
+use HZ\Illuminate\Mongez\Managers\Resources\JsonResourceManager;
 
 class User extends JsonResourceManager
 {

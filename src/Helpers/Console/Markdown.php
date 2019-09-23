@@ -1,9 +1,9 @@
 <?php
-namespace HZ\Illuminate\Organizer\Helpers\Console\Markdown;
+namespace HZ\Illuminate\Mongez\Helpers\Console\Markdown;
 
 use File;
 use Illuminate\Support\Str;
-use HZ\Illuminate\Organizer\Traits\Console\EngezTrait;
+use HZ\Illuminate\Mongez\Traits\Console\EngezTrait;
 
 class Markdown
 {
