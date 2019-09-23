@@ -1,25 +1,21 @@
 {
 	"info": {
-		"_postman_id": "0402fe17-e481-4c12-a34e-569e61795aba",
-		"name": "{moduleName} Postman",
+		"name": "{moduleName}",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
-			"name": "Create {moduleName} ",
+			"name": "[admin] Create new {singleModuleName}",
 			"request": {
 				"method": "POST",
 				"header": [
 					{
 						"key": "Content-Type",
-						"name": "Content-Type",
-						"value": "application/x-www-form-urlencoded",
-						"type": "text"
+						"value": "application/x-www-form-urlencoded"
 					},
 					{
 						"key": "Authorization",
-						"value": "Bearer Token",
-						"type": "text"
+						"value": "{{tokenType}} {{token}}"
 					}
 				],
 				"body": {
@@ -27,32 +23,30 @@
 					"formdata": "{formData}"
 				},
 				"url": {
-					"raw": "{baseUrl}/api/admin/{routeUri}",
-					"protocol":"{protocol}",
-					"host":"{host}",
-					"path": [
-						"api",
-						"admin"
-					]
+					"raw": "{{baseUrl}}/api/admin/{routeUri}"
 				}
 			},
-			"response": []
+			"response": {
+				"header" : [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					}
+				]
+			}	
 		},
 		{
-			"name": "Update {moduleName}",
+			"name": "[admin] Update {singleModuleName}",
 			"request": {
 				"method": "PUT",
 				"header": [
 					{
 						"key": "Content-Type",
-						"name": "Content-Type",
-						"value": "application/x-www-form-urlencoded",
-						"type": "text"
+						"value": "application/x-www-form-urlencoded"
 					},
 					{
 						"key": "Authorization",
-						"type": "text",
-						"value": "Bearer Token"					
+						"value": "{{tokenType}} {{token}}"
 					}
 				],
 				"body": {
@@ -60,20 +54,20 @@
 					"urlencoded": "{formData}"
 				},
 				"url": {
-					"raw": "{baseUrl}/api/admin/{routeUri}/{id}",
-					"protocol":"{protocol}",
-					"host":"{host}",
-					"path": [
-						"api",
-						"admin",
-						"{id}"
-					]
+					"raw": "{{baseUrl}}/api/admin/{routeUri}/{id}"
 				}
 			},
-			"response": []
+			"response": {
+				"header" : [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					}
+				]
+			}
 		},
 		{
-			"name": "Listing of {moduleName}",
+			"name": "[admin] List {moduleName}",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
 			},
@@ -82,14 +76,11 @@
 				"header": [
 					{
 						"key": "Content-Type",
-						"name": "Content-Type",
-						"value": "application/x-www-form-urlencoded",
-						"type": "text"
+						"value": "application/x-www-form-urlencoded"
 					},
 					{
 						"key": "Authorization",
-						"value": "Bearer Token",
-						"type": "text"
+						"value": "{{tokenType}} {{token}}"
 					}
 				],
 				"body": {
@@ -97,131 +88,129 @@
 					"formdata": []
 				},
 				"url": {
-					"raw": "{baseUrl}/api/admin/{moduleName}",
-					"protocol":"{protocol}",
-					"host":"{host}",
+					"raw": "{{baseUrl}}/api/admin/{moduleName}",
 					"path": [
 						"api",
 						"admin"
 					]
 				}
 			},
-			"response": []
+			"response": {
+				"header" : [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					}
+				]
+			}
 		},
 		{
-			"name": "Get single of {moduleName} ",
+			"name": "[admin] Get {singleModuleName}",
 			"request": {
 				"method": "GET",
 				"header": [
 					{
 						"key": "Authorization",
-						"value": "Bearer Token",
-						"type": "text"
+						"value": "{{tokenType}} {{token}}"
 					},
 					{
 						"key": "Content-Type",
-						"value": "application/x-www-form-urlencoded",
-						"type": "text"
+						"value": "application/x-www-form-urlencoded"
 					}
 				],
 				"url": {
-					"raw": "{baseUrl}/api/admin/{routeUri}/{id}",
-					"protocol":"{protocol}",
-					"host":"{host}",
-					"path": [
-						"api",
-						"admin",
-						"{id}"
-					]
+					"raw": "{{baseUrl}}/api/admin/{routeUri}/{id}"
 				}
 			},
-			"response": []
+			"response": {
+				"header" : [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					}
+				]
+			}
 		},
 		{
-			"name": "Delete {moduleName} record",
+			"name": "[admin] Delete {singleModuleName}",
 			"request": {
 				"method": "DELETE",
 				"header": [
 					{
 						"key": "Authorization",
-						"value": "Bearer Token",						
-						"type": "text"
+						"value": "{{tokenType}} {{token}}"
 					},
 					{
 						"key": "Content-Type",
-						"value": "application/x-www-form-urlencoded",
-						"type": "text"
+						"value": "application/x-www-form-urlencoded"
 					}
 				],
 				"url": {
-					"raw": "{baseUrl}/api/admin/{routeUri}/{id}",
-					"protocol":"{protocol}",
-					"host":"{host}",
-					"path": [
-						"api",
-						"admin",
-						"{id}"
-					]
+					"raw": "{{baseUrl}}/api/admin/{routeUri}/{id}"
 				}
 			},
-			"response": []
+			"response": {
+				"header" : [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					}
+				]
+			}
 		},
 		{
-			"name": "Show single record of {moduleName} in front",
+			"name": "[site] Show single record of {moduleName}",
 			"request": {
 				"method": "GET",
 				"header": [
 					{
 						"key": "Content-Type",
-						"name": "Content-Type",
-						"value": "application/x-www-form-urlencoded",
-						"type": "text"
+						"value": "application/x-www-form-urlencoded"
 					},
 					{
 						"key": "Authorization",
-						"value": "Bearer Token",
-						"type": "text"
+						"value": "{{tokenType}} {{token}}"
 					}
 				],
 				"url": {
-					"raw": "{baseUrl}/api/{routeUri}/{id}",
-					"protocol":"{protocol}",
-					"host":"{host}",
-					"path": [
-						"api",
-						"{id}"
-					]
+					"raw": "{{baseUrl}}/api/{routeUri}/{id}"
 				}
 			},
-			"response": []
+			"response": {
+				"header" : [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					}
+				]
+			}
 		},
 		{
-			"name": "Show list {moduleName} in front",
+			"name": "[site] Show list {moduleName}",
 			"request": {
 				"method": "GET",
 				"header": [
 					{
 						"key": "Content-Type",
-						"name": "Content-Type",
-						"value": "application/x-www-form-urlencoded",
-						"type": "text"
+						"value": "application/x-www-form-urlencoded"
 					},
 					{
 						"key": "Authorization",
-						"value": "Bearer Token",
-						"type": "text"
+						"value": "{{tokenType}} {{token}}"
 					}
 				],
 				"url": {
-					"raw": "{baseUrl}/api/{routeUri}",
-					"protocol":"{protocol}",
-					"host":"{host}",
-					"path": [
-						"api"
-					]
+					"raw": "{{baseUrl}}/api/{routeUri}"
 				}
 			},
-			"response": []
+			"response": {
+				"header" : [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					}
+				]
+			}
 		}
 	]
 }

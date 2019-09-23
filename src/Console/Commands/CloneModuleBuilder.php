@@ -2,9 +2,9 @@
 namespace HZ\Illuminate\Mongez\Console\Commands;
 
 use File;
+use Illuminate\Support\Str;
 use Illuminate\Console\Command;
 use HZ\Illuminate\Mongez\Helpers\Mongez;
-
 class CloneModuleBuilder extends Command
 {
     /**
@@ -12,7 +12,27 @@ class CloneModuleBuilder extends Command
      * 
      * @const array
      */
-    const AVAILABLE_MODULES = ['users'];
+    const AVAILABLE_MODULES = ['Users'];
+
+    /**
+     * Database options.
+     *  
+     * @const array
+     */
+    const DATABASE_OPTIONS = [
+        'mysql' =>  'MYSQL',
+        'mongodb' =>'MongoDB'
+    ];
+    
+    /**
+     * Removal folders.
+     *  
+     * @const array
+     */
+    const REMOVAL_FOLDERS = [
+        'Models'=>'User.php',
+        'Repositories'=>'UsersRepository.php'
+    ];
 
     /**
      * The name and signature of the console command.
@@ -42,7 +62,7 @@ class CloneModuleBuilder extends Command
      */
     public function handle()
     {
-        $this->moduleName = $this->argument('module');
+        $this->moduleName = Str::studly($this->argument('module'));
 
         if (! in_array($this->moduleName, static::AVAILABLE_MODULES)) {
             return $this->info('This module does not exits');
@@ -57,8 +77,8 @@ class CloneModuleBuilder extends Command
         }
 
         $this->cloneModule();
-
-        return $this->info('Module cloned successfully');
+        $this->removeUnNeededFiles();
+        $this->info('Module cloned successfully');
     }
 
     /**
@@ -68,9 +88,38 @@ class CloneModuleBuilder extends Command
      */
     protected function cloneModule()
     {
-        $modulePath = Mongez::packagePath('cloneable-modules/' . $this->moduleName);
+        $modulePath = Mongez::packagePath('/' . 'cloneable-modules/' . $this->moduleName);
         
-        File::copyDirectory($modulePath, base_path("app/Modules/" . $this->moduleName));
+        File::copyDirectory($modulePath, $this->modulePath($this->moduleName));
+    }
+
+    /**
+     * Remove un needed files.
+     * 
+     * @return void 
+     */
+    protected function removeUnNeededFiles()
+    {
+        $modulePath = $this->modulePath($this->moduleName);
+        
+        $database = config('database.default');
+         
+        foreach (static::REMOVAL_FOLDERS as $folder => $file) {
+
+            $targetDeletedDirectory = $modulePath . "/{$folder}";
+
+            foreach (File::allFiles($targetDeletedDirectory) as $targetDeletedFile) {
+                
+                $targetFile = static::DATABASE_OPTIONS[$database].$file;
+                $pathInfo = pathinfo($targetDeletedFile)['basename'];
+                
+                if ($pathInfo != $targetFile) {
+                    File::delete($targetDeletedDirectory . '/' . $pathInfo);
+                } else {
+                    rename($targetDeletedDirectory . '/' . $pathInfo, $targetDeletedDirectory . "/{$file}");
+                }
+            }
+        }
     }
 
     /**
