@@ -352,11 +352,11 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
     {
         $databaseFileName = strtolower(str::plural($this->moduleName));
 
+        // Create Schema only in monogo database
         $databaseDriver = config('database.default');     
-        
-        // if ($databaseDriver == 'mongodb') {
+        if ($databaseDriver == 'mongodb') {
             $this->createSchema($databaseFileName);
-        // }
+        }
         
         $this->createMigration();
     }
@@ -408,7 +408,7 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
      */
     protected function createSchema($databaseFileName)
     {
-        $path = $this->modulePath("database/migrations/schema");
+        $path = $this->modulePath("database/schema");
         $this->checkDirectory($path);        
         
         $defaultContent = [

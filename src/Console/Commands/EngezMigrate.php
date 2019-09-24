@@ -12,7 +12,7 @@ class EngezMigrate extends Command
      *
      * @var string
      */
-    protected $signature = 'engez:migrate {modules=}';
+    protected $signature = 'engez:migrate {modules?}';
 
     /**
      * The console command description.
@@ -42,7 +42,8 @@ class EngezMigrate extends Command
      */
     public function handle()
     {
-        if ($this->option('modules') ) {
+        
+        if ($this->hasArgument('modules') && $this->argument('modules')) {
             $this->availableModules = explode(',', $this->argument('modules'));
         } else {
             $this->availableModules = Mongez::getStored('modules');
@@ -69,9 +70,10 @@ class EngezMigrate extends Command
      * @return void
      */
     protected function generateModulesPaths()
-    {
+    {        
         foreach ($this->availableModules as $moduleName) {
-            $this->paths[] = app_path("Modules\\{$moduleName}\\database\\migrations");
+            $this->paths[]= "app\Modules\\{$moduleName}\\database\\migrations";
         }
     }
 }
+
