@@ -1,6 +1,8 @@
 <?php
 namespace HZ\Illuminate\Mongez\Macros\Database\Schema;
 
+use HZ\Illuminate\Mongez\Helpers\Database\MongoDB\Database;
+
 class Blueprint
 {
     /**

@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class TableName extends Migration
+class className extends Migration
 {
     /**
      * Run the migrations.
@@ -15,9 +15,12 @@ class TableName extends Migration
     {
         Schema::create('TableName', function (Blueprint $table) {
             // this is very important to create a unique index for the id
-            $table->int('id')->unique();
+            $table->unique('id');
+
             // the auto increment is just dummy pass, it is auto generated for every single model 
+            $table->int('id');
             $table->increments('id');
+
             // all of it are just dummy pass, it can be changed from the model class            
             $table->string('createdAt');
             $table->string('createdBy');

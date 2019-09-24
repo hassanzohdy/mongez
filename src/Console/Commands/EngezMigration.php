@@ -16,7 +16,13 @@ class EngezMigration extends Command implements EngezInterface
      *
      * @var string
      */
-    protected $signature = 'engez:migration {moduleName} {--data=} {--uploads=} {--index=} {--unique=}';
+    protected $signature = 'engez:migration {migration} 
+                                            {--module=} 
+                                            {--table=} 
+                                            {--data=} 
+                                            {--uploads=} 
+                                            {--index=} 
+                                            {--unique=}';
 
     /**
      * The console command description.
@@ -61,7 +67,8 @@ class EngezMigration extends Command implements EngezInterface
     {
         $this->root = Mongez::packagePath();
         
-        $this->info['moduleName'] = Str::studly($this->argument('moduleName'));        
+        $this->info['migration'] = $this->argument('migration');        
+        $this->info['moduleName'] = Str::studly($this->option('module'));        
         $this->info['index'] =  [];
         $this->info['unique'] =  [];
         $this->info['uploads'] = [];
@@ -108,13 +115,19 @@ class EngezMigration extends Command implements EngezInterface
 
         $path = 'app/modules/'.$this->info['moduleName'].'/database/migrations';
 
-        $databaseFileName = strtolower(str::plural($this->info['moduleName']));
+        // $databaseFileName = strtolower(str::plural($this->info['moduleName']));
+        $databaseFileName = $this->info['migration'];
+
+        $className = Str::studly($databaseFileName);
                 
         $this->checkDirectory($path);
 
         $content = File::get($this->path("Migrations/".$databaseDriver."-migration.php"));
+
+        $tableName = Str::camel(Str::plural($this->optionHasValue('table') ? $this->option('table') : $databaseFileName));
                 
-        $content = str_ireplace("TableName", "{$databaseFileName}", $content);
+        $content = str_ireplace("className", $className, $content);
+        $content = str_ireplace("TableName", $tableName, $content);
  
         foreach($this->info['index'] as $singleIndexData) {
             if (in_array($singleIndexData, $this->info['unique'])) {
