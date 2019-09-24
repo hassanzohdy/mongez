@@ -9,7 +9,7 @@ class Blueprint
      * 
      * @return void
      */
-    public static function loggers()
+    public function loggers()
     {
         return function (string $createdBy = 'created_by', string $updatedBy = 'updated_by', string $deletedBy = 'deleted_by') {
             $this->integer($createdBy);

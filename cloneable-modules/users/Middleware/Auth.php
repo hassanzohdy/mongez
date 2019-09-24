@@ -41,8 +41,8 @@ class Auth
      */
     public function handle(Request $request, Closure $next)
     {
-        $this->apiKey = config('app.api-key');
-
+        $this->apiKey = env('API_KEY');
+        
         // set default auth
         if (Str::contains($request->uri(), '/admin')) {
             $this->appType = 'admin';

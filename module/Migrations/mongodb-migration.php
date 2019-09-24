@@ -14,9 +14,18 @@ class TableName extends Migration
     public function up()
     {
         Schema::create('TableName', function (Blueprint $table) {
-            $table->int('id')->unique();            
-            // Table-Schema
-            
+            // this is very important to create a unique index for the id
+            $table->int('id')->unique();
+            // the auto increment is just dummy pass, it is auto generated for every single model 
+            $table->increments('id');
+            // all of it are just dummy pass, it can be changed from the model class            
+            $table->string('createdAt');
+            $table->string('createdBy');
+            $table->string('updatedAt ');
+            $table->string('updatedBy');
+            $table->string('deletedAt');
+            $table->string('deletedBy');
+            // Table-Schema            
         });
     }
 
