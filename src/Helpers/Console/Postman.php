@@ -102,11 +102,9 @@ class Postman
         // replace module name
         $content = str_ireplace("{moduleName}", $this->moduleName, $content);
 
-        // replace module name
+        // replace single module name
         $content = str_ireplace("{singleModuleName}", $this->singleModuleName, $content);
 
-        // replace base url
-        $content = str_ireplace("{baseUrl}", url('/'), $content);
         // replace routeUri
         $content = str_ireplace("{routeUri}", $this->moduleName, $content);
 
@@ -117,7 +115,7 @@ class Postman
             // set parameters of Add and update request
             if (in_array($item->request->method, $this->formDataArray)) {
                 $request = $this->formDataArray[$item->request->method];
-                $item->request->body->$request['type'] = $request['type'];
+                $item->request->body->{$request['type']} = $this->data;
             }
         }
 

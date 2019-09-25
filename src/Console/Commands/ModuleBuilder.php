@@ -152,17 +152,17 @@ class ModuleBuilder extends Command
         $this->info('Creating database files');
         $this->createDatabase();
 
-        // $this->info('Generating routes files');
-        // $this->createRoutes();
+        $this->info('Generating routes files');
+        $this->createRoutes();
         
-        // $this->info('Generating Module Postman File');
+        $this->info('Generating Module Postman File');
         $this->generatePostmanModule();
 
-        // $this->info('Generating Module Docs');
+        $this->info('Generating Module Docs');
         $this->generateModuleDocs();
         
-        // $this->info('Updating configurations.');
-        // $this->updateConfig();
+        $this->info('Updating configurations.');
+        $this->updateConfig();
     }
 
     /**
