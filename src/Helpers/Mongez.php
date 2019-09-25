@@ -144,6 +144,28 @@ class Mongez
     }
 
     /**
+     * Append value to an arrayable key
+     * 
+     * @param  string $key
+     * @param  mixed $value
+     * @return void
+     */
+    public static function append(string $key, $value)
+    {
+        $list = static::getStored($key);
+
+        if (! $list) {
+            $list = [];
+        }
+
+        if (in_array($value, $list)) return;
+
+        $list[] = $value;
+
+        static::setStored($key, $list);
+    }
+
+    /**
      * Update storage file 
      * 
      * @return void 

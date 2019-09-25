@@ -2,6 +2,7 @@
 namespace HZ\Illuminate\Mongez\Traits\Console;
 
 use File;
+use Illuminate\Support\Str;
 use Illuminate\Console\Command;
 use HZ\Illuminate\Mongez\Helpers\Mongez;
 
@@ -77,4 +78,15 @@ trait EngezTrait
         Command::error($message);
         die();
     } 
+
+    /**
+     * Get a repository shortcut name based on the given module name
+     * 
+     * @param  string $module
+     * @return string 
+     */
+    public function repositoryShortcutName(string $module): string
+    {
+        return Str::plural(Str::camel($module));
+    }
 }
