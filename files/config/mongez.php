@@ -107,6 +107,7 @@ return [
         Illuminate\Filesystem\Filesystem::class => HZ\Illuminate\Mongez\Macros\FileSystem\FileSystem::class,
         Illuminate\Database\Query\Builder::class => HZ\Illuminate\Mongez\Macros\Database\Query\Builder::class,
         Illuminate\Database\Schema\Blueprint::class => HZ\Illuminate\Mongez\Macros\Database\Schema\Blueprint::class,
+        Illuminate\Console\Command::class => HZ\Illuminate\Mongez\Macros\Console\Command::class,
     ],
     /*
     |--------------------------------------------------------------------------

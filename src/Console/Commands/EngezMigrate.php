@@ -1,9 +1,11 @@
 <?php
+
 namespace HZ\Illuminate\Mongez\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use HZ\Illuminate\Mongez\Helpers\Mongez;
+use HZ\Illuminate\Mongez\Traits\Console\EngezTrait;
 
 class EngezMigrate extends Command
 {
@@ -42,7 +44,6 @@ class EngezMigrate extends Command
      */
     public function handle()
     {
-        
         if ($this->hasArgument('modules') && $this->argument('modules')) {
             $this->availableModules = explode(',', $this->argument('modules'));
         } else {
@@ -60,7 +61,8 @@ class EngezMigrate extends Command
      */
     protected function makeMigrate()
     {
-        Artisan::call('migrate', ['--path' => $this->paths]);
+        Artisan::call('migrate', ['--path' => $this->paths, '--realpath' => true]);
+
         return $this->info('Migrate tables has been created Successfully ');
     }
 
@@ -70,10 +72,11 @@ class EngezMigrate extends Command
      * @return void
      */
     protected function generateModulesPaths()
-    {        
+    {
         foreach ($this->availableModules as $moduleName) {
-            $this->paths[]= "app\Modules\\{$moduleName}\\database\\migrations";
+            $this->paths[] = app_path("Modules/{$moduleName}/database/migrations");
         }
+
+        $this->paths[] = Mongez::packagePath('src/database/migrations/' . config('database.default'));
     }
 }
-

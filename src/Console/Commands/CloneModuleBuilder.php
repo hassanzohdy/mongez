@@ -4,15 +4,25 @@ namespace HZ\Illuminate\Mongez\Console\Commands;
 use File;
 use Illuminate\Support\Str;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Artisan;
 use HZ\Illuminate\Mongez\Helpers\Mongez;
+use HZ\Illuminate\Mongez\Traits\Console\EngezTrait;
+
 class CloneModuleBuilder extends Command
 {
+    use EngezTrait;
+
     /**
      * Set all available modules.
      * 
      * @const array
      */
-    const AVAILABLE_MODULES = ['Users'];
+    const AVAILABLE_MODULES = [
+        'Users'=> [
+            'repositoryName' => 'users',
+            'routeType'   => 'admin',
+        ]
+    ];
 
     /**
      * Database options.
@@ -55,6 +65,18 @@ class CloneModuleBuilder extends Command
      */
     protected $moduleName;
 
+     /**
+     * Module path
+     * 
+     * @var string
+     */
+    protected $modulePath;
+
+    /**
+     * Module info
+     */
+    protected $info = [];
+    
     /**
      * Execute the console command.
      *
@@ -62,25 +84,47 @@ class CloneModuleBuilder extends Command
      */
     public function handle()
     {
-        $this->moduleName = Str::studly($this->argument('module'));
-
-        if (! in_array($this->moduleName, static::AVAILABLE_MODULES)) {
+        $this->init();
+        $this->validateArguments();
+        $this->cloneModule();
+        $this->setModuleToFile();
+        $this->createMigration();
+        $this->removeUnNeededFiles();
+        $this->info('Module cloned successfully');
+    }
+    
+    /**
+     * Validate The module name
+     *
+     * @return void
+     */
+    protected function validateArguments()
+    {
+        if (! array_key_exists($this->moduleName, static::AVAILABLE_MODULES)) {
             return $this->info('This module does not exits');
         }
 
-        $modulePath = $this->modulePath();
-
-        if ($this->checkDirectory($modulePath)) {
+        if ($this->checkDirectory($this->modulePath)) {
             $message = $this->confirm($this->moduleName . ' exists, Do you want to override it?');
 
             if (!$message) return;
         }
-
-        $this->cloneModule();
-        $this->removeUnNeededFiles();
-        $this->info('Module cloned successfully');
     }
 
+    /**
+     * Set controller info.
+     * 
+     * @return void
+     */
+    protected function init()
+    {
+        $this->moduleName = Str::studly($this->argument('module'));
+        
+        $this->info = static::AVAILABLE_MODULES[$this->moduleName];
+        
+        $this->modulePath = $this->modulePath();
+    }
+    
     /**
      * Copy files of module
      * 
@@ -142,4 +186,5 @@ class CloneModuleBuilder extends Command
     {
         return base_path("app/Modules/{$this->moduleName}");
     }
+
 }

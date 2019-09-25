@@ -1,10 +1,9 @@
 <?php
-
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateIdsCollection extends Migration
+class Ids extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +12,9 @@ class CreateIdsCollection extends Migration
      */
     public function up()
     {
-        Schema::table('ids', function (Blueprint $table) {
+        Schema::create('ids', function (Blueprint $table) {
             $table->string('collection')->unique();
+            $table->int('id');
         });
     }
 
@@ -25,8 +25,6 @@ class CreateIdsCollection extends Migration
      */
     public function down()
     {
-        Schema::table('ids', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('ids');
     }
 }

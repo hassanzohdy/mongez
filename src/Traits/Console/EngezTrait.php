@@ -2,7 +2,9 @@
 namespace HZ\Illuminate\Mongez\Traits\Console;
 
 use File;
+use Illuminate\Support\Str;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Artisan;
 use HZ\Illuminate\Mongez\Helpers\Mongez;
 
 trait EngezTrait
@@ -77,4 +79,179 @@ trait EngezTrait
         Command::error($message);
         die();
     } 
+
+    /**
+     * Get a repository shortcut name based on the given module name
+     * 
+     * @param  string $module
+     * @return string 
+     */
+    public function repositoryShortcutName(string $module): string
+    {
+        return Str::plural(Str::camel($module));
+    }
+
+    /**
+     * Set module name to config file.
+     * 
+     * @return void
+     */
+    protected function markModuleAsInstalled()
+    {
+        Mongez::append('modules', $this->moduleName);
+
+        Mongez::updateStorageFile();
+    }
+    
+    /**
+     * Create migration file of table in mysql 
+     *
+     * @param string $dataFileName
+     * @return void 
+     */
+    protected function createMigration()
+    {
+        $migrationsOptions = [
+            'moduleName' => $this->moduleName,
+        ];
+
+        $indexedData = '';
+        $uniqueData  = '';
+        $data = '';
+
+        if ($this->hasOption('index')) {
+            $indexedData = $this->option('index');
+            $migrationsOptions['--index'] = $indexedData;
+        }
+
+        if ($this->hasOption('unique')) {
+            $uniqueData = $this->option('unique');
+            $migrationsOptions['--unique'] = $uniqueData;
+        }
+
+        if ($this->hasOption('data')) {
+            $data = $this->option('data');
+            $migrationsOptions['--data'] = $data;
+        }
+
+        if ($this->hasOption('uploads')) {
+            $uploads = $this->option('uploads');
+            $migrationsOptions['--uploads'] = $uploads;
+        }
+
+        Artisan::call('engez:migration', $migrationsOptions);
+    }
+
+    /**
+     * Update configurations
+     *
+     * @return void
+     */
+    protected function updateConfig(): void 
+    {
+        if (! isset($this->info['repositoryName'])) return;
+
+        $config = File::get($mongezPath =  base_path('config/mongez.php'));
+
+        $replacementLine = '// Auto generated repositories here: DO NOT remove this line.';
+        
+        if (! Str::contains($config, $replacementLine)) return;
+
+        $repositoryClassName = basename(str_replace('\\', '/', $this->info['repository']));
+
+        $replacedString = "'{$this->info['repositoryName']}' => App\\Modules\\$repositoryClassName\\Repositories\\{$repositoryClassName}Repository::class,\n \t\t $replacementLine";
+
+        $updatedConfig =str_replace($replacementLine, $replacedString, $config);
+
+        File::put($mongezPath, $updatedConfig);
+    }
+
+    /**
+     * Generate routes files
+     * 
+     * @return void
+     */
+    protected function createRoutes()
+    {
+        $type = $this->option('type');
+
+        // create routes directory
+        $content = File::get($this->path("Controllers/Site/controller.php"));
+
+        $routesDirectory = $this->modulePath("routes");
+
+        $this->checkDirectory($routesDirectory);
+
+        // get the content of the api routes file
+        $apiRoutesFileContent = File::get(base_path('routes/api.php'));
+
+        $controller = $this->info['controller'];
+
+        $controllerName = basename(str_replace('\\', '/', $controller));
+
+        if (in_array($type, ['all', 'site'])) {
+            // generate the site routes file
+            $content = File::get($this->path("routes/site.php"));
+
+            // replace controller name
+            $content = str_ireplace("ControllerName", "{$controllerName}Controller", $content);
+
+            // replace module name
+            $content = str_ireplace("ModuleName", "{$this->moduleName}", $content);
+
+            // replace route prefix
+            $content = str_ireplace("route-prefix", "{$this->module}", $content);
+
+            // create the route file
+            $filePath = $routesDirectory . '/site.php';
+
+            $this->createFile($filePath, $content, 'Site routes');
+
+            // add the routes file to the api routes file content
+            if (Str::contains($apiRoutesFileContent, '// end of site routes')) {
+                $apiRoutesFileContent = str_replace(
+                    '// end of site routes',
+                    "// {$this->moduleName} module
+include base_path('app/Modules/{$this->moduleName}/routes/site.php');
+
+// end of site routes",
+                    $apiRoutesFileContent
+                );
+            }
+        }
+
+        if (in_array($type, ['all', 'admin'])) {
+            // generate the admin routes file
+            $content = File::get($this->path("routes/admin.php"));
+
+            // replace controller name
+            $content = str_ireplace("ControllerName", "{$controllerName}Controller", $content);
+
+            // replace module name
+            $content = str_ireplace("ModuleName", "{$this->moduleName}", $content);
+
+            // replace route prefix
+            $content = str_ireplace("route-prefix", "{$this->module}", $content);
+
+            // create the route file
+            $filePath = $routesDirectory . '/admin.php';
+
+            $this->createFile($filePath, $content, 'Admin routes');
+            // add the routes file to the api routes file content
+            if (Str::contains($apiRoutesFileContent, '// end of admin routes')) {
+                $apiRoutesFileContent = str_replace(
+                    '// end of admin routes',
+                    "// {$this->moduleName} module
+    include base_path('app/Modules/{$this->moduleName}/routes/admin.php');
+
+    // end of admin routes",
+                    $apiRoutesFileContent
+                );
+            }
+        }
+
+        // echo($apiRoutesFileContent);
+
+        File::put(base_path('routes/api.php'), $apiRoutesFileContent);
+    }
 }

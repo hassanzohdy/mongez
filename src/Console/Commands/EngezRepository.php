@@ -1,4 +1,5 @@
 <?php
+
 namespace HZ\Illuminate\Mongez\Console\Commands;
 
 use File;
@@ -35,7 +36,7 @@ class EngezRepository extends Command implements EngezInterface
      * @var array
      */
     protected $availableModules = [];
-    
+
     /**
      * Execute the console command.
      *
@@ -44,11 +45,15 @@ class EngezRepository extends Command implements EngezInterface
     public function handle()
     {
         $this->init();
-        $this->validateArguments();   
+        $this->validateArguments();
         $this->create();
+
+        $this->info('Updating configurations...');
+        $this->updateConfig();
+
         $this->info('Repository created successfully');
     }
-    
+
     /**
      * Validate The module name
      *
@@ -57,12 +62,12 @@ class EngezRepository extends Command implements EngezInterface
     public function validateArguments()
     {
         $availableModules = Mongez::getStored('modules');
-        
-        if (! $this->option('module')) {
+
+        if (!$this->option('module')) {
             return $this->missingRequiredOption('module option is required');
         }
 
-        if (! in_array($this->info['moduleName'], $availableModules)) {
+        if (!in_array($this->info['moduleName'], $availableModules)) {
             return $this->missingRequiredOption('This module is not available');
         }
     }
@@ -73,16 +78,15 @@ class EngezRepository extends Command implements EngezInterface
      * @return void
      */
     public function init()
-    {        
+    {
         $this->info['repository'] = Str::studly($this->argument('repository'));
         $this->info['moduleName'] = Str::studly($this->option('module'));
 
-        $this->info['modelName'] = Str::singular($this->option('model')?:$this->option('module'));
+        $this->info['modelName'] = Str::singular($this->option('model') ?: $this->option('module'));
 
-        $this->info['resourceName'] = Str::singular($this->option('model')?:$this->option('module'));
-        
+        $this->info['resourceName'] = Str::singular($this->option('model') ?: $this->option('module'));
     }
-    
+
     /**
      * Create the repository file
      * 
@@ -142,5 +146,31 @@ class EngezRepository extends Command implements EngezInterface
 
         // create the file
         $this->createFile("$repositoryDirectory/{$repositoryName}Repository.php", $content, 'Repository');
+    }
+
+    /**
+     * Update configurations
+     *
+     * @return void
+     */
+    protected function updateConfig(): void
+    {
+        $config = File::get($mongezPath =  base_path('config/mongez.php'));
+
+        $replacementLine = '// Auto generated repositories here: DO NOT remove this line.';
+
+        if (!Str::contains($config, $replacementLine)) return;
+
+        $repositoryClassName = basename(str_replace('\\', '/', $this->info['repository']));
+
+        $repositoryShortcut = $this->repositoryShortcutName($this->info['repository']);
+
+        $module = $this->info['moduleName'];
+
+        $replacedString = "'{$repositoryShortcut}' => App\\Modules\\$module\\Repositories\\{$repositoryClassName}Repository::class,\n \t\t $replacementLine";
+
+        $updatedConfig = str_replace($replacementLine, $replacedString, $config);
+
+        File::put($mongezPath, $updatedConfig);
     }
 }

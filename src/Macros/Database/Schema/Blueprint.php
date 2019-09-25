@@ -1,6 +1,8 @@
 <?php
 namespace HZ\Illuminate\Mongez\Macros\Database\Schema;
 
+use HZ\Illuminate\Mongez\Helpers\Database\MongoDB\Database;
+
 class Blueprint
 {
     /**
@@ -9,7 +11,7 @@ class Blueprint
      * 
      * @return void
      */
-    public static function loggers()
+    public function loggers()
     {
         return function (string $createdBy = 'created_by', string $updatedBy = 'updated_by', string $deletedBy = 'deleted_by') {
             $this->integer($createdBy);
