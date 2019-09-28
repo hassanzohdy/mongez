@@ -127,7 +127,7 @@ class ModuleBuilder extends Command
         $this->info('Preparing data...');
         $this->initController();
         $this->initModel();
-        $this->initResource();
+        $this->initResource();  
         $this->initRepository();
         $this->initData();
     }
@@ -308,7 +308,7 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
             'controller' => $this->info['controller'],
             '--module' => $this->moduleName,
             '--repository' => $this->info['repositoryName'],
-            'type' => $this->option('type'),
+            '--type' => $this->option('type'),
         ]);
     }
 
@@ -353,7 +353,8 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
     protected function createMigration()
     {
         $migrationsOptions = [
-            'moduleName' => $this->moduleName,
+            'migration' => $this->moduleName,
+            '--module' => $this->moduleName,
         ];
 
         $indexedData = '';
