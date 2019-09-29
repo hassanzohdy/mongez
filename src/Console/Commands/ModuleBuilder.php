@@ -135,7 +135,7 @@ class ModuleBuilder extends Command
         $this->info('Preparing data...');
         $this->initController();
         $this->initModel();
-        $this->initResource();
+        $this->initResource();  
         $this->initRepository();
         $this->initData();
     }
