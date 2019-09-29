@@ -1,9 +1,7 @@
 <?php
 namespace HZ\Illuminate\Mongez\Macros\Http;
 
-use Str;
-use App;
-use Illuminate\Routing\Route;
+use Illuminate\Support\Str;
 
 class Request
 {

@@ -44,9 +44,10 @@ class EngezMigrate extends Command
      */
     public function handle()
     {
-        if ($this->hasArgument('modules') && $this->argument('modules')) {
+        if ($this->argumentHasValue('modules')) {
             $this->availableModules = explode(',', $this->argument('modules'));
         } else {
+            $this->paths[] = Mongez::packagePath('src/database/migrations/' . config('database.default'));
             $this->availableModules = Mongez::getStored('modules');
         }
 
@@ -76,7 +77,5 @@ class EngezMigrate extends Command
         foreach ($this->availableModules as $moduleName) {
             $this->paths[] = app_path("Modules/{$moduleName}/database/migrations");
         }
-
-        $this->paths[] = Mongez::packagePath('src/database/migrations/' . config('database.default'));
     }
 }

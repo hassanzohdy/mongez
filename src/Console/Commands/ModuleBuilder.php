@@ -127,7 +127,7 @@ class ModuleBuilder extends Command
         $this->info('Preparing data...');
         $this->initController();
         $this->initModel();
-        $this->initResource();
+        $this->initResource();  
         $this->initRepository();
         $this->initData();
     }
@@ -222,7 +222,7 @@ class ModuleBuilder extends Command
             'controller' => $this->info['controller'],
             '--module' => $this->moduleName,
             '--repository' => $this->info['repositoryName'],
-            'type' => $this->option('type'),
+            '--type' => $this->option('type'),
         ]);
     }
 
