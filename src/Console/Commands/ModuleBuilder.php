@@ -95,6 +95,14 @@ class ModuleBuilder extends Command
 
         $this->info['moduleName'] = $this->moduleName;
 
+        if (isset($this->info['parent'])) {
+            $availableModules = Mongez::getStored('modules');
+            if (! in_array(strtolower($this->info['parent']), $availableModules)) {
+                Command::error('This parent module is not available');
+                die();
+            }    
+        }
+        
         // check if the module directory exists
         // if so, throw error
 
@@ -139,7 +147,7 @@ class ModuleBuilder extends Command
      */
     protected function create()
     {
-        $this->markModuleAsInstalled();
+        $this->addModule();
 
         $this->info('Creating controller file');
         $this->createController();
@@ -165,8 +173,7 @@ class ModuleBuilder extends Command
         $this->info('Generating Module Docs');
         $this->generateModuleDocs();
         
-        $this->info('Updating configurations.');
-        $this->updateConfig();
+        $this->markModuleAsInstalled();
     }
 
     /**
@@ -218,12 +225,16 @@ class ModuleBuilder extends Command
      */
     protected function createController()
     {
-        Artisan::call('engez:controller', [
+        $controllerOptions = [
             'controller' => $this->info['controller'],
             '--module' => $this->moduleName,
             '--repository' => $this->info['repositoryName'],
-            'type' => $this->option('type'),
-        ]);
+            '--type' => $this->option('type'),
+        ];
+        
+        if (isset($this->info['parent'])) $controllerOptions['--parent'] = $this->info['parent'];
+        
+        Artisan::call('engez:controller', $controllerOptions);
     }
 
     /**
@@ -233,11 +244,14 @@ class ModuleBuilder extends Command
      */
     protected function createResource()
     {
-        Artisan::call('engez:resource', [
+        $resourceOptions = [
             'resource' => $this->info['resource'],
             '--module' => $this->moduleName,
             '--data'   => $this->option('data'),
-        ]);
+        ];
+        if (isset($this->info['parent'])) $resourceOptions['--parent'] = $this->info['parent'];
+
+        Artisan::call('engez:resource', $resourceOptions);
     }
 
     /** 
@@ -302,10 +316,13 @@ class ModuleBuilder extends Command
      */
     protected function createRepository()
     {
-        Artisan::call('engez:repository', [
+        $repositoryOptions = [
             'repository' => $this->info['repositoryName'],
             '--module' => $this->moduleName,
-        ]);
+        ];
+        if (isset($this->info['parent'])) $repositoryOptions['--parent'] = $this->info['parent'];
+
+        Artisan::call('engez:repository', $repositoryOptions);
     }
 
     /**
@@ -324,10 +341,13 @@ class ModuleBuilder extends Command
 
         $this->info['modelName'] = $modelName;
 
-        Artisan::call('engez:model', [
+        $modelOptions = [
             'model' => $this->info['model'],
             '--module' => $this->moduleName,
-        ]);
+        ];
+        if (isset($this->info['parent'])) $modelOptions['--parent'] = $this->info['parent'];
+        
+        Artisan::call('engez:model', $modelOptions);
     }
 
     /**

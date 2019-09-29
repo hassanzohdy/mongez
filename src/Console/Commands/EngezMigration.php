@@ -22,6 +22,7 @@ class EngezMigration extends Command implements EngezInterface
                                             {--data=} 
                                             {--uploads=} 
                                             {--index=} 
+                                            {--parent=}
                                             {--unique=}';
 
     /**
@@ -88,6 +89,10 @@ class EngezMigration extends Command implements EngezInterface
         if ($this->hasOption('uploads')) {
             $this->info['uploads'] = explode(',', $this->option('uploads'));
         }
+        
+        if ($this->hasOption('parent')) {
+            $this->info['parent'] = $this->option('parent');
+        }
     }
 
     /**
@@ -102,6 +107,13 @@ class EngezMigration extends Command implements EngezInterface
         if (! in_array($this->info['moduleName'], $availableModules)) {
             return $this->missingRequiredOption('This module does not available in your modules');
         }
+
+        if ($this->option('parent')) {
+            if (! in_array(strtolower($this->info['parent']), $availableModules)) {
+                Command::error('This parent module is not available');
+                die();
+            }    
+        }
     }
 
     /**
@@ -113,7 +125,11 @@ class EngezMigration extends Command implements EngezInterface
     {
         $databaseDriver = config('database.default');
 
-        $path = 'app/modules/'.$this->info['moduleName'].'/database/migrations';
+        $targetModule = $this->info['moduleName'];
+        
+        if (isset($this->info['parent'])) $targetModule = $this->info['parent'];
+
+        $path = 'app/modules/' . $targetModule . '/database/migrations';
 
         // $databaseFileName = strtolower(str::plural($this->info['moduleName']));
         $databaseFileName = $this->info['migration'];

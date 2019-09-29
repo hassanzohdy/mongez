@@ -51,7 +51,12 @@ trait EngezTrait
      */
     protected function modulePath(string $relativePath): string
     {
-        return base_path("app/Modules/{$this->info['moduleName']}/$relativePath");
+        $targetModule = $this->info['moduleName'];
+        if (isset($this->info['parent'])) {
+            $targetModule = $this->info['parent']."/".$this->info['moduleName'];
+        }
+        
+        return base_path("app/Modules/{$targetModule}/$relativePath");
     }
 
     /**
@@ -96,10 +101,18 @@ trait EngezTrait
      * 
      * @return void
      */
+    protected function addModule()
+    {
+        Mongez::append('modules', strtolower($this->moduleName));
+    }
+
+    /**
+     * Update module name to config file.
+     * 
+     * @return void
+     */
     protected function markModuleAsInstalled()
     {
-        Mongez::append('modules', $this->moduleName);
-
         Mongez::updateStorageFile();
     }
     
@@ -138,32 +151,10 @@ trait EngezTrait
             $uploads = $this->option('uploads');
             $migrationsOptions['--uploads'] = $uploads;
         }
-
+        if (isset($this->info['parent'])) {
+            $migrationsOptions['--parent'] = $this->info['parent'];
+        }   
         Artisan::call('engez:migration', $migrationsOptions);
-    }
-
-    /**
-     * Update configurations
-     *
-     * @return void
-     */
-    protected function updateConfig(): void 
-    {
-        if (! isset($this->info['repositoryName'])) return;
-
-        $config = File::get($mongezPath =  base_path('config/mongez.php'));
-
-        $replacementLine = '// Auto generated repositories here: DO NOT remove this line.';
-        
-        if (! Str::contains($config, $replacementLine)) return;
-
-        $repositoryClassName = basename(str_replace('\\', '/', $this->info['repository']));
-
-        $replacedString = "'{$this->info['repositoryName']}' => App\\Modules\\$repositoryClassName\\Repositories\\{$repositoryClassName}Repository::class,\n \t\t $replacementLine";
-
-        $updatedConfig =str_replace($replacementLine, $replacedString, $config);
-
-        File::put($mongezPath, $updatedConfig);
     }
 
     /**
@@ -189,6 +180,14 @@ trait EngezTrait
 
         $controllerName = basename(str_replace('\\', '/', $controller));
 
+        // replace module name
+        $targetModule = $this->info['moduleName'];
+        $routeModule  =  $this->info['moduleName'];
+        if (isset($this->info['parent'])) {
+            $targetModule = str::studly($this->info['parent']) . '\\' . $this->info['moduleName'];
+            $routeModule = str::studly($this->info['parent']) . '/' . $this->info['moduleName'];
+        }
+
         if (in_array($type, ['all', 'site'])) {
             // generate the site routes file
             $content = File::get($this->path("routes/site.php"));
@@ -197,7 +196,7 @@ trait EngezTrait
             $content = str_ireplace("ControllerName", "{$controllerName}Controller", $content);
 
             // replace module name
-            $content = str_ireplace("ModuleName", "{$this->moduleName}", $content);
+            $content = str_ireplace("ModuleName", "{$targetModule}", $content);
 
             // replace route prefix
             $content = str_ireplace("route-prefix", "{$this->module}", $content);
@@ -211,8 +210,8 @@ trait EngezTrait
             if (Str::contains($apiRoutesFileContent, '// end of site routes')) {
                 $apiRoutesFileContent = str_replace(
                     '// end of site routes',
-                    "// {$this->moduleName} module
-include base_path('app/Modules/{$this->moduleName}/routes/site.php');
+                    "// {$routeModule} module
+include base_path('app/Modules/{$routeModule}/routes/site.php');
 
 // end of site routes",
                     $apiRoutesFileContent
@@ -228,7 +227,7 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
             $content = str_ireplace("ControllerName", "{$controllerName}Controller", $content);
 
             // replace module name
-            $content = str_ireplace("ModuleName", "{$this->moduleName}", $content);
+            $content = str_ireplace("ModuleName", "{$targetModule}", $content);
 
             // replace route prefix
             $content = str_ireplace("route-prefix", "{$this->module}", $content);
@@ -241,8 +240,8 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
             if (Str::contains($apiRoutesFileContent, '// end of admin routes')) {
                 $apiRoutesFileContent = str_replace(
                     '// end of admin routes',
-                    "// {$this->moduleName} module
-    include base_path('app/Modules/{$this->moduleName}/routes/admin.php');
+                    "// {$routeModule} module
+    include base_path('app/Modules/{$routeModule}/routes/admin.php');
 
     // end of admin routes",
                     $apiRoutesFileContent
