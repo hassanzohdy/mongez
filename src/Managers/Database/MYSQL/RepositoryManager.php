@@ -857,7 +857,7 @@ abstract class RepositoryManager implements RepositoryInterface
             if (is_string($key)) {
                 $model->$key = $value;
             } else {
-                $model->key = $this->request->$value;
+                $model->$value = $this->request->$value;
             }
         }
 
