@@ -16,8 +16,7 @@ class EngezMigration extends Command implements EngezInterface
      *
      * @var string
      */
-    protected $signature = 'engez:migration {migration} 
-                                            {--module=} 
+    protected $signature = 'engez:migration {module} 
                                             {--table=} 
                                             {--data=} 
                                             {--uploads=} 
@@ -67,9 +66,8 @@ class EngezMigration extends Command implements EngezInterface
     public function init()
     {
         $this->root = Mongez::packagePath();
-        
-        $this->info['migration'] = $this->argument('migration');        
-        $this->info['moduleName'] = Str::studly($this->option('module'));        
+
+        $this->info['moduleName'] = Str::studly($this->argument('module'));
         $this->info['index'] =  [];
         $this->info['unique'] =  [];
         $this->info['uploads'] = [];
@@ -102,9 +100,10 @@ class EngezMigration extends Command implements EngezInterface
      */
     public function validateArguments()
     {
-        $availableModules = Mongez::getStored('modules');
         
-        if (! in_array($this->info['moduleName'], $availableModules)) {
+        $availableModules = Mongez::getStored('modules');
+
+        if (! in_array(strtolower($this->info['moduleName']), $availableModules)) {
             return $this->missingRequiredOption('This module does not available in your modules');
         }
 
@@ -127,24 +126,26 @@ class EngezMigration extends Command implements EngezInterface
 
         $targetModule = $this->info['moduleName'];
         
-        if (isset($this->info['parent'])) $targetModule = $this->info['parent'];
+        if (isset($this->info['parent'])) {
+            $targetModule = $this->info['parent'];
+        }
 
         $path = 'app/modules/' . $targetModule . '/database/migrations';
 
-        // $databaseFileName = strtolower(str::plural($this->info['moduleName']));
-        $databaseFileName = $this->info['migration'];
-
+        $databaseFileName = strtolower(str::plural($this->info['moduleName']));
+        // $databaseFileName = $this->info['migration'];
+        
         $className = Str::studly($databaseFileName);
-                
+
         $this->checkDirectory($path);
-
+        
         $content = File::get($this->path("Migrations/".$databaseDriver."-migration.php"));
-
+        
         $tableName = Str::camel(Str::plural($this->optionHasValue('table') ? $this->option('table') : $databaseFileName));
                 
         $content = str_ireplace("className", $className, $content);
         $content = str_ireplace("TableName", $tableName, $content);
- 
+        
         foreach($this->info['index'] as $singleIndexData) {
             if (in_array($singleIndexData, $this->info['unique'])) {
                 unset($this->info['index'][array_search($singleIndexData, $this->info['index'])]);

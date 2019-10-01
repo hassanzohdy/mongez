@@ -15,4 +15,5 @@ Route::group([
 ], function () {
     // Restful API CRUD routes 
     Route::apiResource('/route-prefix', 'ControllerName');
+    // Child API CRUD routes 
 });

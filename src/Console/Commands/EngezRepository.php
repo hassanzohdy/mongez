@@ -21,6 +21,8 @@ class EngezRepository extends Command implements EngezInterface
                                                 {repository} 
                                                 {--module=}
                                                 {--model=}
+                                                {--data=}
+                                                {--uploads=}
                                                 {--resource=}
                                                 {--parent=}
                                                 ';
@@ -48,6 +50,7 @@ class EngezRepository extends Command implements EngezInterface
     {
         $this->init();
         $this->validateArguments();
+        
         $this->create();
 
         $this->info('Updating configurations...');
@@ -69,7 +72,7 @@ class EngezRepository extends Command implements EngezInterface
             return $this->missingRequiredOption('module option is required');
         }
 
-        if (!in_array($this->info['moduleName'], $availableModules)) {
+        if (!in_array(strtolower($this->info['moduleName']), $availableModules)) {
             return $this->missingRequiredOption('This module is not available');
         }
 
@@ -98,6 +101,14 @@ class EngezRepository extends Command implements EngezInterface
         if ($this->hasOption('parent')) {
             $this->info['parent'] = $this->option('parent');
         }
+
+        if ($this->hasOption('data')) {
+            $this->info['data'] = $this->option('data');
+        }
+
+        if ($this->hasOption('uploads')) {
+            $this->info['uploads'] = $this->option('uploads');
+        }
     }
 
     /**
@@ -120,7 +131,7 @@ class EngezRepository extends Command implements EngezInterface
 
         $targetModule = $this->info['moduleName'];    
         if (isset($this->info['parent'])) {
-            $targetModule = str::studly($this->info['parent']) . '\\' . $this->info['moduleName'];
+            $targetModule = str::studly($this->info['parent']);
         }
 
         // replace module name
@@ -184,6 +195,9 @@ class EngezRepository extends Command implements EngezInterface
         $repositoryShortcut = $this->repositoryShortcutName($this->info['repository']);
 
         $module = $this->info['moduleName'];
+        if (isset($this->info['parent'])) {
+            $module = $this->info['parent'];
+        }
 
         $replacedString = "'{$repositoryShortcut}' => App\\Modules\\$module\\Repositories\\{$repositoryClassName}Repository::class,\n \t\t $replacementLine";
 

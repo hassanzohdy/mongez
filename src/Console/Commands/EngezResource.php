@@ -19,6 +19,7 @@ class EngezResource extends Command implements EngezInterface
     protected $signature = 'engez:resource {resource} 
                                            {--module=} 
                                            {--data=}
+                                           {--uploads=}
                                            {--parent=} 
                                            ';
     /**
@@ -60,17 +61,17 @@ class EngezResource extends Command implements EngezInterface
         if (! $this->option('module')) {
             return $this->missingRequiredOption('module option is required');
         }
-        
-        if (! in_array($this->info['moduleName'], $availableModules)) {
+        if (! in_array(strtolower($this->info['moduleName']), $availableModules)) {
             return $this->missingRequiredOption('This module is not available');
         }
-        
+
         if ($this->option('parent')) {
             if (! in_array(strtolower($this->info['parent']), $availableModules)) {
-                Command::error('This parent module is not available');
+                return Command::error('This parent module is not available');
                 die();
             }    
         }
+    
     }
 
     /**
@@ -116,7 +117,7 @@ class EngezResource extends Command implements EngezInterface
 
         $targetModule = $this->info['moduleName'];    
         if (isset($this->info['parent'])) {
-            $targetModule = str::studly($this->info['parent']) . '\\' . $this->info['moduleName'];
+            $targetModule = str::studly($this->info['parent']);
         }
 
         // replace module name

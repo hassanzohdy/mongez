@@ -53,9 +53,8 @@ trait EngezTrait
     {
         $targetModule = $this->info['moduleName'];
         if (isset($this->info['parent'])) {
-            $targetModule = $this->info['parent']."/".$this->info['moduleName'];
+            $targetModule = $this->info['parent'];
         }
-        
         return base_path("app/Modules/{$targetModule}/$relativePath");
     }
 
@@ -125,7 +124,7 @@ trait EngezTrait
     protected function createMigration()
     {
         $migrationsOptions = [
-            'moduleName' => $this->moduleName,
+            'module' => $this->moduleName,
         ];
 
         $indexedData = '';
@@ -151,9 +150,11 @@ trait EngezTrait
             $uploads = $this->option('uploads');
             $migrationsOptions['--uploads'] = $uploads;
         }
+
         if (isset($this->info['parent'])) {
             $migrationsOptions['--parent'] = $this->info['parent'];
-        }   
+        }
+
         Artisan::call('engez:migration', $migrationsOptions);
     }
 
@@ -165,7 +166,10 @@ trait EngezTrait
     protected function createRoutes()
     {
         $type = $this->option('type');
-
+        
+        if (isset($this->info['parent'])) {
+            return $this->updateRoutes();
+        }
         // create routes directory
         $content = File::get($this->path("Controllers/Site/controller.php"));
 
@@ -252,5 +256,61 @@ include base_path('app/Modules/{$routeModule}/routes/site.php');
         // echo($apiRoutesFileContent);
 
         File::put(base_path('routes/api.php'), $apiRoutesFileContent);
+    }
+    
+    /**
+     * update parent routes
+     * 
+     * @return void
+     */
+    protected function updateRoutes()
+    {
+        $type = $this->option('type');
+
+        // get the content of the api routes file
+        $apiRoutesFileContent = File::get(base_path('routes/api.php'));
+        
+        $controller = $this->info['controller'];
+
+        $controllerName = basename(str_replace('\\', '/', $controller));
+
+        // replace module name
+        $routeModule  =  strtolower($this->info['moduleName']);
+        if (in_array($type, ['all', 'site'])) {
+            
+            // generate the site routes file
+            
+            $content = File::get($this->modulePath("routes/site.php"));
+            $content = str_replace(
+                '// child routes',
+                "Route::get('/{$this->info['parent']}/{$routeModule}/{id}','{$controllerName}Controller@index');
+    Route::get('/{$this->info['parent']}/$routeModule}/{id}','{$controllerName}Controller@show');
+    // child routes",
+                $content
+            );
+            File::put($this->modulePath("routes/site.php"),$content);
+        }
+        if (in_array($type, ['all', 'admin'])) {
+
+            $content = File::get($this->modulePath("routes/site.php"));
+            $content = str_replace(
+                '// Child routes',
+                "Route::get('/{$this->info['parent']}/{$routeModule}','{$controllerName}Controller@index');
+    Route::get('/{$this->info['parent']}/{$routeModule}/{id}','{$controllerName}Controller@show');
+    // Child routes",
+                $content
+            );
+            File::put($this->modulePath("routes/site.php"),$content);
+
+            $content = File::get($this->modulePath("routes/admin.php"));
+            $content = str_replace(
+                '// Child API CRUD routes',
+                "Route::apiResource('/{$this->info['parent']}/{$routeModule}', '{$controllerName}Controller');
+    // Child API CRUD routes",
+                $content
+            );
+            File::put($this->modulePath("routes/admin.php"),$content);
+        }
+        return;     
     }
 }

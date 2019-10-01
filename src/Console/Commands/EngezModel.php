@@ -74,7 +74,7 @@ class EngezModel extends Command implements EngezInterface
             return $this->info('module option is required');
         }
 
-        if (! in_array($this->info['moduleName'], $availableModules)) {
+        if (! in_array(strtolower($this->info['moduleName']), $availableModules)) {
             return $this->info('This module is not available');
         }
 
@@ -139,7 +139,7 @@ class EngezModel extends Command implements EngezInterface
         // replace module name
         $targetModule = $this->info['moduleName'];   
         if (isset($this->info['parent'])) {
-            $targetModule = str::studly($this->info['parent']) . '\\' . $this->info['moduleName'];
+            $targetModule = str::studly($this->info['parent']);
         }
         
         $content = str_ireplace("ModuleName", $targetModule, $content);

@@ -10,7 +10,7 @@ class Command
      * @return bool
      */
     public function argumentHasValue()
-    { 
+    {
         return function (string $argument): bool {
             return $this->hasArgument($argument) && $this->argument($argument);   
         };

@@ -73,22 +73,22 @@ class EngezController extends Command implements EngezInterface
     public function validateArguments()
     {
         $availableModules = Mongez::getStored('modules');
-
+        
         if (!$this->option('module')) {
             return $this->missingRequiredOption('Module option is required');
         }
 
-        if (!in_array($this->info['moduleName'], $availableModules)) {
+        if (!in_array(strtolower($this->info['moduleName']), $availableModules)) {
             return $this->missingRequiredOption('This module is not available');
         }
-
+        
         if (!in_array($this->info['type'], static::CONTROLLER_TYPES)) {
             return $this->missingRequiredOption('This controller type does not exits');
         }
 
         if ($this->option('parent')) {
             if (! in_array(strtolower($this->info['parent']), $availableModules)) {
-                Command::error('This parent module is not available');
+                return Command::error('This parent module is not available');
                 die();
             }    
         }
@@ -124,7 +124,7 @@ class EngezController extends Command implements EngezInterface
     public function create()
     {
         $controllerType = $this->info['type'];
-        dd($controllerType);
+        
         if (in_array($controllerType, ['all', 'site'])) {
             $this->createController('site');
         }
@@ -149,7 +149,7 @@ class EngezController extends Command implements EngezInterface
         $targetModule = $this->info['moduleName'];
             
         if (isset($this->info['parent'])) {
-            $targetModule = str::studly($this->info['parent']) . '\\' . $this->info['moduleName'];
+            $targetModule = str::studly($this->info['parent']);
         }
 
         // admin controller

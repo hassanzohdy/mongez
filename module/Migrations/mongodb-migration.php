@@ -16,7 +16,8 @@ class className extends Migration
         Schema::create('TableName', function (Blueprint $table) {
             // this is very important to create a unique index for the id
             $table->unique('id');
-
+            // Index of createdBy id
+            $table->index('createdBy.id');
             // the auto increment is just dummy pass, it is auto generated for every single model 
             $table->int('id');
             $table->increments('id');

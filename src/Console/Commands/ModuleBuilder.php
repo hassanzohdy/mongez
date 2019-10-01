@@ -89,31 +89,38 @@ class ModuleBuilder extends Command
     {
         $this->module = $this->argument('moduleName');
 
-        $this->parentModule = $this->option('parent') ?: $this->module;
+        if ($this->option('parent')) $this->info['parent'] = $this->option('parent');
 
         $this->moduleName = Str::studly($this->module);
 
         $this->info['moduleName'] = $this->moduleName;
-
-        if (isset($this->info['parent'])) {
-            $availableModules = Mongez::getStored('modules');
-            if (! in_array(strtolower($this->info['parent']), $availableModules)) {
-                Command::error('This parent module is not available');
-                die();
-            }    
+        $this->validateArguments();
+        $this->adjustOptionsValues();
+    }
+    /**
+     * Validate command arguments 
+     * 
+     * @return void
+     */
+    protected function validateArguments()
+    {
+        $modulePath = $this->modulePath("");
+        
+        if (File::isDirectory($modulePath) && !isset($this->info['parent'])) {
+            return Command::error('This module is already exist');
+            die();
         }
         
         // check if the module directory exists
-        // if so, throw error
-
-        if (File::isDirectory($this->modulePath(''))) {
-            Command::error('This module already exits');
-            die();
+        // if so, throw error        
+        if (isset($this->info['parent'])) {
+            $availableModules = Mongez::getStored('modules');
+            if (! in_array(strtolower($this->info['parent']), $availableModules)) {
+                return Command::error('This parent module is not available');
+                die();
+            }
         }
-
-        $this->adjustOptionsValues();
     }
-
     /**
      * Adjust sent options and update its value if its default
      * 
@@ -163,7 +170,7 @@ class ModuleBuilder extends Command
 
         $this->info('Creating database files');
         $this->createDatabase();
-
+        
         $this->info('Generating routes files');
         $this->createRoutes();
 
@@ -247,9 +254,11 @@ class ModuleBuilder extends Command
         $resourceOptions = [
             'resource' => $this->info['resource'],
             '--module' => $this->moduleName,
-            '--data'   => $this->option('data'),
         ];
+
         if (isset($this->info['parent'])) $resourceOptions['--parent'] = $this->info['parent'];
+        if (isset($this->info['uploads'])) $resourceOptions['--uploads'] = $this->option('uploads');
+        if (isset($this->info['data'])) $resourceOptions['--data'] = $this->option('data');
 
         Artisan::call('engez:resource', $resourceOptions);
     }
@@ -268,7 +277,7 @@ class ModuleBuilder extends Command
         if ($databaseDriver == 'mongodb') {
             $this->createSchema($databaseFileName);
         }
-
+        
         $this->createMigration();
     }
 
@@ -321,7 +330,9 @@ class ModuleBuilder extends Command
             '--module' => $this->moduleName,
         ];
         if (isset($this->info['parent'])) $repositoryOptions['--parent'] = $this->info['parent'];
-
+        if (isset($this->info['uploads'])) $repositoryOptions['--uploads'] = $this->info['uploads'];
+        if (isset($this->info['data'])) $repositoryOptions['--data'] = $this->info['data'];
+        
         Artisan::call('engez:repository', $repositoryOptions);
     }
 
@@ -436,14 +447,23 @@ class ModuleBuilder extends Command
     {
         $data = [];
         if (isset($this->info['data'])) $data = $this->info['data'];
-
-        $postman =  new MarkDown([
+        $markDownOption = [
             'moduleName' => $this->info['modelName'],
-            'data'       => $data
-        ]);
+            'data'       => $data,
+        ];
+        if (isset($this->info['parent'])) {
+            $markDownOption['parent'] = $this->info['parent'];
+        }
+        
+        $markDown =  new Markdown($markDownOption);
+        
+        $moduleFileName = 'README.md';
+        if(isset($this->info['parent'])) {
+            $moduleFileName = strtolower($this->info['moduleName']) .'.md';
+        }
 
         $path = $this->modulePath("docs");
-        $content = $postman->getContent();
-        $this->createFile("{$path}/README.md", $content, 'Docs');
+        $content = $markDown->getContent();
+        $this->createFile("{$path}/{$moduleFileName}", $content, 'Docs');
     }
 }
