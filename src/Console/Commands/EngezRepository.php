@@ -21,7 +21,11 @@ class EngezRepository extends Command implements EngezInterface
                                                 {repository} 
                                                 {--module=}
                                                 {--model=}
-                                                {--resource=}';
+                                                {--data=}
+                                                {--uploads=}
+                                                {--resource=}
+                                                {--parent=}
+                                                ';
 
     /**
      * The console command description.
@@ -46,6 +50,7 @@ class EngezRepository extends Command implements EngezInterface
     {
         $this->init();
         $this->validateArguments();
+        
         $this->create();
 
         $this->info('Updating configurations...');
@@ -67,8 +72,15 @@ class EngezRepository extends Command implements EngezInterface
             return $this->missingRequiredOption('module option is required');
         }
 
-        if (!in_array($this->info['moduleName'], $availableModules)) {
+        if (!in_array(strtolower($this->info['moduleName']), $availableModules)) {
             return $this->missingRequiredOption('This module is not available');
+        }
+
+        if ($this->option('parent')) {
+            if (! in_array(strtolower($this->info['parent']), $availableModules)) {
+                Command::error('This parent module is not available');
+                die();
+            }    
         }
     }
 
@@ -85,6 +97,18 @@ class EngezRepository extends Command implements EngezInterface
         $this->info['modelName'] = Str::singular($this->option('model') ?: $this->option('module'));
 
         $this->info['resourceName'] = Str::singular($this->option('model') ?: $this->option('module'));
+        
+        if ($this->hasOption('parent')) {
+            $this->info['parent'] = $this->option('parent');
+        }
+
+        if ($this->hasOption('data')) {
+            $this->info['data'] = $this->option('data');
+        }
+
+        if ($this->hasOption('uploads')) {
+            $this->info['uploads'] = $this->option('uploads');
+        }
     }
 
     /**
@@ -105,8 +129,13 @@ class EngezRepository extends Command implements EngezInterface
         // replace repository name
         $content = str_ireplace("RepositoryName", "{$repositoryName}", $content);
 
+        $targetModule = $this->info['moduleName'];    
+        if (isset($this->info['parent'])) {
+            $targetModule = str::studly($this->info['parent']);
+        }
+
         // replace module name
-        $content = str_ireplace("ModuleName", $this->info['moduleName'], $content);
+        $content = str_ireplace("ModuleName", $targetModule, $content);
 
         // replace model path
         $content = str_ireplace("ModelName", $this->info['modelName'], $content);
@@ -166,6 +195,9 @@ class EngezRepository extends Command implements EngezInterface
         $repositoryShortcut = $this->repositoryShortcutName($this->info['repository']);
 
         $module = $this->info['moduleName'];
+        if (isset($this->info['parent'])) {
+            $module = $this->info['parent'];
+        }
 
         $replacedString = "'{$repositoryShortcut}' => App\\Modules\\$module\\Repositories\\{$repositoryClassName}Repository::class,\n \t\t $replacementLine";
 

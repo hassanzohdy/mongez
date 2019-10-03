@@ -16,7 +16,11 @@ class EngezModel extends Command implements EngezInterface
      *
      * @var string
      */
-    protected $signature = 'engez:model {model} {--module=} {--data=}';
+    protected $signature = 'engez:model {model} 
+                                        {--module=} 
+                                        {--data=}
+                                        {--parent=}
+                                        ';
 
     /**
      * The console command description.
@@ -70,8 +74,15 @@ class EngezModel extends Command implements EngezInterface
             return $this->info('module option is required');
         }
 
-        if (! in_array($this->info['moduleName'], $availableModules)) {
+        if (! in_array(strtolower($this->info['moduleName']), $availableModules)) {
             return $this->info('This module is not available');
+        }
+
+        if ($this->option('parent')) {
+            if (! in_array(strtolower($this->info['parent']), $availableModules)) {
+                Command::error('This parent module is not available');
+                die();
+            }    
         }
     }
 
@@ -86,6 +97,10 @@ class EngezModel extends Command implements EngezInterface
 
         $this->info['modelName'] = Str::studly($this->argument('model'));
         $this->info['moduleName'] = Str::studly($this->option('module'));    
+        
+        if ($this->hasOption('parent')) {
+            $this->info['parent'] = $this->option('parent');
+        }
     }
     
     /**
@@ -122,7 +137,12 @@ class EngezModel extends Command implements EngezInterface
         $content = str_replace('DatabaseName', $this->databaseName, $content);
 
         // replace module name
-        $content = str_ireplace("ModuleName", $this->info['moduleName'], $content);
+        $targetModule = $this->info['moduleName'];   
+        if (isset($this->info['parent'])) {
+            $targetModule = str::studly($this->info['parent']);
+        }
+        
+        $content = str_ireplace("ModuleName", $targetModule, $content);
         
         $modelDirectory = $this->modulePath("Models/");
 

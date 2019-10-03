@@ -16,8 +16,12 @@ class EngezResource extends Command implements EngezInterface
      *
      * @var string
      */
-    protected $signature = 'engez:resource {resource} {--module=} {--data=}';
-
+    protected $signature = 'engez:resource {resource} 
+                                           {--module=} 
+                                           {--data=}
+                                           {--uploads=}
+                                           {--parent=} 
+                                           ';
     /**
      * The console command description.
      *
@@ -57,10 +61,17 @@ class EngezResource extends Command implements EngezInterface
         if (! $this->option('module')) {
             return $this->missingRequiredOption('module option is required');
         }
-        
-        if (! in_array($this->info['moduleName'], $availableModules)) {
+        if (! in_array(strtolower($this->info['moduleName']), $availableModules)) {
             return $this->missingRequiredOption('This module is not available');
         }
+
+        if ($this->option('parent')) {
+            if (! in_array(strtolower($this->info['parent']), $availableModules)) {
+                return Command::error('This parent module is not available');
+                die();
+            }    
+        }
+    
     }
 
     /**
@@ -75,6 +86,9 @@ class EngezResource extends Command implements EngezInterface
 
         $this->info['data'] = explode(",",$this->option('data')) ?: [];
     
+        if ($this->hasOption('parent')) {
+            $this->info['parent'] = $this->option('parent');
+        }
     }
     
     /**
@@ -101,8 +115,13 @@ class EngezResource extends Command implements EngezInterface
         // replace resource name
         $content = str_ireplace("ResourceName", "{$resourceName}", $content);
 
+        $targetModule = $this->info['moduleName'];    
+        if (isset($this->info['parent'])) {
+            $targetModule = str::studly($this->info['parent']);
+        }
+
         // replace module name
-        $content = str_ireplace("ModuleName", $this->info['moduleName'], $content);
+        $content = str_ireplace("ModuleName", $targetModule, $content);
 
         $dataList = '';
         

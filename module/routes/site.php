@@ -16,4 +16,5 @@ Route::group([
     Route::get('/route-prefix', 'ControllerName@index');
     // one record 
     Route::get('/route-prefix/{id}', 'ControllerName@show');
+    // Child routes
 });

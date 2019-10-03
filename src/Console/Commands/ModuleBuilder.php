@@ -89,23 +89,38 @@ class ModuleBuilder extends Command
     {
         $this->module = $this->argument('moduleName');
 
-        $this->parentModule = $this->option('parent') ?: $this->module;
+        if ($this->option('parent')) $this->info['parent'] = $this->option('parent');
 
         $this->moduleName = Str::studly($this->module);
 
         $this->info['moduleName'] = $this->moduleName;
-
-        // check if the module directory exists
-        // if so, throw error
-
-        if (File::isDirectory($this->modulePath(''))) {
-            Command::error('This module already exits');
-            die();
-        }
-
+        $this->validateArguments();
         $this->adjustOptionsValues();
     }
-
+    /**
+     * Validate command arguments 
+     * 
+     * @return void
+     */
+    protected function validateArguments()
+    {
+        $modulePath = $this->modulePath("");
+        
+        if (File::isDirectory($modulePath) && !isset($this->info['parent'])) {
+            return Command::error('This module is already exist');
+            die();
+        }
+        
+        // check if the module directory exists
+        // if so, throw error        
+        if (isset($this->info['parent'])) {
+            $availableModules = Mongez::getStored('modules');
+            if (! in_array(strtolower($this->info['parent']), $availableModules)) {
+                return Command::error('This parent module is not available');
+                die();
+            }
+        }
+    }
     /**
      * Adjust sent options and update its value if its default
      * 
@@ -139,7 +154,7 @@ class ModuleBuilder extends Command
      */
     protected function create()
     {
-        $this->setModuleToFile();
+        $this->addModule();
 
         $this->info('Creating controller file');
         $this->createController();
@@ -155,7 +170,7 @@ class ModuleBuilder extends Command
 
         $this->info('Creating database files');
         $this->createDatabase();
-
+        
         $this->info('Generating routes files');
         $this->createRoutes();
 
@@ -164,95 +179,8 @@ class ModuleBuilder extends Command
 
         $this->info('Generating Module Docs');
         $this->generateModuleDocs();
-    }
-
-    /**
-     * Generate routes files
-     * 
-     * @return void
-     */
-    protected function createRoutes()
-    {
-        $type = $this->option('type');
-
-        // create routes directory
-        $content = File::get($this->path("Controllers/Site/controller.php"));
-
-        $routesDirectory = $this->modulePath("routes");
-
-        $this->checkDirectory($routesDirectory);
-
-        // get the content of the api routes file
-        $apiRoutesFileContent = File::get(base_path('routes/api.php'));
-
-        $controller = $this->info['controller'];
-
-        $controllerName = basename(str_replace('\\', '/', $controller));
-
-        if (in_array($type, ['all', 'site'])) {
-            // generate the site routes file
-            $content = File::get($this->path("routes/site.php"));
-
-            // replace controller name
-            $content = str_ireplace("ControllerName", "{$controllerName}Controller", $content);
-
-            // replace module name
-            $content = str_ireplace("ModuleName", "{$this->moduleName}", $content);
-
-            // replace route prefix
-            $content = str_ireplace("route-prefix", "{$this->module}", $content);
-
-            // create the route file
-            $filePath = $routesDirectory . '/site.php';
-
-            $this->createFile($filePath, $content, 'Site routes');
-
-            // add the routes file to the api routes file content
-            if (Str::contains($apiRoutesFileContent, '// end of site routes')) {
-                $apiRoutesFileContent = str_replace(
-                    '// end of site routes',
-                    "// {$this->moduleName} module
-include base_path('app/Modules/{$this->moduleName}/routes/site.php');
-
-// end of site routes",
-                    $apiRoutesFileContent
-                );
-            }
-        }
-
-        if (in_array($type, ['all', 'admin'])) {
-            // generate the admin routes file
-            $content = File::get($this->path("routes/admin.php"));
-
-            // replace controller name
-            $content = str_ireplace("ControllerName", "{$controllerName}Controller", $content);
-
-            // replace module name
-            $content = str_ireplace("ModuleName", "{$this->moduleName}", $content);
-
-            // replace route prefix
-            $content = str_ireplace("route-prefix", "{$this->module}", $content);
-
-            // create the route file
-            $filePath = $routesDirectory . '/admin.php';
-
-            $this->createFile($filePath, $content, 'Admin routes');
-            // add the routes file to the api routes file content
-            if (Str::contains($apiRoutesFileContent, '// end of admin routes')) {
-                $apiRoutesFileContent = str_replace(
-                    '// end of admin routes',
-                    "// {$this->moduleName} module
-    include base_path('app/Modules/{$this->moduleName}/routes/admin.php');
-
-    // end of admin routes",
-                    $apiRoutesFileContent
-                );
-            }
-        }
-
-        // echo($apiRoutesFileContent);
-
-        File::put(base_path('routes/api.php'), $apiRoutesFileContent);
+        
+        $this->markModuleAsInstalled();
     }
 
     /**
@@ -304,12 +232,16 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
      */
     protected function createController()
     {
-        Artisan::call('engez:controller', [
+        $controllerOptions = [
             'controller' => $this->info['controller'],
             '--module' => $this->moduleName,
             '--repository' => $this->info['repositoryName'],
             '--type' => $this->option('type'),
-        ]);
+        ];
+        
+        if (isset($this->info['parent'])) $controllerOptions['--parent'] = $this->info['parent'];
+        
+        Artisan::call('engez:controller', $controllerOptions);
     }
 
     /**
@@ -319,11 +251,16 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
      */
     protected function createResource()
     {
-        Artisan::call('engez:resource', [
+        $resourceOptions = [
             'resource' => $this->info['resource'],
             '--module' => $this->moduleName,
-            '--data'   => $this->option('data'),
-        ]);
+        ];
+
+        if (isset($this->info['parent'])) $resourceOptions['--parent'] = $this->info['parent'];
+        if (isset($this->info['uploads'])) $resourceOptions['--uploads'] = $this->option('uploads');
+        if (isset($this->info['data'])) $resourceOptions['--data'] = $this->option('data');
+
+        Artisan::call('engez:resource', $resourceOptions);
     }
 
     /** 
@@ -340,48 +277,8 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
         if ($databaseDriver == 'mongodb') {
             $this->createSchema($databaseFileName);
         }
-
+        
         $this->createMigration();
-    }
-
-    /**
-     * Create migration file of table in mysql 
-     *
-     * @param string $dataFileName
-     * @return void 
-     */
-    protected function createMigration()
-    {
-        $migrationsOptions = [
-            'migration' => $this->moduleName,
-            '--module' => $this->moduleName,
-        ];
-
-        $indexedData = '';
-        $uniqueData  = '';
-        $data = '';
-
-        if ($this->hasOption('index')) {
-            $indexedData = $this->option('index');
-            $migrationsOptions['--index'] = $indexedData;
-        }
-
-        if ($this->hasOption('unique')) {
-            $uniqueData = $this->option('unique');
-            $migrationsOptions['--unique'] = $uniqueData;
-        }
-
-        if ($this->hasOption('data')) {
-            $data = $this->option('data');
-            $migrationsOptions['--data'] = $data;
-        }
-
-        if ($this->hasOption('uploads')) {
-            $uploads = $this->option('uploads');
-            $migrationsOptions['--uploads'] = $uploads;
-        }
-
-        Artisan::call('engez:migration', $migrationsOptions);
     }
 
     /**
@@ -398,6 +295,12 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
         $defaultContent = [
             '_id' => "objectId",
             'id' => 'int',
+            'createdAt'=>'dataTime',
+            'updatedAt'=>'dataTime',
+            'deletedAt'=>'dataTime',
+            'deletedBy'=>'@Users/users',
+            'createdBy'=>'@Users/users',
+            'updatedBy'=>'@Users/users',
         ];
 
         $customData = $this->info['data'] ?? [];
@@ -422,10 +325,15 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
      */
     protected function createRepository()
     {
-        Artisan::call('engez:repository', [
+        $repositoryOptions = [
             'repository' => $this->info['repositoryName'],
             '--module' => $this->moduleName,
-        ]);
+        ];
+        if (isset($this->info['parent'])) $repositoryOptions['--parent'] = $this->info['parent'];
+        if (isset($this->info['uploads'])) $repositoryOptions['--uploads'] = $this->info['uploads'];
+        if (isset($this->info['data'])) $repositoryOptions['--data'] = $this->info['data'];
+        
+        Artisan::call('engez:repository', $repositoryOptions);
     }
 
     /**
@@ -444,10 +352,13 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
 
         $this->info['modelName'] = $modelName;
 
-        Artisan::call('engez:model', [
+        $modelOptions = [
             'model' => $this->info['model'],
             '--module' => $this->moduleName,
-        ]);
+        ];
+        if (isset($this->info['parent'])) $modelOptions['--parent'] = $this->info['parent'];
+        
+        Artisan::call('engez:model', $modelOptions);
     }
 
     /**
@@ -504,18 +415,6 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
     }
 
     /**
-     * Set module name to config file.
-     * 
-     * @return void
-     */
-    protected function setModuleToFile()
-    {
-        Mongez::append('modules', $this->moduleName);
-
-        Mongez::updateStorageFile();
-    }
-
-    /**
      * Generate module postman
      *   
      * @return void
@@ -548,14 +447,23 @@ include base_path('app/Modules/{$this->moduleName}/routes/site.php');
     {
         $data = [];
         if (isset($this->info['data'])) $data = $this->info['data'];
-
-        $postman =  new MarkDown([
+        $markDownOption = [
             'moduleName' => $this->info['modelName'],
-            'data'       => $data
-        ]);
+            'data'       => $data,
+        ];
+        if (isset($this->info['parent'])) {
+            $markDownOption['parent'] = $this->info['parent'];
+        }
+        
+        $markDown =  new Markdown($markDownOption);
+        
+        $moduleFileName = 'README.md';
+        if(isset($this->info['parent'])) {
+            $moduleFileName = strtolower($this->info['moduleName']) .'.md';
+        }
 
         $path = $this->modulePath("docs");
-        $content = $postman->getContent();
-        $this->createFile("{$path}/README.md", $content, 'Docs');
+        $content = $markDown->getContent();
+        $this->createFile("{$path}/{$moduleFileName}", $content, 'Docs');
     }
 }

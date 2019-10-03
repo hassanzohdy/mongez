@@ -26,6 +26,7 @@ class EngezController extends Command implements EngezInterface
      * @var string
      */
     protected $signature = 'engez:controller  {controller} 
+                                               {--parent=}
                                                {--module=} 
                                                {--type=all}
                                                {--repository=}';
@@ -72,17 +73,24 @@ class EngezController extends Command implements EngezInterface
     public function validateArguments()
     {
         $availableModules = Mongez::getStored('modules');
-
+        
         if (!$this->option('module')) {
             return $this->missingRequiredOption('Module option is required');
         }
 
-        if (!in_array($this->info['moduleName'], $availableModules)) {
+        if (!in_array(strtolower($this->info['moduleName']), $availableModules)) {
             return $this->missingRequiredOption('This module is not available');
         }
-
+        
         if (!in_array($this->info['type'], static::CONTROLLER_TYPES)) {
             return $this->missingRequiredOption('This controller type does not exits');
+        }
+
+        if ($this->option('parent')) {
+            if (! in_array(strtolower($this->info['parent']), $availableModules)) {
+                return Command::error('This parent module is not available');
+                die();
+            }    
         }
     }
 
@@ -98,12 +106,14 @@ class EngezController extends Command implements EngezInterface
         $this->info['type'] = $this->option('type');
 
         $repositoryName = $this->info['controllerName'];
-
         if ($this->option('repository')) {
             $repositoryName = $this->option('repository');
         }
-
         $this->info['repositoryName'] = $repositoryName;
+    
+        if ($this->option('parent')) {
+            $this->info['parent'] = $this->option('parent');
+        }
     }
 
     /**
@@ -114,7 +124,7 @@ class EngezController extends Command implements EngezInterface
     public function create()
     {
         $controllerType = $this->info['type'];
-
+        
         if (in_array($controllerType, ['all', 'site'])) {
             $this->createController('site');
         }
@@ -136,6 +146,12 @@ class EngezController extends Command implements EngezInterface
 
         $controllerName = basename(str_replace('\\', '/', $controller));
 
+        $targetModule = $this->info['moduleName'];
+            
+        if (isset($this->info['parent'])) {
+            $targetModule = str::studly($this->info['parent']);
+        }
+
         // admin controller
         $this->info("Creating $controllerType controller...");
 
@@ -147,7 +163,7 @@ class EngezController extends Command implements EngezInterface
         $content = str_ireplace("ControllerName", "{$controllerName}Controller", $content);
 
         // replace module name
-        $content = str_ireplace("ModuleName", $this->info['moduleName'], $content);
+        $content = str_ireplace("ModuleName", $targetModule, $content);
 
         // repository name 
         $content = str_ireplace('repo-name', $this->repositoryShortcutName($this->info['repositoryName']), $content);
