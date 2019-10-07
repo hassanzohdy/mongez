@@ -66,12 +66,16 @@ class ModuleBuilder extends Command
                                        {--controller=}
                                        {--type=all}
                                        {--model=}
+                                       {--table=}
                                        {--data=}
                                        {--uploads=}
+                                       {--index=}
+                                       {--unique=}
+                                       {--int=}
                                        {--resource=}
                                        {--repository=}
                                        {--path=}
-                            ';
+                                       ';
 
     /**
      * The console command description.
@@ -89,7 +93,7 @@ class ModuleBuilder extends Command
     {
         $this->module = $this->argument('moduleName');
 
-        if ($this->option('parent')) $this->info['parent'] = $this->option('parent');
+        if ($this->optionHasValue('parent')) $this->info['parent'] = $this->option('parent');
 
         $this->moduleName = Str::studly($this->module);
 
@@ -107,7 +111,7 @@ class ModuleBuilder extends Command
         $modulePath = $this->modulePath("");
         
         if (File::isDirectory($modulePath) && !isset($this->info['parent'])) {
-            return Command::error('This module is already exist');
+            Command::error('This module is already exist');
             die();
         }
         
@@ -116,7 +120,7 @@ class ModuleBuilder extends Command
         if (isset($this->info['parent'])) {
             $availableModules = Mongez::getStored('modules');
             if (! in_array(strtolower($this->info['parent']), $availableModules)) {
-                return Command::error('This parent module is not available');
+                Command::error('This parent module is not available');
                 die();
             }
         }
@@ -200,7 +204,7 @@ class ModuleBuilder extends Command
     }
 
     /**
-     * Handle controller file
+     * Handle controller file.
      * 
      * @return void
      */
@@ -209,7 +213,7 @@ class ModuleBuilder extends Command
         $this->setData('controller');
 
         $controller = $this->info['controller'];
-
+        
         $controllerPath = $this->option('path'); // the parent directory inside the Api directory
 
         if ($controllerPath) {
@@ -221,7 +225,6 @@ class ModuleBuilder extends Command
         if (!in_array($controllerType, static::CONTROLLER_TYPES)) {
             throw new Exception(sprintf('Unknown controller type %s, available types: %s', $controllerType, implode(',', static::CONTROLLER_TYPES)));
         }
-
         $this->info['controller'] = $controller;
     }
 
@@ -232,6 +235,11 @@ class ModuleBuilder extends Command
      */
     protected function createController()
     {
+        $controllerName = basename(str_replace('\\', '/', $this->info['controller']));
+        if (File::exists($this->modulePath("Controllers/Admin/{$controllerName}Controller.php"))) {
+            Command::error('You already have this module');
+            die();    
+        }
         $controllerOptions = [
             'controller' => $this->info['controller'],
             '--module' => $this->moduleName,
@@ -259,7 +267,7 @@ class ModuleBuilder extends Command
         if (isset($this->info['parent'])) $resourceOptions['--parent'] = $this->info['parent'];
         if (isset($this->info['uploads'])) $resourceOptions['--uploads'] = $this->option('uploads');
         if (isset($this->info['data'])) $resourceOptions['--data'] = $this->option('data');
-
+        
         Artisan::call('engez:resource', $resourceOptions);
     }
 
@@ -270,6 +278,7 @@ class ModuleBuilder extends Command
      */
     protected function createDatabase()
     {
+        
         $databaseFileName = strtolower(str::plural($this->moduleName));
 
         // Create Schema only in monogo database
@@ -277,8 +286,6 @@ class ModuleBuilder extends Command
         if ($databaseDriver == 'mongodb') {
             $this->createSchema($databaseFileName);
         }
-        
-        $this->createMigration();
     }
 
     /**
@@ -351,13 +358,35 @@ class ModuleBuilder extends Command
         $modelName = Str::singular($modelName);
 
         $this->info['modelName'] = $modelName;
-
+        $string = '';
+        
         $modelOptions = [
             'model' => $this->info['model'],
-            '--module' => $this->moduleName,
+            '--module' => $this->moduleName, 
         ];
+
         if (isset($this->info['parent'])) $modelOptions['--parent'] = $this->info['parent'];
         
+        if ($this->optionHasValue('index')) {
+            $modelOptions['--index'] = $this->option('index');
+        }
+
+        if ($this->optionHasValue('unique')) {
+            $modelOptions['--unique'] = $this->option('unique');
+        }
+        
+        if ($this->optionHasValue('data')) {
+            $modelOptions['--data'] = $this->option('data');
+        }
+
+        if ($this->optionHasValue('uploads')) {
+            $modelOptions['--uploads'] = $this->option('uploads');
+        }
+        
+        if ($this->optionHasValue('table')) {
+            $modelOptions['--table'] = $this->option('table');
+        }
+
         Artisan::call('engez:model', $modelOptions);
     }
 

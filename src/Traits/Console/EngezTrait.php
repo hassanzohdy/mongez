@@ -124,31 +124,28 @@ trait EngezTrait
     protected function createMigration()
     {
         $migrationsOptions = [
-            'module' => $this->moduleName,
+            'migrationName' => 'create_' .Str::plural(strtolower($this->info['modelName'])).'_table',
+            'module' => $this->info['moduleName'],
         ];
 
-        $indexedData = '';
-        $uniqueData  = '';
-        $data = '';
-
-        if ($this->hasOption('index')) {
-            $indexedData = $this->option('index');
-            $migrationsOptions['--index'] = $indexedData;
+        if ($this->optionHasValue('index')) {
+            $migrationsOptions['--index'] = $this->option('index');
         }
 
-        if ($this->hasOption('unique')) {
-            $uniqueData = $this->option('unique');
-            $migrationsOptions['--unique'] = $uniqueData;
+        if ($this->optionHasValue('unique')) {
+            $migrationsOptions['--unique'] = $this->option('unique');
+        }
+        
+        if ($this->optionHasValue('data')) {
+            $migrationsOptions['--data'] = $this->option('data');
         }
 
-        if ($this->hasOption('data')) {
-            $data = $this->option('data');
-            $migrationsOptions['--data'] = $data;
+        if ($this->optionHasValue('uploads')) {
+            $migrationsOptions['--uploads'] = $this->option('uploads');
         }
 
-        if ($this->hasOption('uploads')) {
-            $uploads = $this->option('uploads');
-            $migrationsOptions['--uploads'] = $uploads;
+        if ($this->optionHasValue('table')) {
+            $migrationsOptions['--table'] = $this->option('table');
         }
 
         if (isset($this->info['parent'])) {
@@ -282,10 +279,10 @@ include base_path('app/Modules/{$routeModule}/routes/site.php');
             
             $content = File::get($this->modulePath("routes/site.php"));
             $content = str_replace(
-                '// child routes',
+                '// Child routes',
                 "Route::get('/{$this->info['parent']}/{$routeModule}/{id}','{$controllerName}Controller@index');
     Route::get('/{$this->info['parent']}/$routeModule}/{id}','{$controllerName}Controller@show');
-    // child routes",
+    // Child routes",
                 $content
             );
             File::put($this->modulePath("routes/site.php"),$content);

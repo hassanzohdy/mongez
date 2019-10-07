@@ -90,23 +90,24 @@ class EngezRepository extends Command implements EngezInterface
      * @return void
      */
     public function init()
-    {
+    {                
         $this->info['repository'] = Str::studly($this->argument('repository'));
+        $this->info['repositoryName'] = Str::camel(basename(str_replace('\\', '/', $this->info['repository'])));
         $this->info['moduleName'] = Str::studly($this->option('module'));
 
         $this->info['modelName'] = Str::singular($this->option('model') ?: $this->option('module'));
 
         $this->info['resourceName'] = Str::singular($this->option('model') ?: $this->option('module'));
         
-        if ($this->hasOption('parent')) {
+        if ($this->optionHasValue('parent')) {
             $this->info['parent'] = $this->option('parent');
         }
 
-        if ($this->hasOption('data')) {
+        if ($this->optionHasValue('data')) {
             $this->info['data'] = $this->option('data');
         }
 
-        if ($this->hasOption('uploads')) {
+        if ($this->optionHasValue('uploads')) {
             $this->info['uploads'] = $this->option('uploads');
         }
     }
@@ -144,7 +145,7 @@ class EngezRepository extends Command implements EngezInterface
         $content = str_ireplace("ResourceName", $this->info['resourceName'], $content);
 
         // repository name 
-        $content = str_ireplace('repo-name', $this->info['repository'], $content);
+        $content = str_ireplace('repo-name', $this->info['repositoryName'], $content);
 
         $dataList = '';
 
@@ -193,7 +194,7 @@ class EngezRepository extends Command implements EngezInterface
         $repositoryClassName = basename(str_replace('\\', '/', $this->info['repository']));
 
         $repositoryShortcut = $this->repositoryShortcutName($this->info['repository']);
-
+        
         $module = $this->info['moduleName'];
         if (isset($this->info['parent'])) {
             $module = $this->info['parent'];
