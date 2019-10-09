@@ -59,6 +59,13 @@ abstract class RepositoryManager implements RepositoryInterface
     const EVENT = '';
 
     /**
+     * Uploads directory name
+     * 
+     * @const string
+     */
+    const UPLOADS_DIRECTORY = '';
+
+    /**
      * Event name to be triggered
      * If set to empty, then it will be the class model name
      * 
@@ -263,6 +270,21 @@ abstract class RepositoryManager implements RepositoryInterface
     protected $request;
 
     /**
+     * Events Object
+     *
+     * @var Events
+     */
+    protected $events;
+
+    /**
+     * Old model object
+     * Works with update method only
+     * 
+     * @var Model
+     */
+    protected $oldModel;
+
+    /**
      * Select Helper Object
      *
      * @var \HZ\Illuminate\Mongez\Helpers\Repository\Select
@@ -304,15 +326,7 @@ abstract class RepositoryManager implements RepositoryInterface
         $this->user = user();
 
         if (!empty(static::EVENTS_LIST)) {
-            $this->eventName = static::EVENT;
-
-            if (!$this->eventName) {
-                $eventNameModelBased = basename(str_replace('\\', '/', static::MODEL));
-
-                $this->eventName = strtolower($eventNameModelBased);
-
-                $this->eventName = Str::plural($this->eventName);
-            }
+            $this->eventName = static::EVENT ?: static::NAME;
 
             // register events
             $this->registerEvents();
@@ -663,6 +677,8 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $oldModel = clone $model;
 
+        $this->oldModel = $oldModel;
+
         $this->setAutoData($model, $request);
 
         $this->setData($model, $request);
@@ -751,9 +767,19 @@ abstract class RepositoryManager implements RepositoryInterface
             }
 
             if ($request->$name) {
-                $model->$column = $request->$name->store(static::NAME);
+                $model->$column = $request->$name->store($this->getUploadsStorageDirectoryName());
             }
         }
+    }
+
+    /**
+     * Get the uploads storage directory name
+     * 
+     * @return string
+     */
+    protected function getUploadsStorageDirectoryName(): string
+    {
+        return static::UPLOADS_DIRECTORY ?: static::NAME;
     }
 
     /**
@@ -908,8 +934,6 @@ abstract class RepositoryManager implements RepositoryInterface
         if (method_exists($this->query, $method)) {
             return $this->query->$method(...$args);
         }
-
-        // return $this->query->$method(...$args);
 
         return $this->marcoableMethods($method, $args);
     }

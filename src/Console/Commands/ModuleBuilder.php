@@ -63,6 +63,7 @@ class ModuleBuilder extends Command
     protected $signature = 'engez:module 
                                        {moduleName}
                                        {--parent=}
+                                       {--singleName=}
                                        {--controller=}
                                        {--type=all}
                                        {--model=}
@@ -94,6 +95,7 @@ class ModuleBuilder extends Command
         $this->moduleName = Str::studly($this->module);
 
         $this->info['moduleName'] = $this->moduleName;
+        
         $this->validateArguments();
         $this->adjustOptionsValues();
     }
@@ -107,7 +109,7 @@ class ModuleBuilder extends Command
         $modulePath = $this->modulePath("");
         
         if (File::isDirectory($modulePath) && !isset($this->info['parent'])) {
-            return Command::error('This module is already exist');
+            Command::error('This module is already exist');
             die();
         }
         
@@ -116,7 +118,7 @@ class ModuleBuilder extends Command
         if (isset($this->info['parent'])) {
             $availableModules = Mongez::getStored('modules');
             if (! in_array(strtolower($this->info['parent']), $availableModules)) {
-                return Command::error('This parent module is not available');
+                Command::error('This parent module is not available');
                 die();
             }
         }
@@ -356,6 +358,7 @@ class ModuleBuilder extends Command
             'model' => $this->info['model'],
             '--module' => $this->moduleName,
         ];
+        
         if (isset($this->info['parent'])) $modelOptions['--parent'] = $this->info['parent'];
         
         Artisan::call('engez:model', $modelOptions);
@@ -368,6 +371,10 @@ class ModuleBuilder extends Command
      */
     protected function initModel()
     {
+        if ($this->optionHasValue('singleName')) {
+            return $this->info['model'] = $this->option('singleName');
+        }
+
         $this->setData('model');
     }
 
@@ -378,6 +385,10 @@ class ModuleBuilder extends Command
      */
     protected function initResource()
     {
+        if ($this->optionHasValue('singleName')) {
+            return $this->info['resource'] = $this->option('singleName');
+        }
+
         $this->setData('resource');
     }
 
@@ -390,7 +401,7 @@ class ModuleBuilder extends Command
     {
         $this->setData('repository');
 
-        $this->info['repositoryName'] = Str::camel(basename(str_replace('\\', '/', $this->info['repository'])));
+        $this->info['repositoryName'] = $this->adjustRepositoryName($this->info['repository']);
     }
 
     /**

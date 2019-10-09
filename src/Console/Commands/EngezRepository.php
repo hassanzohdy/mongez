@@ -127,7 +127,7 @@ class EngezRepository extends Command implements EngezInterface
         $content = File::get($this->path("Repositories/{$database}-repository.php"));
 
         // replace repository name
-        $content = str_ireplace("RepositoryName", "{$repositoryName}", $content);
+        $content = str_ireplace("RepositoryName", Str::camel($repositoryName), $content);
 
         $targetModule = $this->info['moduleName'];    
         if (isset($this->info['parent'])) {
@@ -144,7 +144,7 @@ class EngezRepository extends Command implements EngezInterface
         $content = str_ireplace("ResourceName", $this->info['resourceName'], $content);
 
         // repository name 
-        $content = str_ireplace('repo-name', $this->info['repository'], $content);
+        $content = str_ireplace('repo-name', $this->adjustRepositoryName($this->info['repository']), $content);
 
         $dataList = '';
 

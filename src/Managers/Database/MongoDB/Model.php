@@ -57,6 +57,15 @@ abstract class Model extends BaseModel
      */
     const DELETED_BY = 'deletedBy';
 
+
+    /**
+     * Shared info of the model
+     * This is used for getting simple info 
+     * 
+     * @const array
+     */
+    const SHARED_INFO = [];
+
     /**
      * Disable guarded fields
      *
@@ -152,7 +161,25 @@ abstract class Model extends BaseModel
      */
     public function sharedInfo(): array
     {
-        return $this->getAttributes();
+        return ! empty(static::SHARED_INFO) ? $this->getValues(...static::SHARED_INFO) 
+                                            : $this->getAttributes();
+    }
+
+    /**
+     * Get values of the given columns
+     * 
+     * @param ...$columns
+     * @return array
+     */
+    public function getValues(...$columns): array
+    {
+        $data = [];
+
+        foreach ($columns as $column) {
+            $data[$column] = $this->$column;
+        }
+
+        return $data;
     }
 
     /**
