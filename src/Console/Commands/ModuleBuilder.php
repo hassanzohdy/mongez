@@ -259,7 +259,7 @@ class ModuleBuilder extends Command
         ];
 
         if (isset($this->info['parent'])) $resourceOptions['--parent'] = $this->info['parent'];
-        if (isset($this->info['uploads'])) $resourceOptions['--uploads'] = $this->option('uploads');
+        if (isset($this->info['uploads'])) $resourceOptions['--assets'] = $this->option('uploads');
         if (isset($this->info['data'])) $resourceOptions['--data'] = $this->option('data');
 
         Artisan::call('engez:resource', $resourceOptions);

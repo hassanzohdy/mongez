@@ -19,7 +19,7 @@ class EngezResource extends Command implements EngezInterface
     protected $signature = 'engez:resource {resource} 
                                            {--module=} 
                                            {--data=}
-                                           {--uploads=}
+                                           {--assets=}
                                            {--parent=} 
                                            ';
     /**
@@ -85,6 +85,7 @@ class EngezResource extends Command implements EngezInterface
         $this->info['moduleName'] = Str::studly($this->option('module'));
 
         $this->info['data'] = explode(",",$this->option('data')) ?: [];
+        $this->info['assets'] = explode(",",$this->option('assets')) ?: [];
     
         if ($this->hasOption('parent')) {
             $this->info['parent'] = $this->option('parent');
@@ -141,8 +142,8 @@ class EngezResource extends Command implements EngezInterface
 
         $assetsList = '';
 
-        if (!empty($this->info['uploads'])) {
-            $assetsList = "'" . implode("', '", $this->info['uploads']) . "'";
+        if (!empty($this->info['assets'])) {
+            $assetsList = "'" . implode("', '", $this->info['assets']) . "'";
         }
 
         // replace resource data

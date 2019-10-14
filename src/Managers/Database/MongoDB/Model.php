@@ -1,5 +1,4 @@
 <?php
-
 namespace HZ\Illuminate\Mongez\Managers\Database\MongoDB;
 
 use DB;
@@ -9,7 +8,7 @@ use Jenssegers\Mongodb\Eloquent\Model as BaseModel;
 abstract class Model extends BaseModel
 {
     use ModelTrait {
-        boot as TraitBoot;
+        boot as traitBoot;
     }
 
     /**
@@ -78,7 +77,7 @@ abstract class Model extends BaseModel
      */
     public static function boot()
     {
-        static::TraitBoot();
+        static::traitBoot();
 
         // Create an auto increment id on creating new document
 

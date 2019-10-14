@@ -51,7 +51,7 @@ class ResourceName extends JsonResourceManager
     /**
      * Data that will be returned as a collection of resources
      * 
-     * i.e [city => CityResource::class],
+     * i.e [cities => CityResource::class],
      * @const array
      */
     const COLLECTABLE = [];
