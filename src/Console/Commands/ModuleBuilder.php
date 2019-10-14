@@ -321,13 +321,12 @@ class ModuleBuilder extends Command
             die();    
         }
         $controllerOptions = [
-            'controller' => $this->info['controller'],
+            'controller' => $controllerName,
             '--module' => $this->moduleName,
         ];
         $options = $this->setOptions([
             'parent',
             'type',
-            'repository'=>'uploads'
         ]);
         
         $this->call('engez:controller', array_merge($controllerOptions, $options));

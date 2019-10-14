@@ -111,6 +111,7 @@ class EngezController extends Command implements EngezInterface
         $this->info['type'] = $this->option('type');
 
         $repositoryName = $this->info['controllerName'];
+        
         if ($this->optionHasValue('repository')) {
             $repositoryName = $this->option('repository');
         }
@@ -169,8 +170,8 @@ class EngezController extends Command implements EngezInterface
 
         // replace module name
         $content = str_ireplace("ModuleName", $targetModule, $content);
-
-        // repository name 
+        
+        // repository name  
         $content = str_ireplace('repo-name', $this->repositoryShortcutName($this->info['repositoryName']), $content);
 
         $controllerDirectory = $this->modulePath("Controllers/$bigControllerType");
