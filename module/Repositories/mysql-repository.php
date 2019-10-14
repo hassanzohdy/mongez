@@ -138,4 +138,16 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
     {
         // 
     }
+
+    /**
+     * Get a specific record with full details
+     * 
+     * @param  int id
+     * @return mixed
+     */
+    public function get(int $id) 
+    {
+        //
+    }
+
 }

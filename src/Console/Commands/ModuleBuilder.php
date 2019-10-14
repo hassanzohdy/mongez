@@ -54,7 +54,12 @@ class ModuleBuilder extends Command
      * Module info
      */
     protected $info = [];
-
+    
+    /**
+     * Available Options
+     *
+     */
+    protected $availableOptions = [];
     /**
      * The name and signature of the console command.
      *
@@ -72,6 +77,8 @@ class ModuleBuilder extends Command
                                        {--index=}
                                        {--unique=}
                                        {--int=}
+                                       {--double=}
+                                       {--bool=}
                                        {--resource=}
                                        {--repository=}
                                        {--path=}
@@ -136,6 +143,77 @@ class ModuleBuilder extends Command
         $this->create();
     }
 
+    // /**
+    //  * Set all available options
+    //  * 
+    //  * @return void 
+    //  */
+    // protected function setOptions()
+    // {
+    //     $this->availableOptions = [];
+
+    //     if ($this->optionHasValue('parent')) {
+    //         $this->availableOptions['--parent'] = $this->option('parent');
+    //     }
+
+    //     if ($this->optionHasValue('model')) {
+    //         $this->availableOptions['--model'] = $this->option('model');
+    //     }
+
+    //     if ($this->optionHasValue('path')) {
+    //         $this->availableOptions['--path'] = $this->option('path');
+    //     }
+
+    //     if ($this->optionHasValue('repository')) {
+    //         $this->availableOptions['--repository'] = $this->option('repository');
+    //     }
+
+    //     if ($this->optionHasValue('resource')) {
+    //         $this->availableOptions['--resource'] = $this->option('resource');
+    //     }
+
+    //     if ($this->optionHasValue('controller')) {
+    //         $this->availableOptions['--controller'] = $this->option('controller');
+    //     }
+
+    //     if ($this->optionHasValue('index')) {
+    //         $this->availableOptions['--index'] = $this->option('index');
+    //     }
+
+    //     if ($this->optionHasValue('unique')) {
+    //         $this->availableOptions['--unique'] = $this->option('unique');
+    //     }
+        
+    //     if ($this->optionHasValue('data')) {
+    //         $this->availableOptions['--data'] = $this->option('data');
+    //     }
+
+    //     if ($this->optionHasValue('uploads')) {
+    //         $this->availableOptions['--uploads'] = $this->option('uploads');
+    //     }
+
+    //     if ($this->optionHasValue('double')) {
+    //         $this->availableOptions['--double'] = $this->option('double');
+    //     }
+        
+    //     if ($this->optionHasValue('bool')) {
+    //         $this->availableOptions['--bool'] = $this->option('bool');
+    //     }
+        
+    //     if ($this->optionHasValue('int')) {
+    //         $this->availableOptions['--int'] = $this->option('int');
+    //     }
+    //     if ($this->optionHasValue('table')) {
+    //         $this->availableOptions['--table'] = $this->option('table');
+    //     }
+    // }
+
+    /**
+     * Get option from available options
+     * 
+     * @param string $key
+     * @return 
+     */
     /**
      * Init data
      * 
@@ -243,13 +321,14 @@ class ModuleBuilder extends Command
         $controllerOptions = [
             'controller' => $this->info['controller'],
             '--module' => $this->moduleName,
-            '--repository' => $this->info['repositoryName'],
-            '--type' => $this->option('type'),
         ];
+        $options = $this->setOptions([
+            'parent',
+            'type',
+            'repository'=>'uploads'
+        ]);
         
-        if (isset($this->info['parent'])) $controllerOptions['--parent'] = $this->info['parent'];
-        
-        Artisan::call('engez:controller', $controllerOptions);
+        $this->call('engez:controller', array_merge($controllerOptions, $options));
     }
 
     /**
@@ -264,11 +343,13 @@ class ModuleBuilder extends Command
             '--module' => $this->moduleName,
         ];
 
-        if (isset($this->info['parent'])) $resourceOptions['--parent'] = $this->info['parent'];
-        if (isset($this->info['uploads'])) $resourceOptions['--uploads'] = $this->option('uploads');
-        if (isset($this->info['data'])) $resourceOptions['--data'] = $this->option('data');
+        $options = $this->setOptions([
+            'parent',
+            'assets'=>'uploads',
+            'data'
+        ]);
         
-        Artisan::call('engez:resource', $resourceOptions);
+        $this->call('engez:resource', array_merge($resourceOptions, $options));
     }
 
     /** 
@@ -336,11 +417,13 @@ class ModuleBuilder extends Command
             'repository' => $this->info['repositoryName'],
             '--module' => $this->moduleName,
         ];
-        if (isset($this->info['parent'])) $repositoryOptions['--parent'] = $this->info['parent'];
-        if (isset($this->info['uploads'])) $repositoryOptions['--uploads'] = $this->info['uploads'];
-        if (isset($this->info['data'])) $repositoryOptions['--data'] = $this->info['data'];
-        
-        Artisan::call('engez:repository', $repositoryOptions);
+        $options = $this->setOptions([
+            'parent',
+            'uploads',
+            'data'
+        ]);
+
+        $this->call('engez:repository', array_merge($repositoryOptions, $options));
     }
 
     /**
@@ -358,36 +441,24 @@ class ModuleBuilder extends Command
         $modelName = Str::singular($modelName);
 
         $this->info['modelName'] = $modelName;
-        $string = '';
         
         $modelOptions = [
             'model' => $this->info['model'],
             '--module' => $this->moduleName, 
         ];
-
-        if (isset($this->info['parent'])) $modelOptions['--parent'] = $this->info['parent'];
+        $options = $this->setOptions([
+            'index',
+            'unique',
+            'data',
+            'uploads',
+            'double',
+            'bool',
+            'int',
+            'data',
+            'parent'
+        ]);
         
-        if ($this->optionHasValue('index')) {
-            $modelOptions['--index'] = $this->option('index');
-        }
-
-        if ($this->optionHasValue('unique')) {
-            $modelOptions['--unique'] = $this->option('unique');
-        }
-        
-        if ($this->optionHasValue('data')) {
-            $modelOptions['--data'] = $this->option('data');
-        }
-
-        if ($this->optionHasValue('uploads')) {
-            $modelOptions['--uploads'] = $this->option('uploads');
-        }
-        
-        if ($this->optionHasValue('table')) {
-            $modelOptions['--table'] = $this->option('table');
-        }
-
-        Artisan::call('engez:model', $modelOptions);
+        $this->call('engez:model', array_merge($modelOptions, $options));
     }
 
     /**
@@ -444,7 +515,7 @@ class ModuleBuilder extends Command
     }
 
     /**
-     * Generate module postman
+     * Generate module postman.
      *   
      * @return void
      */
@@ -453,9 +524,36 @@ class ModuleBuilder extends Command
         $data = [];
         if (isset($this->info['data'])) $data = $this->info['data'];
 
+        $uploads = [];
+        
+        if ($this->optionHasValue('uploads')) {
+            $uploads[] = $this->option('uploads');
+        }
+
+        if ($this->optionHasValue('index')) {
+            $data[] = $this->option('index');
+        }
+
+        if ($this->optionHasValue('unique')) {
+            $data[] = $this->option('unique');
+        }
+
+        if ($this->optionHasValue('double')) {
+            $data[] = $this->option('double');
+        }
+        
+        if ($this->optionHasValue('bool')) {
+            $data[] = $this->option('bool');
+        }
+        
+        if ($this->optionHasValue('int')) {
+            $data[] = $this->option('int');
+        }
+
         $postman =  new Postman([
             'modelName' => $this->info['modelName'],
-            'data'       => $data
+            'data'       => $data,
+            'uploads'    => $uploads
         ]);
 
         $path = $this->modulePath("docs");
@@ -468,7 +566,7 @@ class ModuleBuilder extends Command
     }
 
     /**
-     * Generate module documentation
+     * Generate module documentation.
      *   
      * @return void
      */
@@ -476,9 +574,14 @@ class ModuleBuilder extends Command
     {
         $data = [];
         if (isset($this->info['data'])) $data = $this->info['data'];
+
+        $uploads = [];
+        if ($this->optionHasValue('uploads')) $uploads = $this->option('uploads');
+
         $markDownOption = [
             'moduleName' => $this->info['modelName'],
             'data'       => $data,
+            'uploads'    => $uploads
         ];
         if (isset($this->info['parent'])) {
             $markDownOption['parent'] = $this->info['parent'];

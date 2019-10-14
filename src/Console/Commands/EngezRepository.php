@@ -104,11 +104,11 @@ class EngezRepository extends Command implements EngezInterface
         }
 
         if ($this->optionHasValue('data')) {
-            $this->info['data'] = $this->option('data');
+            $this->info['data'] = explode(",",$this->option('data'));
         }
 
         if ($this->optionHasValue('uploads')) {
-            $this->info['uploads'] = $this->option('uploads');
+            $this->info['uploads'] = explode(",",$this->option('uploads'));
         }
     }
 
@@ -148,7 +148,7 @@ class EngezRepository extends Command implements EngezInterface
         $content = str_ireplace('repo-name', $this->info['repositoryName'], $content);
 
         $dataList = '';
-
+        
         if (!empty($this->info['data'])) {
             if (in_array('id', $this->info['data'])) {
                 $this->info['data'] = Arr::remove($this->info['data'], 'id');
@@ -156,7 +156,7 @@ class EngezRepository extends Command implements EngezInterface
 
             $dataList = "'" . implode("', '", $this->info['data']) . "'";
         }
-
+        
         // replace repository data
         $content = str_ireplace("DATA_LIST", $dataList, $content);
 

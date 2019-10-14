@@ -386,11 +386,9 @@ abstract class RepositoryManager implements RepositoryInterface
                 $this->query->whereNull($deletedAtColumn);
             } elseif ($retrieveMode == static::RETRIEVE_DELETED_RECORDS) {
                 $deletedAtColumn = $this->column(static::DELETED_AT);
-
                 $this->query->whereNotNull($deletedAtColumn);
             }
         }
-
         foreach (static::FILTER_BY as $column => $option) {
             if ($value = $this->option($option)) {
                 $column = is_numeric($column) ? $option : $column;
@@ -510,10 +508,11 @@ abstract class RepositoryManager implements RepositoryInterface
     {
         if (static::MODEL) {
             $model = static::MODEL;
-            return $model::table();
+            $table = $model::getTableName();
         } else {
-            return DB::table($this->tableName);
+            $table = $this->tableName;
         }
+        return DB::table($table);
     }
 
     /**
@@ -942,5 +941,5 @@ abstract class RepositoryManager implements RepositoryInterface
     public function isUsingSoftDelete(): bool
     {
         return static::USING_SOFT_DELETE;
-    }
+    }    
 }

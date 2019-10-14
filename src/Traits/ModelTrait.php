@@ -22,10 +22,10 @@ trait ModelTrait
      * @return string
      */
     public static function getTableName()
-    {
+    { 
         return (new static)->getTable();
     }
-
+    
     /**
      * {@inheritDoc}
      */

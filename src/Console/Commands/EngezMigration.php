@@ -24,6 +24,7 @@ class EngezMigration extends Command implements EngezInterface
                                             {--data=}
                                             {--uploads=}
                                             {--int=}
+                                            {--double=}
                                             {--bool=}
                                             {--index=} 
                                             {--parent=}
@@ -77,6 +78,7 @@ class EngezMigration extends Command implements EngezInterface
         $this->info['index'] =  [];
         $this->info['unique'] =  [];
         $this->info['int'] =  [];
+        $this->info['double'] =  [];
         $this->info['bool'] =  [];
         
         if ($this->optionHasValue('index')) {
@@ -92,7 +94,7 @@ class EngezMigration extends Command implements EngezInterface
         }
         
         if ($this->optionHasValue('uploads')) {
-            $allData .= $this->option('data'); 
+            $allData .= $this->option('uploads'); 
         }
 
         if ($this->optionHasValue('int')) {
@@ -101,6 +103,10 @@ class EngezMigration extends Command implements EngezInterface
 
         if ($this->optionHasValue('bool')) {
             $this->info['bool'] = explode(',', $this->option('bool'));
+        }
+
+        if ($this->optionHasValue('double')) {
+            $this->info['double'] = explode(',', $this->option('double'));
         }
 
         if ($this->optionHasValue('parent')) {
@@ -164,8 +170,6 @@ class EngezMigration extends Command implements EngezInterface
         $this->info['table'] = $table;
         $this->info['migrationType'] = 'create';
         if (!$create) $this->info['migrationType'] = 'table';
-
-        $this->info['className'] = $name;
     }
     /**
      * Make migration file for module
@@ -185,12 +189,13 @@ class EngezMigration extends Command implements EngezInterface
         $path = 'app/modules/' . $targetModule . '/database/migrations';
 
         $databaseFileName = $this->info['migrationName'];
-            
+        $className = Str::studly($databaseFileName);
+
         $this->checkDirectory($path);
         
         $content = File::get($this->path("Migrations/".$databaseDriver."-migration.php"));
 
-        $content = str_ireplace("className", $this->info['className'], $content);
+        $content = str_ireplace("className", $className, $content);
         $content = str_ireplace("TableName", $this->info['table'], $content);
         $content = str_ireplace("{'type'}", $this->info['migrationType'], $content);
         
@@ -199,8 +204,8 @@ class EngezMigration extends Command implements EngezInterface
                 unset($this->info['index'][array_search($singleIndexData, $this->info['index'])]);
             }
         }
-        $allData = array_filter(array_unique(array_merge($this->info['data'], $this->info['int'], $this->info['bool'], $this->info['index'], $this->info['unique'])));
-
+        $allData = array_filter(array_unique(array_merge($this->info['data'], $this->info['int'], $this->info['bool'], $this->info['index'], $this->info['unique'], $this->info['double'])));
+        
         if (! empty($allData)) {
             $schema = '';
             $tabs = "\n" . str_repeat("\t", 3);
@@ -216,7 +221,11 @@ class EngezMigration extends Command implements EngezInterface
                 }
 
                 if (in_array($data, $this->info['int'])) {
-                    $dataSchema = "{$tabs}\$table->int('$data');";
+                    $dataSchema = "{$tabs}\$table->integer('$data');";
+                }
+
+                if (in_array($data, $this->info['double'])) {
+                    $dataSchema = "{$tabs}\$table->double('$data');";
                 }
                 
                 if (in_array($data, $this->info['bool'])) {

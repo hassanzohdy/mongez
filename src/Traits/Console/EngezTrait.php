@@ -144,6 +144,13 @@ trait EngezTrait
             $migrationsOptions['--uploads'] = $this->option('uploads');
         }
 
+        if ($this->optionHasValue('int')) {
+            $migrationsOptions['--int'] = $this->option('int');
+        }
+
+        if ($this->optionHasValue('double')) {
+            $migrationsOptions['--double'] = $this->option('double');
+        }
         if ($this->optionHasValue('table')) {
             $migrationsOptions['--table'] = $this->option('table');
         }
@@ -309,5 +316,28 @@ include base_path('app/Modules/{$routeModule}/routes/site.php');
             File::put($this->modulePath("routes/admin.php"),$content);
         }
         return;     
+    }
+
+    /**
+     * 
+     */
+    protected function setOptions(array $keys)
+    {
+        $neededOptions = [];
+        foreach ($keys as $index => $key ) 
+        {
+            if (is_numeric($index)) {
+                $index = $key;
+            }
+
+            if (!str::startsWith('--' ,$index)) {
+                $index = '--' .$index;
+            }
+
+            if ($this->optionHasValue($key)) {
+                $neededOptions[$index] = $this->option($key);
+            }
+        }
+        return $neededOptions;
     }
 }

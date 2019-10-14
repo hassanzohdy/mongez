@@ -22,6 +22,8 @@ class EngezModel extends Command implements EngezInterface
                                         {--uploads=}
                                         {--index=}
                                         {--int=}
+                                        {--bool}
+                                        {--double=}
                                         {--table=}                                        
                                         {--unique=}
                                         {--index=}
