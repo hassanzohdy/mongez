@@ -206,6 +206,11 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     protected function setMultiDocumentData($model, $request)
     {
         foreach (static::MULTI_DOCUMENTS_DATA as $column => $documentModelClass) {
+            if (! $request->$column) {
+                $model->$column = [];
+                continue;
+            }
+            
             $ids = array_map('intVal', $request->$column);
             $records = $documentModelClass::whereIn('id', $ids)->get();
 

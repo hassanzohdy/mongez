@@ -27,6 +27,33 @@ trait ModelTrait
     }
     
     /**
+     * Get model id, if no id yet then return next id
+     * 
+     * @return int
+     */
+    public function getId(): int
+    {
+        return $this->id ?? static::getNextId();
+    }
+
+    /**
+     * Pluck the given keys from the model info
+     * 
+     * @param  array $columns
+     * @return array
+     */
+    public function pluck(array $columns): array
+    {
+        $data = [];
+
+        foreach ($columns as $column) {
+            $data[$column] = $this->$column;
+        }
+
+        return $data;
+    }
+
+    /**
      * {@inheritDoc}
      */
     public static function boot()

@@ -275,7 +275,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * @var Events
      */
     protected $events;
-    
+
     /**
      * Old model object
      * Works with update method only
@@ -283,7 +283,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * @var Model
      */
     protected $oldModel;
-    
+
     /**
      * Select Helper Object
      *
@@ -426,7 +426,7 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $this->orderBy($this->option('orderBy', $defaultOrderBy));
 
-        $this->events->trigger("{$this->eventName}.listing", $this->query, $this);
+        $this->trigger("listing", $this->query, $this);
 
         $paginate = $this->option('paginate', static::PAGINATE);
 
@@ -452,13 +452,29 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $records = $this->records($records);
 
-        $results = $this->events->trigger("{$this->eventName}.list", $records);
+        $results = $this->trigger("list", $records);
 
         if ($results instanceof Collection) {
             $records = $results;
         }
 
         return $records;
+    }
+
+    /**
+     * Trigger the given event related to current repository
+     * 
+     * @param  string $events
+     * @param ...$values
+     * @return mixed
+     */
+    public function trigger(string $events, ...$values)
+    {
+        $events = array_map(function ($event) {
+            return "{$this->eventName}.{$event}";
+        }, explode(' ', $events));
+
+        return $this->events->trigger(implode(' ', $events), ...$values);
     }
 
     /**
@@ -656,11 +672,11 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $this->setData($model, $request);
 
-        $this->events->trigger("{$this->eventName}.saving {$this->eventName}.creating", $model, $request);
+        $this->trigger("saving creating", $model, $request);
 
         $model->save();
 
-        $this->events->trigger("{$this->eventName}.save {$this->eventName}.create", $model, $request);
+        $this->trigger("save create", $model, $request);
 
         return $model;
     }
@@ -674,15 +690,17 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $oldModel = clone $model;
 
+        $this->oldModel = $oldModel;
+
         $this->setAutoData($model, $request);
 
         $this->setData($model, $request);
 
-        $this->events->trigger("{$this->eventName}.saving {$this->eventName}.updating", $model, $request, $oldModel);
+        $this->trigger("saving updating", $model, $request, $oldModel);
 
         $model->save();
 
-        $this->events->trigger("{$this->eventName}.save {$this->eventName}.update", $model, $request, $oldModel);
+        $this->trigger("save update", $model, $request, $oldModel);
 
         return $model;
     }
@@ -762,9 +780,19 @@ abstract class RepositoryManager implements RepositoryInterface
             }
 
             if ($request->$name) {
-                $model->$column = $request->$name->store(static::NAME);
+                $model->$column = $request->$name->store($this->getUploadsStorageDirectoryName());
             }
         }
+    }
+
+    /**
+     * Get the uploads storage directory name
+     * 
+     * @return string
+     */
+    protected function getUploadsStorageDirectoryName(): string
+    {
+        return static::UPLOADS_DIRECTORY ?: static::NAME;
     }
 
     /**
@@ -791,7 +819,7 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     protected function setFloatData($model, $request)
     {
-        foreach (static::INTEGER_DATA as $column) {
+        foreach (static::FLOAT_DATA as $column) {
             if (in_array($column, static::WHEN_AVAILABLE_DATA) && !isset($request->$column)) continue;
             $model->$column = (float) $request->$column;
         }
@@ -868,7 +896,7 @@ abstract class RepositoryManager implements RepositoryInterface
             if (is_string($key)) {
                 $model->$key = $value;
             } else {
-                $model->key = $this->request->$value;
+                $model->$value = $this->request->$value;
             }
         }
 
@@ -898,11 +926,11 @@ abstract class RepositoryManager implements RepositoryInterface
 
         if (!$model) return false;
 
-        if ($this->events->trigger("{$this->eventName}.deleting", $model, $id) === false) return false;
+        if ($this->trigger("deleting", $model, $id) === false) return false;
 
         $model->delete();
 
-        $this->events->trigger("{$this->eventName}.delete", $model, $id);
+        $this->trigger("delete", $model, $id);
 
         return true;
     }
@@ -919,8 +947,6 @@ abstract class RepositoryManager implements RepositoryInterface
         if (method_exists($this->query, $method)) {
             return $this->query->$method(...$args);
         }
-
-        // return $this->query->$method(...$args);
 
         return $this->marcoableMethods($method, $args);
     }

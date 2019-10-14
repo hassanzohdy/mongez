@@ -106,6 +106,7 @@ class ModuleBuilder extends Command
         $this->moduleName = Str::studly($this->module);
 
         $this->info['moduleName'] = $this->moduleName;
+        
         $this->validateArguments();
         $this->adjustOptionsValues();
     }

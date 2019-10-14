@@ -180,6 +180,6 @@ class EngezController extends Command implements EngezInterface
         // create the file
         $filePath = "$controllerDirectory/{$controllerName}Controller.php";
 
-        $this->createFile($filePath, $content, "$bigControllerType Controller");
+        $this->createFile($filePath, $content, "$bigControllerType Controller");        
     }
 }

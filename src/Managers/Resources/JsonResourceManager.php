@@ -84,6 +84,24 @@ abstract class JsonResourceManager extends JsonResource
     protected $assetsUrlFunction;
 
     /**
+     * List of keys that will be unset before manipulating it
+     * 
+     * @var array
+     */
+    protected static $disabledKeys = [];
+
+    /**
+     * Disable the given list of keys
+     * 
+     * @param ...$keys
+     * @return void
+     */
+    public static function disable(...$keys) 
+    {
+        static::$disabledKeys = array_merge(static::$disabledKeys, $keys); 
+    }
+
+    /**
      * Transform the resource into an array.
      *
      * @param   \Illuminate\Http\Request  $request
@@ -93,10 +111,15 @@ abstract class JsonResourceManager extends JsonResource
     {
         $this->request = $request;
 
-        if (! $this->assetsUrlFunction) {
+        if (!$this->assetsUrlFunction) {
             $this->assetsUrlFunction = config('mongez.resources.assets', 'url');
         }
-        
+
+        // unset all data from the resource
+        foreach (static::$disabledKeys as $key) {
+            unset($this->resource->$key);
+        }
+
         $this->collectData(static::DATA);
 
         $this->collectLocalized(static::LOCALIZED);
@@ -161,7 +184,7 @@ abstract class JsonResourceManager extends JsonResource
             }
 
             $asset = $this->$column;
-            
+
             $this->data[$column] =  !is_array($asset) ? call_user_func($this->assetsUrlFunction, $asset) : array_map(function ($asset) {
                 return call_user_func($this->assetsUrlFunction, $asset);
             }, $asset);
@@ -259,7 +282,11 @@ abstract class JsonResourceManager extends JsonResource
             $value = $this->$column ?? null;
             $dataValue = $this->data[$column] ?? null;
 
-            if (!$this->isEmptyValue($value) || !$this->isEmptyValue($dataValue)) {
+            if (
+                !$this->isEmptyValue($value) ||
+                ! is_subclass_of($dataValue, self::class) &&
+                !$this->isEmptyValue($dataValue)
+            ) {
                 $this->data[$column] = $dataValue ?? $value;
             } else {
                 unset($this->data[$column]);

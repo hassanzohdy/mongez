@@ -73,6 +73,19 @@ trait EngezTrait
     }
 
     /**
+     * Get proper repository name
+     * 
+     * @param  string $repositoryName
+     * @return string
+     */
+    private function adjustRepositoryName(string $repositoryName): string
+    {
+        return Str::plural(
+            Str::camel(basename(str_replace('\\', '/', $repositoryName)))
+        );
+    }
+
+    /**
      * Output Missing Required options to console
      * 
      * @param  string $message
@@ -294,8 +307,8 @@ include base_path('app/Modules/{$routeModule}/routes/site.php');
             );
             File::put($this->modulePath("routes/site.php"),$content);
         }
-        if (in_array($type, ['all', 'admin'])) {
 
+        if (in_array($type, ['all', 'admin'])) {
             $content = File::get($this->modulePath("routes/site.php"));
             $content = str_replace(
                 '// Child routes',
@@ -304,8 +317,8 @@ include base_path('app/Modules/{$routeModule}/routes/site.php');
     // Child routes",
                 $content
             );
-            File::put($this->modulePath("routes/site.php"),$content);
 
+            File::put($this->modulePath("routes/site.php"),$content);
             $content = File::get($this->modulePath("routes/admin.php"));
             $content = str_replace(
                 '// Child API CRUD routes',

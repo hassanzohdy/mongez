@@ -1,5 +1,4 @@
 <?php
-
 namespace HZ\Illuminate\Mongez\Managers\Database\MongoDB;
 
 use DB;
@@ -9,7 +8,7 @@ use Jenssegers\Mongodb\Eloquent\Model as BaseModel;
 abstract class Model extends BaseModel
 {
     use ModelTrait {
-        boot as TraitBoot;
+        boot as traitBoot;
     }
 
     /**
@@ -57,6 +56,15 @@ abstract class Model extends BaseModel
      */
     const DELETED_BY = 'deletedBy';
 
+
+    /**
+     * Shared info of the model
+     * This is used for getting simple info 
+     * 
+     * @const array
+     */
+    const SHARED_INFO = [];
+
     /**
      * Disable guarded fields
      *
@@ -69,7 +77,7 @@ abstract class Model extends BaseModel
      */
     public static function boot()
     {
-        static::TraitBoot();
+        static::traitBoot();
 
         // Create an auto increment id on creating new document
 
@@ -152,7 +160,25 @@ abstract class Model extends BaseModel
      */
     public function sharedInfo(): array
     {
-        return $this->getAttributes();
+        return ! empty(static::SHARED_INFO) ? $this->getValues(...static::SHARED_INFO) 
+                                            : $this->getAttributes();
+    }
+
+    /**
+     * Get values of the given columns
+     * 
+     * @param ...$columns
+     * @return array
+     */
+    public function getValues(...$columns): array
+    {
+        $data = [];
+
+        foreach ($columns as $column) {
+            $data[$column] = $this->$column;
+        }
+
+        return $data;
     }
 
     /**
