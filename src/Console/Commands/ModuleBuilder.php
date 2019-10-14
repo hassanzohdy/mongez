@@ -68,6 +68,7 @@ class ModuleBuilder extends Command
     protected $signature = 'engez:module 
                                        {moduleName}
                                        {--parent=}
+                                       {--singleName=}
                                        {--controller=}
                                        {--type=all}
                                        {--model=}
@@ -468,6 +469,10 @@ class ModuleBuilder extends Command
      */
     protected function initModel()
     {
+        if ($this->optionHasValue('singleName')) {
+            return $this->info['model'] = $this->option('singleName');
+        }
+
         $this->setData('model');
     }
 
@@ -478,6 +483,9 @@ class ModuleBuilder extends Command
      */
     protected function initResource()
     {
+        if ($this->optionHasValue('singleName')) {
+            return $this->info['resource'] = $this->option('singleName');
+        } 
         $this->setData('resource');
     }
 
@@ -490,7 +498,7 @@ class ModuleBuilder extends Command
     {
         $this->setData('repository');
 
-        $this->info['repositoryName'] = Str::camel(basename(str_replace('\\', '/', $this->info['repository'])));
+        $this->info['repositoryName'] = $this->adjustRepositoryName($this->info['repository']); 
     }
 
     /**

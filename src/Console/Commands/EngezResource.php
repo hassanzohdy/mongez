@@ -85,13 +85,10 @@ class EngezResource extends Command implements EngezInterface
         $this->info['moduleName'] = Str::studly($this->option('module'));
 
         $this->info['data'] = explode(",",$this->option('data')) ?: [];
+        $this->info['assets'] = explode(",",$this->option('assets')) ?: []; 
 
         if ($this->optionHasValue('parent')) {
             $this->info['parent'] = $this->option('parent');
-        }
-
-        if ($this->optionHasValue('assets')) {
-            $this->info['assets'] = explode("," ,$this->option('assets'));
         }
     }
     

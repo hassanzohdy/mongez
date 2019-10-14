@@ -59,6 +59,13 @@ abstract class RepositoryManager implements RepositoryInterface
     const EVENT = '';
 
     /**
+     * Uploads directory name
+     * 
+     * @const string
+     */
+    const UPLOADS_DIRECTORY = '';
+
+    /**
      * Event name to be triggered
      * If set to empty, then it will be the class model name
      * 
@@ -147,7 +154,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * 
      * @const array
      */
-    const ORDER_BY = [];
+    const ORDER_BY = ['id', 'DESC'];
 
     /**
      * Auto fill the following columns directly from the request
@@ -261,7 +268,22 @@ abstract class RepositoryManager implements RepositoryInterface
      * @var \Illuminate\Http\Request
      */
     protected $request;
-
+    
+    /**
+     * Events Object
+     *
+     * @var Events
+     */
+    protected $events;
+    
+    /**
+     * Old model object
+     * Works with update method only
+     * 
+     * @var Model
+     */
+    protected $oldModel;
+    
     /**
      * Select Helper Object
      *
@@ -303,20 +325,10 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $this->user = user();
 
-        if (!empty(static::EVENTS_LIST)) {
-            $this->eventName = static::EVENT;
+        $this->eventName = static::EVENT ?: static::NAME; 
 
-            if (!$this->eventName) {
-                $eventNameModelBased = basename(str_replace('\\', '/', static::MODEL));
-
-                $this->eventName = strtolower($eventNameModelBased);
-
-                $this->eventName = Str::plural($this->eventName);
-            }
-
-            // register events
-            $this->registerEvents();
-        }
+        // register events
+        $this->registerEvents();
     }
 
     /**

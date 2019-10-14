@@ -93,8 +93,6 @@ abstract class AdminApiController extends ApiController
      */
     public function show($id, Request $request)
     {
-        $access = true;
-
         $id = (int) $id;
 
         if (!$this->repository->has($id)) {
