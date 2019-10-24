@@ -112,7 +112,7 @@ abstract class JsonResourceManager extends JsonResource
         $this->request = $request;
 
         if (!$this->assetsUrlFunction) {
-            $this->assetsUrlFunction = config('mongez.resources.assets', 'url');
+            $this->assetsUrlFunction = static::assetsFunction();
         }
 
         // unset all data from the resource
@@ -137,6 +137,27 @@ abstract class JsonResourceManager extends JsonResource
         $this->extend($request);
 
         return $this->data;
+    }
+
+    /**
+     * Get assets function name
+     * 
+     * @return string
+     */
+    public static function assetsFunction(): string
+    {
+        return config('mongez.resources.assets', 'url');
+    }
+
+    /**
+     * Get the full url for the given asset path
+     * 
+     * @param string $path
+     * @return string
+     */
+    public static function assetsUrl(string $path): string
+    {
+        return call_user_func(static::assetsFunction(), $path);
     }
 
     /**
