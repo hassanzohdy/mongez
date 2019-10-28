@@ -23,6 +23,9 @@ class EngezRepository extends Command implements EngezInterface
                                                 {--model=}
                                                 {--data=}
                                                 {--uploads=}
+                                                {--int=}
+                                                {--bool=}
+                                                {--double=}
                                                 {--resource=}
                                                 {--parent=}
                                                 ';
@@ -110,6 +113,18 @@ class EngezRepository extends Command implements EngezInterface
         if ($this->optionHasValue('uploads')) {
             $this->info['uploads'] = explode(",",$this->option('uploads'));
         }
+
+        if ($this->optionHasValue('bool')) {
+            $this->info['bool'] = explode(",",$this->option('bool'));
+        }
+
+        if ($this->optionHasValue('double')) {
+            $this->info['double'] = explode(",",$this->option('double'));
+        }
+
+        if ($this->optionHasValue('int')) {
+            $this->info['int'] = explode(",",$this->option('int'));
+        }
     }
 
     /**
@@ -159,14 +174,38 @@ class EngezRepository extends Command implements EngezInterface
         // replace repository data
         $content = str_ireplace("DATA_LIST", $dataList, $content);
 
-        // uploads
+        // uploads data
         $uploadsList = '';
-
         if (!empty($this->info['uploads'])) {
             $uploadsList = "'" . implode("', '", $this->info['uploads']) . "'";
         }
 
-        // replace repository data
+        // int data
+        $intList = '';
+        if (!empty($this->info['int'])) {
+            $intList = "'" . implode("', '", $this->info['int']) . "'";
+        }
+        
+        // uploads data
+        $doubleList = '';
+        if (!empty($this->info['double'])) {
+            $doubleList = "'" . implode("', '", $this->info['double']) . "'";
+        }
+
+        // uploads data
+        $boolList = '';
+        if (!empty($this->info['bool'])) {
+            $boolList = "'" . implode("', '", $this->info['bool']) . "'";
+        }
+        // replace repository bool
+        $content = str_ireplace("BOOL_LIST", $boolList, $content);
+        // replace repository double
+        $content = str_ireplace("FLOAT_LIST", $doubleList, $content);
+        // replace repository integer
+        $content = str_ireplace("INTEGER_LIST", $intList, $content);
+
+
+        // replace repository Upload
         $content = str_ireplace("UPLOADS_LIST", $uploadsList, $content);
 
         $repositoryDirectory = $this->modulePath("Repositories/");
@@ -175,34 +214,5 @@ class EngezRepository extends Command implements EngezInterface
 
         // create the file
         $this->createFile("$repositoryDirectory/{$repositoryName}Repository.php", $content, 'Repository');
-    }
-
-    /**
-     * Update configurations
-     *
-     * @return void
-     */
-    protected function updateConfig(): void
-    {
-        $config = File::get($mongezPath =  base_path('config/mongez.php'));
-
-        $replacementLine = '// Auto generated repositories here: DO NOT remove this line.';
-
-        if (!Str::contains($config, $replacementLine)) return;
-
-        $repositoryClassName = basename(str_replace('\\', '/', $this->info['repository']));
-
-        $repositoryShortcut = $this->repositoryShortcutName($this->info['repository']);
-        
-        $module = $this->info['moduleName'];
-        if (isset($this->info['parent'])) {
-            $module = $this->info['parent'];
-        }
-
-        $replacedString = "'{$repositoryShortcut}' => App\\Modules\\$module\\Repositories\\{$repositoryClassName}Repository::class,\n \t\t $replacementLine";
-
-        $updatedConfig = str_replace($replacementLine, $replacedString, $config);
-
-        File::put($mongezPath, $updatedConfig);
     }
 }

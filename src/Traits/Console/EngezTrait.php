@@ -182,11 +182,16 @@ trait EngezTrait
      */
     protected function createRoutes()
     {
-        $type = $this->option('type');
-        
+        if ($this->optionHasValue('type')) {
+            $type = $this->option('type');
+        } else {
+            $type = $this->info['type'];
+        }
+
         if (isset($this->info['parent'])) {
             return $this->updateRoutes();
         }
+        
         // create routes directory
         $content = File::get($this->path("Controllers/Site/controller.php"));
 
@@ -220,6 +225,7 @@ trait EngezTrait
             $content = str_ireplace("ModuleName", "{$targetModule}", $content);
 
             // replace route prefix
+            $routePrefix = strtolower($this->module);
             $content = str_ireplace("route-prefix", "{$this->module}", $content);
 
             // create the route file
@@ -246,12 +252,13 @@ include base_path('app/Modules/{$routeModule}/routes/site.php');
 
             // replace controller name
             $content = str_ireplace("ControllerName", "{$controllerName}Controller", $content);
-
+            
             // replace module name
             $content = str_ireplace("ModuleName", "{$targetModule}", $content);
 
             // replace route prefix
-            $content = str_ireplace("route-prefix", "{$this->module}", $content);
+            $routePrefix = strtolower($this->info['moduleName']);
+            $content = str_ireplace("route-prefix", "{$routePrefix}", $content);
 
             // create the route file
             $filePath = $routesDirectory . '/admin.php';
@@ -269,9 +276,7 @@ include base_path('app/Modules/{$routeModule}/routes/site.php');
                 );
             }
         }
-
-        // echo($apiRoutesFileContent);
-
+        
         File::put(base_path('routes/api.php'), $apiRoutesFileContent);
     }
     
@@ -299,10 +304,10 @@ include base_path('app/Modules/{$routeModule}/routes/site.php');
             
             $content = File::get($this->modulePath("routes/site.php"));
             $content = str_replace(
-                '// Child routes',
-                "Route::get('/{$this->info['parent']}/{$routeModule}/{id}','{$controllerName}Controller@index');
-    Route::get('/{$this->info['parent']}/$routeModule}/{id}','{$controllerName}Controller@show');
-    // Child routes",
+                '// Sub API CRUD routes',
+                "// Sub API CRUD routes
+    Route::get('/{$this->info['parent']}/{$routeModule}/{id}','{$controllerName}Controller@index');
+    Route::get('/{$this->info['parent']}/$routeModule}/{id}','{$controllerName}Controller@show');",
                 $content
             );
             File::put($this->modulePath("routes/site.php"),$content);
@@ -311,19 +316,19 @@ include base_path('app/Modules/{$routeModule}/routes/site.php');
         if (in_array($type, ['all', 'admin'])) {
             $content = File::get($this->modulePath("routes/site.php"));
             $content = str_replace(
-                '// Child routes',
-                "Route::get('/{$this->info['parent']}/{$routeModule}','{$controllerName}Controller@index');
-    Route::get('/{$this->info['parent']}/{$routeModule}/{id}','{$controllerName}Controller@show');
-    // Child routes",
+                '// Sub API CRUD routes',
+                "// Sub API CRUD routes
+    Route::get('/{$this->info['parent']}/{$routeModule}','{$controllerName}Controller@index');
+    Route::get('/{$this->info['parent']}/{$routeModule}/{id}','{$controllerName}Controller@show');",
                 $content
             );
 
             File::put($this->modulePath("routes/site.php"),$content);
             $content = File::get($this->modulePath("routes/admin.php"));
             $content = str_replace(
-                '// Child API CRUD routes',
-                "Route::apiResource('/{$this->info['parent']}/{$routeModule}', '{$controllerName}Controller');
-    // Child API CRUD routes",
+                '// Sub API CRUD routes',
+                "// Sub API CRUD routes
+    Route::apiResource('/{$this->info['parent']}/{$routeModule}', '{$controllerName}Controller');",
                 $content
             );
             File::put($this->modulePath("routes/admin.php"),$content);
@@ -352,5 +357,46 @@ include base_path('app/Modules/{$routeModule}/routes/site.php');
             }
         }
         return $neededOptions;
+    }
+
+    /**
+     * Add routes to permission table
+     * 
+     * @return void 
+     */
+    public function addRoutesToPermissionTable()
+    {
+        $permissionsRepo = repo('permissions');
+        $permissionsRepo->insertModulePermissions($this->moduleName);
+    }
+
+    /**
+     * Update configurations
+     *
+     * @return void
+     */
+    protected function updateConfig(): void
+    {
+        $config = File::get($mongezPath =  base_path('config/mongez.php'));
+
+        $replacementLine = '// Auto generated repositories here: DO NOT remove this line.';
+
+        if (!Str::contains($config, $replacementLine)) return;
+
+        $repositoryClassName = basename(str_replace('\\', '/', $this->info['repository']));
+
+        $repositoryShortcut = $this->repositoryShortcutName($this->info['repository']);
+        
+        $module = $this->info['moduleName'];
+        if (isset($this->info['parent'])) {
+            $module = $this->info['parent'];
+        }
+
+        $replacedString = "'{$repositoryShortcut}' => App\\Modules\\$module\\Repositories\\{$repositoryClassName}Repository::class,\n \t\t $replacementLine";
+        $updatedConfig = str_replace($replacementLine, $replacedString, $config);
+
+        config(['mongez.repositories.' .$repositoryShortcut => "App\\Modules\\$module\\Repositories\\{$repositoryClassName}Repository"]);
+
+        File::put($mongezPath, $updatedConfig);
     }
 }

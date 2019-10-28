@@ -1,9 +1,12 @@
 <?php
-namespace App\Modules\ModuleName\Repositories;
+namespace App\Modules\Users\Repositories;
 
-use App\Modules\ModuleName\{
-    Models\ModelName as Model,
-    Resources\ResourceName as Resource
+use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+
+use App\Modules\Users\{
+    Models\Permission as Model,
+    Resources\Permission as Resource
 };
 
 use HZ\Illuminate\Mongez\{
@@ -11,12 +14,12 @@ use HZ\Illuminate\Mongez\{
     Managers\Database\MongoDB\RepositoryManager
 };
 
-class RepositoryNameRepository extends RepositoryManager implements RepositoryInterface
+class permissionsRepository extends RepositoryManager implements RepositoryInterface
 {
     /**
      * {@inheritDoc}
      */
-    const NAME = 'repo-name';
+    const NAME = 'permissions';
     
     /**
      * {@inheritDoc}
@@ -33,7 +36,7 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
      * 
      * @const array
      */
-    const DATA = [DATA_LIST];       
+    const DATA = ['name', 'route', 'key', 'type'];       
     
     /**
      * Auto save uploads in this list
@@ -42,7 +45,7 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
      * 
      * @const array
      */
-    const UPLOADS = [UPLOADS_LIST];       
+    const UPLOADS = [];       
     
     /**
      * Auto fill the following columns as arrays directly from the request
@@ -58,38 +61,22 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
      * 
      * @cont array  
      */
-    const INTEGER_DATA = [INTEGER_LIST];
+    const INTEGER_DATA = [];
 
     /**
      * Set columns list of float values.
      * 
      * @cont array  
      */
-    const FLOAT_DATA = [FLOAT_LIST];
+    const FLOAT_DATA = [];
 
     /**
      * Set columns of booleans data type.
      * 
      * @cont array  
      */
-    const BOOLEAN_DATA = [BOOL_LIST];
+    const BOOLEAN_DATA = [];
     
-    /**
-     * Set the columns will be filled with single record of collection data
-     * i.e [country => CountryModel::class]
-     * 
-     * @const array
-     */
-    const DOCUMENT_DATA = [];
-
-    /**
-     * Set the columns will be filled with array of records.
-     * i.e [tags => TagModel::class]
-     * 
-     * @const array
-     */
-    const MULTI_DOCUMENTS_DATA = [];
-
     /**
      * Add the column if and only if the value is passed in the request.
      * 
@@ -119,7 +106,7 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
      * @const int|null
      */
     const ITEMS_PER_PAGE = null;
-
+    
     /**
      * Set any extra data or columns that need more customizations
      * Please note this method is triggered on create or update call
@@ -132,6 +119,18 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
     {
         // 
     }
+
+    
+    /**
+     * Manage Selected Columns
+     *
+     * @return void
+     */
+    protected function select()
+    {
+        //
+    }
+
     
     /**
      * Do any extra filtration here
@@ -141,5 +140,66 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
     protected function filter() 
     {
         // 
+    }
+
+    /**
+     * Get a specific record with full details
+     * 
+     * @param  int id
+     * @return mixed
+     */
+    public function get(int $id) 
+    {
+        //
+    }
+
+    /**
+     * Insert module permissions
+     * 
+     * @var string $moduleName
+     */
+    public function insertModulePermissions($moduleName)
+    {
+        $modelName = strtolower(Str::singular($moduleName));
+        $routeName = strtolower($moduleName);
+
+        $modulePermissions = [
+            [
+                'name' => 'Create new ' .$modelName,
+                'route' => '/api/admin/' .$routeName,
+                'type' => 'create',
+                'key' => $routeName. '.create'
+            ],
+            [
+                'name' => 'Update ' .$modelName,
+                'route' => '/api/admin/' .$routeName .'/{' .$modelName .'}',
+                'type' => 'update',
+                'key' => $routeName .'.update'
+            ],
+            [
+                'name' => 'Get ' .$modelName,
+                'route' => '/api/admin/' .$routeName .'/{' .$modelName .'}',
+                'type' => 'show',
+                'key' => $routeName .'.show'
+            ],
+            [
+                'name' => 'Delete ' .$modelName,
+                'route' => '/api/admin/' .$routeName .'/{' .$modelName .'}',
+                'type' => 'delete',
+                'key' => $routeName .'.delete'
+            ],
+            [
+                'name' => 'List of ' .$routeName,
+                'route' => '/api/admin/' .$routeName,
+                'type' => 'list',
+                'key' => $routeName .'.list'
+            ]
+        ];
+
+        foreach ($modulePermissions as $modulePermission) {
+            $request = new Request;
+            $request->replace($modulePermission);
+            $this->create($request);
+        }
     }
 }

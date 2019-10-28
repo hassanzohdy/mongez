@@ -51,7 +51,16 @@ class ModuleBuilder extends Command
     protected $databaseName;
 
     /**
+     * User module is exist
+     *
+     * @var bool
+     */
+    protected $isUserModuleExits = false;
+
+    /**
      * Module info
+     * 
+     * @var array
      */
     protected $info = [];
     
@@ -145,71 +154,6 @@ class ModuleBuilder extends Command
         $this->create();
     }
 
-    // /**
-    //  * Set all available options
-    //  * 
-    //  * @return void 
-    //  */
-    // protected function setOptions()
-    // {
-    //     $this->availableOptions = [];
-
-    //     if ($this->optionHasValue('parent')) {
-    //         $this->availableOptions['--parent'] = $this->option('parent');
-    //     }
-
-    //     if ($this->optionHasValue('model')) {
-    //         $this->availableOptions['--model'] = $this->option('model');
-    //     }
-
-    //     if ($this->optionHasValue('path')) {
-    //         $this->availableOptions['--path'] = $this->option('path');
-    //     }
-
-    //     if ($this->optionHasValue('repository')) {
-    //         $this->availableOptions['--repository'] = $this->option('repository');
-    //     }
-
-    //     if ($this->optionHasValue('resource')) {
-    //         $this->availableOptions['--resource'] = $this->option('resource');
-    //     }
-
-    //     if ($this->optionHasValue('controller')) {
-    //         $this->availableOptions['--controller'] = $this->option('controller');
-    //     }
-
-    //     if ($this->optionHasValue('index')) {
-    //         $this->availableOptions['--index'] = $this->option('index');
-    //     }
-
-    //     if ($this->optionHasValue('unique')) {
-    //         $this->availableOptions['--unique'] = $this->option('unique');
-    //     }
-        
-    //     if ($this->optionHasValue('data')) {
-    //         $this->availableOptions['--data'] = $this->option('data');
-    //     }
-
-    //     if ($this->optionHasValue('uploads')) {
-    //         $this->availableOptions['--uploads'] = $this->option('uploads');
-    //     }
-
-    //     if ($this->optionHasValue('double')) {
-    //         $this->availableOptions['--double'] = $this->option('double');
-    //     }
-        
-    //     if ($this->optionHasValue('bool')) {
-    //         $this->availableOptions['--bool'] = $this->option('bool');
-    //     }
-        
-    //     if ($this->optionHasValue('int')) {
-    //         $this->availableOptions['--int'] = $this->option('int');
-    //     }
-    //     if ($this->optionHasValue('table')) {
-    //         $this->availableOptions['--table'] = $this->option('table');
-    //     }
-    // }
-
     /**
      * Get option from available options
      * 
@@ -223,6 +167,10 @@ class ModuleBuilder extends Command
      */
     protected function init()
     {
+        if (in_array('users', Mongez::getStored('modules'))) {
+            $this->isUserModuleExits = true;
+        }
+
         $this->info('Preparing data...');
         $this->initController();
         $this->initModel();
@@ -263,7 +211,9 @@ class ModuleBuilder extends Command
 
         $this->info('Generating Module Docs');
         $this->generateModuleDocs();
-        
+
+        if ($this->isUserModuleExits) $this->addRoutesToPermissionTable();
+   
         $this->markModuleAsInstalled();
     }
 
@@ -421,9 +371,12 @@ class ModuleBuilder extends Command
         $options = $this->setOptions([
             'parent',
             'uploads',
-            'data'
+            'data',
+            'int',
+            'double',
+            'bool'
         ]);
-
+        
         $this->call('engez:repository', array_merge($repositoryOptions, $options));
     }
 

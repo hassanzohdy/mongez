@@ -133,7 +133,7 @@ abstract class AdminApiController extends ApiController
         }
 
         $model = $this->repository->create($request);
-
+        
         $returnOnStore = $this->controllerInfo['returnOn']['store'] ?? config('mongez.admin.returnOn.store', 'single-record');
 
         if ($returnOnStore == 'single-record') {

@@ -1,11 +1,11 @@
 {
     "info": {
-        "name": "users",
+        "name": "usersgroups",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "item": [
         {
-            "name": "[admin] Create new User",
+            "name": "[admin] Create new UsersGroup",
             "protocolProfileBehavior": {
                 "disableBodyPruning": true
             },
@@ -29,29 +29,21 @@
                             "type": "text"
                         },
                         {
-                            "key": "email",
-                            "type": "text"
-                        },
-                        {
-                            "key": "password",
-                            "type": "text"
-                        },
-                        {
-                            "key": "user_group_id",
+                            "key": "permissions",
                             "type": "text"
                         }
-
                     ]
                 },
                 "url": {
-                    "raw": "{{baseUrl}}/api/admin/users",
+                    "raw": "{{baseUrl}}/api/admin/users/groups",
                     "host": "{{host}}",
                     "protocol": "{{protocol}}",
                     "path": [
                         "{{baseUrl}}",
                         "api",
                         "admin",
-                        "users"
+                        "users",
+                        "groups"
                     ]
                 }
             },
@@ -65,7 +57,7 @@
             }
         },
         {
-            "name": "[admin] Update User",
+            "name": "[admin] Update UsersGroup",
             "protocolProfileBehavior": {
                 "disableBodyPruning": true
             },
@@ -89,21 +81,13 @@
                             "type": "text"
                         },
                         {
-                            "key": "email",
-                            "type": "text"
-                        },
-                        {
-                            "key": "password",
-                            "type": "text"
-                        },
-                        {
-                            "key": "user_group_id",
+                            "key": "permissions",
                             "type": "text"
                         }
                     ]
                 },
                 "url": {
-                    "raw": "{{baseUrl}}/api/admin/users/{id}",
+                    "raw": "{{baseUrl}}/api/admin/users/groups/{id}",
                     "host": "{{host}}",
                     "protocol": "{{protocol}}",
                     "path": [
@@ -111,6 +95,7 @@
                         "api",
                         "admin",
                         "users",
+                        "groups",                        
                         "{id}"
                     ]
                 }
@@ -125,7 +110,7 @@
             }
         },
         {
-            "name": "[admin] List users",
+            "name": "[admin] List usersgroups",
             "protocolProfileBehavior": {
                 "disableBodyPruning": true
             },
@@ -146,14 +131,15 @@
                     "formdata": []
                 },
                 "url": {
-                    "raw": "{{baseUrl}}/api/admin/users",
+                    "raw": "{{baseUrl}}/api/admin/users/groups",
                     "host": "{{host}}",
                     "protocol": "{{protocol}}",
                     "path": [
                         "{{baseUrl}}",
                         "api",
                         "admin",
-                        "users"
+                        "users",
+                        "groups"                    
                     ]
                 }
             },
@@ -167,7 +153,7 @@
             }
         },
         {
-            "name": "[admin] Get User",
+            "name": "[admin] Get UsersGroup",
             "protocolProfileBehavior": {
                 "disableBodyPruning": true
             },
@@ -184,7 +170,7 @@
                     }
                 ],
                 "url": {
-                    "raw": "{{baseUrl}}/api/admin/users/{id}",
+                    "raw": "{{baseUrl}}/api/admin/users/groups/{id}",
                     "host": "{{host}}",
                     "protocol": "{{protocol}}",
                     "path": [
@@ -192,6 +178,7 @@
                         "api",
                         "admin",
                         "users",
+                        "groups",
                         "{id}"
                     ]
                 }
@@ -206,7 +193,7 @@
             }
         },
         {
-            "name": "[admin] Delete User",
+            "name": "[admin] Delete UsersGroup",
             "protocolProfileBehavior": {
                 "disableBodyPruning": true
             },
@@ -223,7 +210,7 @@
                     }
                 ],
                 "url": {
-                    "raw": "{{baseUrl}}/api/admin/users/{id}",
+                    "raw": "{{baseUrl}}/api/admin/users/groups/{id}",
                     "host": "{{host}}",
                     "protocol": "{{protocol}}",
                     "path": [
@@ -231,54 +218,8 @@
                         "api",
                         "admin",
                         "users",
+                        "groups",
                         "{id}"
-                    ]
-                }
-            },
-            "response": {
-                "header": [
-                    {
-                        "key": "Content-Type",
-                        "value": "application/x-www-form-urlencoded"
-                    }
-                ]
-            }
-        },
-        {
-            "name": "[admin] Login User",
-            "protocolProfileBehavior": {
-                "disableBodyPruning": true
-            },
-            "request": {
-                "method": "POST",
-                "header": [
-                    {
-                        "key": "Content-Type",
-                        "value": "application/x-www-form-urlencoded"
-                    }
-                ],
-                "body": {
-                    "mode": "formdata",
-                    "formdata": [
-                        {
-                            "key": "email",
-                            "type": "text"
-                        },
-                        {
-                            "key": "password",
-                            "type": "text"
-                        }
-                    ]
-                },
-                "url": {
-                    "raw": "{{baseUrl}}/api/admin/login",
-                    "host": "{{host}}",
-                    "protocol": "{{protocol}}",
-                    "path": [
-                        "{{baseUrl}}",
-                        "api",
-                        "admin",
-                        "login"
                     ]
                 }
             },

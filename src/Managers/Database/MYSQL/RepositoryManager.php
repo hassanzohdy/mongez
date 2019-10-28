@@ -677,8 +677,8 @@ abstract class RepositoryManager implements RepositoryInterface
         $model->save();
 
         $this->trigger("save create", $model, $request);
-
-        return $model;
+        
+        return $model;  
     }
 
     /**

@@ -1,22 +1,22 @@
 <?php
-namespace App\Modules\ModuleName\Repositories;
+namespace App\Modules\Users\Repositories;
 
-use App\Modules\ModuleName\{
-    Models\ModelName as Model,
-    Resources\ResourceName as Resource
+use App\Modules\Users\{
+    Models\UserGroup as Model,
+    Resources\UsersGroup as Resource
 };
 
 use HZ\Illuminate\Mongez\{
     Contracts\Repositories\RepositoryInterface,
-    Managers\Database\MongoDB\RepositoryManager
+    Managers\Database\MYSQL\RepositoryManager
 };
 
-class RepositoryNameRepository extends RepositoryManager implements RepositoryInterface
+class UsersGroupsRepository extends RepositoryManager implements RepositoryInterface
 {
     /**
      * {@inheritDoc}
      */
-    const NAME = 'repo-name';
+    const NAME = 'usersGroups';
     
     /**
      * {@inheritDoc}
@@ -33,7 +33,7 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
      * 
      * @const array
      */
-    const DATA = [DATA_LIST];       
+    const DATA = ['name', 'permissions'];       
     
     /**
      * Auto save uploads in this list
@@ -42,7 +42,7 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
      * 
      * @const array
      */
-    const UPLOADS = [UPLOADS_LIST];       
+    const UPLOADS = [];       
     
     /**
      * Auto fill the following columns as arrays directly from the request
@@ -58,38 +58,22 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
      * 
      * @cont array  
      */
-    const INTEGER_DATA = [INTEGER_LIST];
+    const INTEGER_DATA = [];
 
     /**
      * Set columns list of float values.
      * 
      * @cont array  
      */
-    const FLOAT_DATA = [FLOAT_LIST];
+    const FLOAT_DATA = [];
 
     /**
      * Set columns of booleans data type.
      * 
      * @cont array  
      */
-    const BOOLEAN_DATA = [BOOL_LIST];
+    const BOOLEAN_DATA = [];
     
-    /**
-     * Set the columns will be filled with single record of collection data
-     * i.e [country => CountryModel::class]
-     * 
-     * @const array
-     */
-    const DOCUMENT_DATA = [];
-
-    /**
-     * Set the columns will be filled with array of records.
-     * i.e [tags => TagModel::class]
-     * 
-     * @const array
-     */
-    const MULTI_DOCUMENTS_DATA = [];
-
     /**
      * Add the column if and only if the value is passed in the request.
      * 
@@ -130,8 +114,21 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
      */
     protected function setData($model, $request) 
     {
-        // 
+        // Convert the array of ids to string
+        $model->permissions = implode(",", $request->permissions);
     }
+
+    
+    /**
+     * Manage Selected Columns
+     *
+     * @return void
+     */
+    protected function select()
+    {
+        //
+    }
+
     
     /**
      * Do any extra filtration here
@@ -142,4 +139,16 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
     {
         // 
     }
+
+    /**
+     * Get a specific record with full details
+     * 
+     * @param  int id
+     * @return mixed
+     */
+    public function get(int $id) 
+    {
+        //
+    }
+
 }

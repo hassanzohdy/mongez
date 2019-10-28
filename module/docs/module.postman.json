@@ -284,5 +284,28 @@
 				]
 			}
 		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"type": "string"
+		},
+		{
+			"key": "host",
+			"type": "string"
+		},
+		{
+			"key": "protocol",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"type": "string"
+		},
+		{
+			"key": "tokenType",
+			"value": "Bearer",
+			"type": "string"
+		}
 	]
 }
