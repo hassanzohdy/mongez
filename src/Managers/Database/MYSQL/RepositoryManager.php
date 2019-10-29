@@ -672,11 +672,11 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $model = new $modelName;
 
+        $this->trigger("saving creating", $model, $request);
+
         $this->setAutoData($model, $request);
 
         $this->setData($model, $request);
-
-        $this->trigger("saving creating", $model, $request);
 
         $model->save();
 
@@ -696,11 +696,11 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $this->oldModel = $oldModel;
 
+        $this->trigger("saving updating", $model, $request, $oldModel);
+
         $this->setAutoData($model, $request);
 
         $this->setData($model, $request);
-
-        $this->trigger("saving updating", $model, $request, $oldModel);
 
         $model->save();
 

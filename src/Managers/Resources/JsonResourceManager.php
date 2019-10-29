@@ -84,11 +84,18 @@ abstract class JsonResourceManager extends JsonResource
     protected $assetsUrlFunction;
 
     /**
-     * List of keys that will be unset before manipulating it
+     * List of keys that will be unset before sending 
      * 
      * @var array
      */
     protected static $disabledKeys = [];
+
+    /**
+     * List of keys that will be taken only
+     * 
+     * @var array
+     */
+    protected static $allowedKeys = [];
 
     /**
      * Disable the given list of keys
@@ -99,6 +106,17 @@ abstract class JsonResourceManager extends JsonResource
     public static function disable(...$keys) 
     {
         static::$disabledKeys = array_merge(static::$disabledKeys, $keys); 
+    }
+
+    /**
+     * Disable the given list of keys
+     * 
+     * @param ...$keys
+     * @return void
+     */
+    public static function only(...$keys) 
+    {
+        static::$allowedKeys = array_merge(static::$allowedKeys, $keys); 
     }
 
     /**
@@ -113,11 +131,6 @@ abstract class JsonResourceManager extends JsonResource
 
         if (!$this->assetsUrlFunction) {
             $this->assetsUrlFunction = static::assetsFunction();
-        }
-
-        // unset all data from the resource
-        foreach (static::$disabledKeys as $key) {
-            unset($this->resource->$key);
         }
 
         $this->collectData(static::DATA);
@@ -135,6 +148,19 @@ abstract class JsonResourceManager extends JsonResource
         $this->filterWhenAvailable(static::WHEN_AVAILABLE);
 
         $this->extend($request);
+
+        // unset all data from the resource
+        foreach (static::$disabledKeys as $key) {
+            unset($this->data[$key]);
+        }
+
+        if (! empty(static::$allowedKeys)) {
+            foreach (array_keys($this->data) as $key) {
+                if (! in_array($key, static::$allowedKeys)) {
+                    unset($this->data[$key]);
+                }
+            }
+        }
 
         return $this->data;
     }
@@ -435,5 +461,18 @@ abstract class JsonResourceManager extends JsonResource
     public function append(string $key)
     {
         $this->set($key, $this->$key);
+    }
+
+    /**
+     * Collect resources from array
+     * 
+     * @param array $collection
+     * @return mixed
+     */
+    public static function collectArray($collection)
+    {
+        return static::collection(collect($collection)->map(function ($resource) {
+            return (object) $resource;
+        }));
     }
 }
