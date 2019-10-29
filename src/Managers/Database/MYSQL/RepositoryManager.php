@@ -13,6 +13,7 @@ use HZ\Illuminate\Mongez\Events\Events;
 use HZ\Illuminate\Mongez\Traits\RepositoryTrait;
 use HZ\Illuminate\Mongez\Helpers\Repository\Select;
 use HZ\Illuminate\Mongez\Contracts\Repositories\RepositoryInterface;
+use Illuminate\Http\Resources\Json\JsonResource;
 
 abstract class RepositoryManager implements RepositoryInterface
 {
@@ -509,7 +510,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * @param \Model $model
      * @return \JsonResource
      */
-    public function wrap($model)
+    public function wrap($model): JsonResource
     {
         $resource = static::RESOURCE;
         return new $resource($model);
@@ -668,11 +669,11 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $model = new $modelName;
 
+        $this->trigger("saving creating", $model, $request);
+
         $this->setAutoData($model, $request);
 
         $this->setData($model, $request);
-
-        $this->trigger("saving creating", $model, $request);
 
         $model->save();
 
@@ -692,11 +693,11 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $this->oldModel = $oldModel;
 
+        $this->trigger("saving updating", $model, $request, $oldModel);
+
         $this->setAutoData($model, $request);
 
         $this->setData($model, $request);
-
-        $this->trigger("saving updating", $model, $request, $oldModel);
 
         $model->save();
 
@@ -780,7 +781,19 @@ abstract class RepositoryManager implements RepositoryInterface
             }
 
             if ($request->$name) {
-                $model->$column = $request->$name->store($this->getUploadsStorageDirectoryName());
+                $file = $request->$name;
+                if (is_array($request->$name)) {
+                    $files = [];
+                    $storageDirectory = $this->getUploadsStorageDirectoryName();
+
+                    foreach ($file as $fileObject) {
+                        $files[] = $fileObject->store($storageDirectory);
+                    }
+
+                    $model->$column = $files;
+                } else {
+                    $model->$column = $request->$name->store($this->getUploadsStorageDirectoryName());
+                }
             }
         }
     }
