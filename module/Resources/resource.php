@@ -55,4 +55,18 @@ class ResourceName extends JsonResourceManager
      * @const array
      */
     const COLLECTABLE = [];
+    
+    /**
+     * List of keys that will be unset before sending
+     * 
+     * @var array
+     */
+    protected static $disabledKeys = [];
+    
+    /**
+     * List of keys that will be taken only
+     * 
+     * @var array
+     */
+    protected static $allowedKeys = [];
 }

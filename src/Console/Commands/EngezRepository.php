@@ -186,13 +186,13 @@ class EngezRepository extends Command implements EngezInterface
             $intList = "'" . implode("', '", $this->info['int']) . "'";
         }
         
-        // uploads data
+        // double data
         $doubleList = '';
         if (!empty($this->info['double'])) {
             $doubleList = "'" . implode("', '", $this->info['double']) . "'";
         }
 
-        // uploads data
+        // bool data
         $boolList = '';
         if (!empty($this->info['bool'])) {
             $boolList = "'" . implode("', '", $this->info['bool']) . "'";

@@ -52,14 +52,22 @@ if (! function_exists('repo')) {
      * @throws \HZ\Illuminate\Mongez\Exceptions\NotFoundRepositoryException
      */
     function repo(string $repository): RepositoryInterface
-    {   
-        $repositoryClass = config('mongez.repositories.' .$repository);
-
-        if (! $repositoryClass) {
-            throw new NotFoundRepositoryException(sprintf('Call to undefined repository: %s', $repository));
+    {
+        static $repos = [];
+        
+        if (! empty($repos[$repository])) {
+            return $repos[$repository];
         }
+        
+        $repositoryClass = config('mongez.repositories.' . $repository); 
+        
+        if (! $repositoryClass) { 
+            throw new NotFoundRepositoryException(sprintf('Call to undefined repository: %s', $repository)); 
+        }
+        
+        $repositoryClass = App::make($repositoryClass);
 
-        return App::make($repositoryClass);
+        return $repos[$repository] = $repositoryClass; 
     }
 }
 

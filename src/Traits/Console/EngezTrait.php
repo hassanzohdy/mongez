@@ -399,4 +399,28 @@ include base_path('app/Modules/{$routeModule}/routes/site.php');
 
         File::put($mongezPath, $updatedConfig);
     }
+
+
+
+        /**
+     * Update configurations
+     *
+     * @return void
+     */
+    protected function updateServiceProviderConfig(): void
+    {
+        $config = File::get($mongezPath =  base_path('config/mongez.php'));
+
+        $replacementLine = '// Auto generated providers here: DO NOT remove this line.';
+
+        if (!Str::contains($config, $replacementLine)) return;
+        
+        $module = $this->info['moduleName'];
+        $serviceProviderClassName = Str::singular($module) .'ServiceProvider';
+
+        $replacedString = "App\\Modules\\$module\\Providers\\{$serviceProviderClassName}::class,\n \t\t $replacementLine";
+        $updatedConfig = str_replace($replacementLine, $replacedString, $config);
+
+        File::put($mongezPath, $updatedConfig);
+    }
 }

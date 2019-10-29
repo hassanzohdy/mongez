@@ -141,7 +141,7 @@ class ModuleBuilder extends Command
                 Command::error('This parent module is not available');
                 die();
             }
-        }
+        } 
     }
     /**
      * Adjust sent options and update its value if its default
@@ -205,6 +205,8 @@ class ModuleBuilder extends Command
         
         $this->info('Generating routes files');
         $this->createRoutes();
+
+        if (! isset($this->info['parent'])) $this->createServiceProvider();
 
         $this->info('Generating Module Postman File');
         $this->generatePostmanModule();
@@ -429,6 +431,39 @@ class ModuleBuilder extends Command
         $this->setData('model');
     }
 
+    /**
+     * Create module service provider
+     * 
+     * @return void 
+     */
+    protected function createServiceProvider()
+    {
+        $moduleServiceProviderPath = $this->path("Providers/ModuleServiceProvider.php");
+        $content = File::get($moduleServiceProviderPath);
+
+        $types = $this->option('type');
+
+        if ($types == 'all') {
+            $types = 'admin,site';
+        }
+        $types = explode(',', $types);
+        
+        $stringTypes = json_encode($types);
+
+        // replace Route list
+        $content = str_ireplace("ROUTES_LIST", $stringTypes, $content);
+        
+        // replace module name
+        $content = str_ireplace("ModuleName", $this->moduleName, $content);
+        $content = str_ireplace("ClassName", Str::singular($this->moduleName), $content);        
+        $serviceProviderName = Str::singular($this->moduleName) .'ServiceProvider';
+        $serviceProviderDirectory = $this->modulePath("Providers");
+        
+        $this->checkDirectory($serviceProviderDirectory);
+        $this->createFile("$serviceProviderDirectory/{$serviceProviderName}.php", $content, 'ServiceProvider');
+        $this->updateServiceProviderConfig();
+    }
+    
     /**
      * Create module resource
      * 
