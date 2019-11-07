@@ -115,6 +115,7 @@ class CloneModuleBuilder extends Command
         $this->updateConfig();
         $this->updateRepositoriesConfig();
         $this->addModulePermissions();
+        $this->updateServiceProviderConfig();
         $this->info('Module cloned successfully');
     }
     

@@ -199,8 +199,6 @@ trait EngezTrait
 
         $this->checkDirectory($routesDirectory);
 
-        // get the content of the api routes file
-        $apiRoutesFileContent = File::get(base_path('routes/api.php'));
 
         $controller = $this->info['controller'];
 
@@ -232,18 +230,7 @@ trait EngezTrait
             $filePath = $routesDirectory . '/site.php';
 
             $this->createFile($filePath, $content, 'Site routes');
-
-            // add the routes file to the api routes file content
-            if (Str::contains($apiRoutesFileContent, '// end of site routes')) {
-                $apiRoutesFileContent = str_replace(
-                    '// end of site routes',
-                    "// {$routeModule} module
-include base_path('app/Modules/{$routeModule}/routes/site.php');
-
-// end of site routes",
-                    $apiRoutesFileContent
-                );
-            }
+          
         }
 
         if (in_array($type, ['all', 'admin'])) {
@@ -264,20 +251,7 @@ include base_path('app/Modules/{$routeModule}/routes/site.php');
             $filePath = $routesDirectory . '/admin.php';
 
             $this->createFile($filePath, $content, 'Admin routes');
-            // add the routes file to the api routes file content
-            if (Str::contains($apiRoutesFileContent, '// end of admin routes')) {
-                $apiRoutesFileContent = str_replace(
-                    '// end of admin routes',
-                    "// {$routeModule} module
-    include base_path('app/Modules/{$routeModule}/routes/admin.php');
-
-    // end of admin routes",
-                    $apiRoutesFileContent
-                );
-            }
-        }
-        
-        File::put(base_path('routes/api.php'), $apiRoutesFileContent);
+        }        
     }
     
     /**
@@ -288,9 +262,6 @@ include base_path('app/Modules/{$routeModule}/routes/site.php');
     protected function updateRoutes()
     {
         $type = $this->option('type');
-
-        // get the content of the api routes file
-        $apiRoutesFileContent = File::get(base_path('routes/api.php'));
         
         $controller = $this->info['controller'];
 
@@ -399,17 +370,15 @@ include base_path('app/Modules/{$routeModule}/routes/site.php');
 
         File::put($mongezPath, $updatedConfig);
     }
-
-
-
-        /**
+    
+    /**
      * Update configurations
      *
      * @return void
      */
     protected function updateServiceProviderConfig(): void
     {
-        $config = File::get($mongezPath =  base_path('config/mongez.php'));
+        $config = File::get($mongezPath =  base_path('config/app.php'));
 
         $replacementLine = '// Auto generated providers here: DO NOT remove this line.';
 

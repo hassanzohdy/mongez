@@ -9,7 +9,14 @@ interface ModuleServiceProviderInterface
      * @return void
      */
     public function boot();
-
+    
+    /**
+     * Define the routes for the application.
+     *
+     * @return void
+     */
+    public function map();
+    
     /**
      * Define the "api" routes for the application.
      *

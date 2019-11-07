@@ -13,5 +13,5 @@ class ClassNameServiceProvider extends ModuleServiceProvider
     /**
      * {@inheritDoc}
      */    
-    protected $namespace = 'App/Modules/ModuleName/Providers';
+    protected $namespace = 'App/Modules/ModuleName/';
 }
