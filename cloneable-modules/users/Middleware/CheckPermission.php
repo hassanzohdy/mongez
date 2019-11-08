@@ -38,34 +38,39 @@ class CheckPermission
 
         $requestMethod = $request->server('REQUEST_METHOD');
 
+        // If current request in expect routes array will pass without checking the permissions  
         if (in_array($routeFormat, $this->expectRoutes)) return $next($request);
 
+        // Explode the request path into array 
         $replacementString = array_filter(explode('/', $routeFormat));
-        $routeName = $replacementString[sizeof($replacementString)];
         
+        $routeName = end($replacementString);
+
+        // If the last item of array is numeric the route name will be before last item
         if (is_numeric($routeName)) {
             $routeName = $replacementString[sizeof($replacementString)-1];
         }
-
+         
         $replacementString = "{".Str::singular($routeName)."}";
 
         // replace any numeric value with {routeName}
         $routeFormat = preg_replace('/([\d])+/', "{$replacementString}", preg_quote($routeFormat));
 
+        // By current route format will get the route key to distinguish between the store and list route.
         $routeCollections = Route::getRoutes();
         foreach ($routeCollections as $route) {
             if ($routeFormat == '/'.$route->uri && $requestMethod == $route->methods[0]){
                 $routeKey = $route->action['as'];
             }
         }
-
+        
         $userGroupId = request()->user()->user_group_id;
 
         $userGroup = UserGroup::find($userGroupId);
         $userGroupPermissions = explode(',', $userGroup->permissions);
 
         $currentRequestPermission = Permission::where('key', $routeKey)->first();
-        
+
         if (! $currentRequestPermission){
             return response()->json('Please Add route to permissions table');
         }

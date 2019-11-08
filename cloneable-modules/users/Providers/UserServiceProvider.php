@@ -8,10 +8,10 @@ class UserServiceProvider extends ModuleServiceProvider
     /**
      * {@inheritDoc}
      */
-    const ROUTES_TYPES = ["admin"];
+    const ROUTES_TYPES = ["admin","site"];
     
     /**
      * {@inheritDoc}
      */    
-    protected $namespace = 'App/Modules/Users/Providers';
+    protected $namespace = 'App/Modules/Users/';
 }
