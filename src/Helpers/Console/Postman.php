@@ -68,12 +68,17 @@ class Postman
         $this->singleModuleName = $data['modelName'];
         $this->moduleName = strtolower(str::plural($this->singleModuleName));
 
-        foreach($data['data'] as $textInput) {
-            $this->data[] = ['key'=>$textInput, 'type'=>'text'];
+        foreach($data['data'] as $textInput => $dataType) {
+            $this->data [] = [
+                'key'   => $textInput, 
+                'type'  => 'text',
+                'value' => $dataType
+            ];
             
         }
-        foreach($data['uploads'] as $uploadInput) {
-            $this->data[] = ['key'=>$uploadInput, 'type'=>'file'];
+
+        foreach(explode("," ,$data['uploads']) as $uploadInput) {
+            $this->data[] = ['key'=> $uploadInput, 'type'=>'file'];
             
         }
 

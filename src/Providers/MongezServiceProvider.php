@@ -101,11 +101,12 @@ class MongezServiceProvider extends ServiceProvider
         $searchString = '// Auto generated providers here: DO NOT remove this line.';
         
         if (Str::contains($config, $searchString)) return;
-        $replacedString = "App\Providers\RouteServiceProvider::class,\n \t\t $searchString";
+        $replacedString = "App\Providers\RouteServiceProvider::class,\n\n\t\t/** \n\t\t * Modules Service Providers...\n\t\t */\n\t\t$searchString\n";
         $updatedConfig = str_ireplace("App\Providers\RouteServiceProvider::class,", $replacedString, $config);
 
         File::put($configPath, $updatedConfig);
     }
+
     /**
      * Register any application services.
      *

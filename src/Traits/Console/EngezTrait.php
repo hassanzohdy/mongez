@@ -387,7 +387,7 @@ trait EngezTrait
         $module = $this->info['moduleName'];
         $serviceProviderClassName = Str::singular($module) .'ServiceProvider';
 
-        $replacedString = "App\\Modules\\$module\\Providers\\{$serviceProviderClassName}::class,\n \t\t $replacementLine";
+        $replacedString = "App\\Modules\\$module\\Providers\\{$serviceProviderClassName}::class,\n \t\t$replacementLine";
         $updatedConfig = str_replace($replacementLine, $replacedString, $config);
 
         File::put($mongezPath, $updatedConfig);

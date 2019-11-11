@@ -6,7 +6,6 @@ use File;
 use Exception;
 use Illuminate\Support\Str;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Artisan;
 use HZ\Illuminate\Mongez\Helpers\Mongez;
 use HZ\Illuminate\Mongez\Helpers\Console\Postman;
 use HZ\Illuminate\Mongez\Helpers\Console\Markdown;
@@ -518,37 +517,31 @@ class ModuleBuilder extends Command
     protected function generatePostmanModule()
     {
         $data = [];
-        if (isset($this->info['data'])) $data = $this->info['data'];
+        if (isset($this->info['data'])) $data = array_fill_keys($this->info['data'], 'String');
 
-        $uploads = [];
+        $uploads = '';
         
         if ($this->optionHasValue('uploads')) {
-            $uploads[] = $this->option('uploads');
+            $uploads = $this->option('uploads');
         }
 
-        if ($this->optionHasValue('index')) {
-            $data[] = $this->option('index');
-        }
-
-        if ($this->optionHasValue('unique')) {
-            $data[] = $this->option('unique');
-        }
-
-        if ($this->optionHasValue('double')) {
-            $data[] = $this->option('double');
+        $dataOptions = [
+            'double' =>  'Double',
+            'bool'   =>  'Bool', 
+            'int'    =>  'Int'
+        ];
+        $options = [];
+        foreach ($dataOptions as $dataOption => $value) {
+            if ($this->optionHasValue($dataOption)) {
+                foreach (explode(',', $this->option($dataOption)) as $option) {
+                    $options [$option] = $value;
+                }
+            }
         }
         
-        if ($this->optionHasValue('bool')) {
-            $data[] = $this->option('bool');
-        }
-        
-        if ($this->optionHasValue('int')) {
-            $data[] = $this->option('int');
-        }
-
         $postman =  new Postman([
-            'modelName' => $this->info['modelName'],
-            'data'       => $data,
+            'modelName'  => $this->info['modelName'],
+            'data'       => array_merge($data, $dataOptions),
             'uploads'    => $uploads
         ]);
 
@@ -569,15 +562,26 @@ class ModuleBuilder extends Command
     protected function generateModuleDocs()
     {
         $data = [];
-        if (isset($this->info['data'])) $data = $this->info['data'];
+        if (isset($this->info['data'])) $data = array_fill_keys($this->info['data'], 'String');
 
-        $uploads = [];
-        if ($this->optionHasValue('uploads')) $uploads = $this->option('uploads');
-
+        $dataOptions = [
+            'uploads' => 'File',
+            'double' =>  'Double',
+            'bool'   =>  'Bool', 
+            'int'    =>  'Int'
+        ];
+        $options = [];
+        foreach ($dataOptions as $dataOption => $value) {
+            if ($this->optionHasValue($dataOption)) {
+                foreach (explode(',', $this->option($dataOption)) as $option) {
+                    $options [$option] = $value;
+                }
+            }
+        }
+        
         $markDownOption = [
             'moduleName' => $this->info['modelName'],
-            'data'       => $data,
-            'uploads'    => $uploads
+            'data'       => array_merge($data, $options),
         ];
         if (isset($this->info['parent'])) {
             $markDownOption['parent'] = $this->info['parent'];

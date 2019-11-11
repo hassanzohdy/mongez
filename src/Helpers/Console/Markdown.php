@@ -76,11 +76,12 @@ class Markdown
         
         $data = '{'.PHP_EOL;
         
-        foreach ($this->data as $key) {
-            $data .= '"'.$key.'"'.' : '.'"text",'.PHP_EOL;
+        foreach ($this->data as $key => $value) {
+            $value = '"'.$value.'"';
+            $data .= '"'.$key.'"'.' : ' .$value .PHP_EOL;
         }
         $data .= '}';
-        
+
         $content = str_ireplace("data", $data, $content);
 
         return $this->content = $content;
