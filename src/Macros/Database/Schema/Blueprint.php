@@ -14,7 +14,7 @@ class Blueprint
     public function loggers()
     {
         return function (string $createdBy = 'created_by', string $updatedBy = 'updated_by', string $deletedBy = 'deleted_by') {
-            $this->integer($createdBy)->nullable();
+            $this->integer($createdBy)->nullable()->index();
             $this->integer($updatedBy)->nullable();
             $this->integer($deletedBy)->nullable();
             $this->timestamps(); // created_at + updated_at
