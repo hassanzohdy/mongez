@@ -137,31 +137,35 @@ trait EngezTrait
     protected function createMigration()
     {
         $migrationsOptions = [
-            'module' => $this->moduleName,
+            'migrationName' => 'create_' .Str::plural(strtolower($this->info['modelName'])).'_table',
+            'module' => $this->info['moduleName'],
         ];
 
-        $indexedData = '';
-        $uniqueData  = '';
-        $data = '';
-
-        if ($this->hasOption('index')) {
-            $indexedData = $this->option('index');
-            $migrationsOptions['--index'] = $indexedData;
+        if ($this->optionHasValue('index')) {
+            $migrationsOptions['--index'] = $this->option('index');
         }
 
-        if ($this->hasOption('unique')) {
-            $uniqueData = $this->option('unique');
-            $migrationsOptions['--unique'] = $uniqueData;
+        if ($this->optionHasValue('unique')) {
+            $migrationsOptions['--unique'] = $this->option('unique');
+        }
+        
+        if ($this->optionHasValue('data')) {
+            $migrationsOptions['--data'] = $this->option('data');
         }
 
-        if ($this->hasOption('data')) {
-            $data = $this->option('data');
-            $migrationsOptions['--data'] = $data;
+        if ($this->optionHasValue('uploads')) {
+            $migrationsOptions['--uploads'] = $this->option('uploads');
         }
 
-        if ($this->hasOption('uploads')) {
-            $uploads = $this->option('uploads');
-            $migrationsOptions['--uploads'] = $uploads;
+        if ($this->optionHasValue('int')) {
+            $migrationsOptions['--int'] = $this->option('int');
+        }
+
+        if ($this->optionHasValue('double')) {
+            $migrationsOptions['--double'] = $this->option('double');
+        }
+        if ($this->optionHasValue('table')) {
+            $migrationsOptions['--table'] = $this->option('table');
         }
 
         if (isset($this->info['parent'])) {
@@ -178,11 +182,16 @@ trait EngezTrait
      */
     protected function createRoutes()
     {
-        $type = $this->option('type');
-        
+        if ($this->optionHasValue('type')) {
+            $type = $this->option('type');
+        } else {
+            $type = $this->info['type'];
+        }
+
         if (isset($this->info['parent'])) {
             return $this->updateRoutes();
         }
+        
         // create routes directory
         $content = File::get($this->path("Controllers/Site/controller.php"));
 
@@ -190,8 +199,6 @@ trait EngezTrait
 
         $this->checkDirectory($routesDirectory);
 
-        // get the content of the api routes file
-        $apiRoutesFileContent = File::get(base_path('routes/api.php'));
 
         $controller = $this->info['controller'];
 
@@ -216,24 +223,14 @@ trait EngezTrait
             $content = str_ireplace("ModuleName", "{$targetModule}", $content);
 
             // replace route prefix
+            $routePrefix = strtolower($this->module);
             $content = str_ireplace("route-prefix", "{$this->module}", $content);
 
             // create the route file
             $filePath = $routesDirectory . '/site.php';
 
             $this->createFile($filePath, $content, 'Site routes');
-
-            // add the routes file to the api routes file content
-            if (Str::contains($apiRoutesFileContent, '// end of site routes')) {
-                $apiRoutesFileContent = str_replace(
-                    '// end of site routes',
-                    "// {$routeModule} module
-include base_path('app/Modules/{$routeModule}/routes/site.php');
-
-// end of site routes",
-                    $apiRoutesFileContent
-                );
-            }
+          
         }
 
         if (in_array($type, ['all', 'admin'])) {
@@ -242,33 +239,19 @@ include base_path('app/Modules/{$routeModule}/routes/site.php');
 
             // replace controller name
             $content = str_ireplace("ControllerName", "{$controllerName}Controller", $content);
-
+            
             // replace module name
             $content = str_ireplace("ModuleName", "{$targetModule}", $content);
 
             // replace route prefix
-            $content = str_ireplace("route-prefix", "{$this->module}", $content);
+            $routePrefix = strtolower($this->info['moduleName']);
+            $content = str_ireplace("route-prefix", "{$routePrefix}", $content);
 
             // create the route file
             $filePath = $routesDirectory . '/admin.php';
 
             $this->createFile($filePath, $content, 'Admin routes');
-            // add the routes file to the api routes file content
-            if (Str::contains($apiRoutesFileContent, '// end of admin routes')) {
-                $apiRoutesFileContent = str_replace(
-                    '// end of admin routes',
-                    "// {$routeModule} module
-    include base_path('app/Modules/{$routeModule}/routes/admin.php');
-
-    // end of admin routes",
-                    $apiRoutesFileContent
-                );
-            }
-        }
-
-        // echo($apiRoutesFileContent);
-
-        File::put(base_path('routes/api.php'), $apiRoutesFileContent);
+        }        
     }
     
     /**
@@ -279,9 +262,6 @@ include base_path('app/Modules/{$routeModule}/routes/site.php');
     protected function updateRoutes()
     {
         $type = $this->option('type');
-
-        // get the content of the api routes file
-        $apiRoutesFileContent = File::get(base_path('routes/api.php'));
         
         $controller = $this->info['controller'];
 
@@ -295,10 +275,10 @@ include base_path('app/Modules/{$routeModule}/routes/site.php');
             
             $content = File::get($this->modulePath("routes/site.php"));
             $content = str_replace(
-                '// Child routes',
-                "Route::get('/{$this->info['parent']}/{$routeModule}/{id}','{$controllerName}Controller@index');
-    Route::get('/{$this->info['parent']}/$routeModule}/{id}','{$controllerName}Controller@show');
-    // Child routes",
+                '// Sub API CRUD routes',
+                "// Sub API CRUD routes
+    Route::get('/{$this->info['parent']}/{$routeModule}/{id}','{$controllerName}Controller@index');
+    Route::get('/{$this->info['parent']}/$routeModule}/{id}','{$controllerName}Controller@show');",
                 $content
             );
             File::put($this->modulePath("routes/site.php"),$content);
@@ -307,23 +287,109 @@ include base_path('app/Modules/{$routeModule}/routes/site.php');
         if (in_array($type, ['all', 'admin'])) {
             $content = File::get($this->modulePath("routes/site.php"));
             $content = str_replace(
-                '// Child routes',
-                "Route::get('/{$this->info['parent']}/{$routeModule}','{$controllerName}Controller@index');
-    Route::get('/{$this->info['parent']}/{$routeModule}/{id}','{$controllerName}Controller@show');
-    // Child routes",
+                '// Sub API CRUD routes',
+                "// Sub API CRUD routes
+    Route::get('/{$this->info['parent']}/{$routeModule}','{$controllerName}Controller@index');
+    Route::get('/{$this->info['parent']}/{$routeModule}/{id}','{$controllerName}Controller@show');",
                 $content
             );
 
             File::put($this->modulePath("routes/site.php"),$content);
             $content = File::get($this->modulePath("routes/admin.php"));
             $content = str_replace(
-                '// Child API CRUD routes',
-                "Route::apiResource('/{$this->info['parent']}/{$routeModule}', '{$controllerName}Controller');
-    // Child API CRUD routes",
+                '// Sub API CRUD routes',
+                "// Sub API CRUD routes
+    Route::apiResource('/{$this->info['parent']}/{$routeModule}', '{$controllerName}Controller');",
                 $content
             );
             File::put($this->modulePath("routes/admin.php"),$content);
         }
         return;     
+    }
+
+    /**
+     * 
+     */
+    protected function setOptions(array $keys)
+    {
+        $neededOptions = [];
+        foreach ($keys as $index => $key ) 
+        {
+            if (is_numeric($index)) {
+                $index = $key;
+            }
+
+            if (!str::startsWith('--' ,$index)) {
+                $index = '--' .$index;
+            }
+
+            if ($this->optionHasValue($key)) {
+                $neededOptions[$index] = $this->option($key);
+            }
+        }
+        return $neededOptions;
+    }
+
+    /**
+     * Add routes to permission table
+     * 
+     * @return void 
+     */
+    public function addRoutesToPermissionTable()
+    {
+        $permissionsRepo = repo('permissions');
+        $permissionsRepo->insertModulePermissions($this->moduleName);
+    }
+
+    /**
+     * Update configurations
+     *
+     * @return void
+     */
+    protected function updateConfig(): void
+    {
+        $config = File::get($mongezPath =  base_path('config/mongez.php'));
+
+        $replacementLine = '// Auto generated repositories here: DO NOT remove this line.';
+
+        if (!Str::contains($config, $replacementLine)) return;
+
+        $repositoryClassName = basename(str_replace('\\', '/', $this->info['repository']));
+
+        $repositoryShortcut = $this->repositoryShortcutName($this->info['repository']);
+        
+        $module = $this->info['moduleName'];
+        if (isset($this->info['parent'])) {
+            $module = $this->info['parent'];
+        }
+
+        $replacedString = "'{$repositoryShortcut}' => App\\Modules\\$module\\Repositories\\{$repositoryClassName}Repository::class,\n \t\t $replacementLine";
+        $updatedConfig = str_replace($replacementLine, $replacedString, $config);
+
+        config(['mongez.repositories.' .$repositoryShortcut => "App\\Modules\\$module\\Repositories\\{$repositoryClassName}Repository"]);
+
+        File::put($mongezPath, $updatedConfig);
+    }
+    
+    /**
+     * Update configurations
+     *
+     * @return void
+     */
+    protected function updateServiceProviderConfig(): void
+    {
+        $config = File::get($mongezPath =  base_path('config/app.php'));
+
+        $replacementLine = '// Auto generated providers here: DO NOT remove this line.';
+
+        if (!Str::contains($config, $replacementLine)) return;
+        
+        $module = $this->info['moduleName'];
+        $serviceProviderClassName = Str::singular($module) .'ServiceProvider';
+
+        $replacedString = "App\\Modules\\$module\\Providers\\{$serviceProviderClassName}::class,\n \t\t$replacementLine";
+        $updatedConfig = str_replace($replacementLine, $replacedString, $config);
+
+        File::put($mongezPath, $updatedConfig);
     }
 }

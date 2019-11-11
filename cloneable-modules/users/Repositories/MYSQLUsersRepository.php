@@ -36,7 +36,7 @@ class UsersRepository extends RepositoryManager implements RepositoryInterface
     /**
      * {@inheritDoc}
      */
-    const DATA = ['name', 'email'];
+    const DATA = ['name', 'email','password','user_group_id'];
 
     /**
      * Store the list here as array
@@ -66,12 +66,44 @@ class UsersRepository extends RepositoryManager implements RepositoryInterface
     protected function setData($model, $request)
     {
         // add additional data
-     }
+    }
+
+        /**
+     * Manage Selected Columns
+     *
+     * @return void
+     */
+    protected function select()
+    {
+        //
+    }
+
+    
+    /**
+     * Do any extra filtration here
+     * 
+     * @return  void
+     */
+    protected function filter() 
+    {
+        // 
+    }
+
+    /**
+     * Get a specific record with full details
+     * 
+     * @param  int id
+     * @return mixed
+     */
+    public function get(int $id) 
+    {
+        //
+    }
 
     /**
      * {@inheritDoc}
      */
-    public function onCreate($user, Request $request)
+    public function onCreate($user, $request)
     {
         $this->generateAccessToken($user, $request);
     }

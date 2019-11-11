@@ -55,7 +55,7 @@ class ResourceName extends JsonResourceManager
      * @const array
      */
     const COLLECTABLE = [];
-
+    
     /**
      * List of keys that will be unset before sending
      * 

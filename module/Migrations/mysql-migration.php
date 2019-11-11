@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class TableName extends Migration
+class className extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class TableName extends Migration
      */
     public function up()
     {
-        Schema::create('TableName', function (Blueprint $table) {
+        Schema::{'type'}('TableName', function (Blueprint $table) {
             $table->increments('id');
             $table->loggers();
             

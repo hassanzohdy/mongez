@@ -54,20 +54,20 @@ if (! function_exists('repo')) {
     function repo(string $repository): RepositoryInterface
     {
         static $repos = [];
-
+        
         if (! empty($repos[$repository])) {
             return $repos[$repository];
         }
-
-        $repositoryClass = config('mongez.repositories.' . $repository);
-
-        if (! $repositoryClass) {
-            throw new NotFoundRepositoryException(sprintf('Call to undefined repository: %s', $repository));
+        
+        $repositoryClass = config('mongez.repositories.' . $repository); 
+        
+        if (! $repositoryClass) { 
+            throw new NotFoundRepositoryException(sprintf('Call to undefined repository: %s', $repository)); 
         }
-       
+        
         $repositoryClass = App::make($repositoryClass);
 
-        return $repos[$repository] = $repositoryClass;
+        return $repos[$repository] = $repositoryClass; 
     }
 }
 

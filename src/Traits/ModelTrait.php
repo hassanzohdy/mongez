@@ -22,10 +22,10 @@ trait ModelTrait
      * @return string
      */
     public static function getTableName()
-    {
+    { 
         return (new static)->getTable();
     }
-
+    
     /**
      * Get model id, if no id yet then return next id
      * 

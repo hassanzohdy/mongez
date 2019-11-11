@@ -20,7 +20,7 @@ class EngezResource extends Command implements EngezInterface
                                            {--module=} 
                                            {--data=}
                                            {--assets=}
-                                           {--parent=} 
+                                           {--parent=}
                                            ';
     /**
      * The console command description.
@@ -58,14 +58,14 @@ class EngezResource extends Command implements EngezInterface
     {
         $availableModules = Mongez::getStored('modules');
 
-        if (! $this->option('module')) {
+        if (! $this->optionHasValue('module')) {
             return $this->missingRequiredOption('module option is required');
         }
         if (! in_array(strtolower($this->info['moduleName']), $availableModules)) {
             return $this->missingRequiredOption('This module is not available');
         }
 
-        if ($this->option('parent')) {
+        if ($this->optionHasValue('parent')) {
             if (! in_array(strtolower($this->info['parent']), $availableModules)) {
                 return Command::error('This parent module is not available');
                 die();
@@ -85,9 +85,9 @@ class EngezResource extends Command implements EngezInterface
         $this->info['moduleName'] = Str::studly($this->option('module'));
 
         $this->info['data'] = explode(",",$this->option('data')) ?: [];
-        $this->info['assets'] = explode(",",$this->option('assets')) ?: [];
-    
-        if ($this->hasOption('parent')) {
+        $this->info['assets'] = explode(",",$this->option('assets')) ?: []; 
+
+        if ($this->optionHasValue('parent')) {
             $this->info['parent'] = $this->option('parent');
         }
     }
@@ -145,7 +145,7 @@ class EngezResource extends Command implements EngezInterface
         if (!empty($this->info['assets'])) {
             $assetsList = "'" . implode("', '", $this->info['assets']) . "'";
         }
-
+        
         // replace resource data
         $content = str_ireplace("ASSETS_LIST", $assetsList, $content);
 

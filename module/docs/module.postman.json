@@ -6,6 +6,9 @@
 	"item": [
 		{
 			"name": "[admin] Create new {singleModuleName}",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
 			"request": {
 				"method": "POST",
 				"header": [
@@ -23,7 +26,15 @@
 					"formdata": "{formData}"
 				},
 				"url": {
-					"raw": "{{baseUrl}}/api/admin/{routeUri}"
+					"raw": "{{baseUrl}}/api/admin/{routeUri}",
+					"host": "{{host}}",
+					"protocol": "{{protocol}}",
+					"path": [
+						"{{baseUrl}}",
+						"api",
+						"admin",
+						"{routeUri}"
+					]
 				}
 			},
 			"response": {
@@ -37,6 +48,9 @@
 		},
 		{
 			"name": "[admin] Update {singleModuleName}",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
 			"request": {
 				"method": "PUT",
 				"header": [
@@ -54,7 +68,16 @@
 					"urlencoded": "{formData}"
 				},
 				"url": {
-					"raw": "{{baseUrl}}/api/admin/{routeUri}/{id}"
+					"raw": "{{baseUrl}}/api/admin/{routeUri}/{id}",
+					"host": "{{host}}",
+					"protocol": "{{protocol}}",
+					"path": [
+						"{{baseUrl}}",
+						"api",
+						"admin",
+						"{routeUri}",
+						"{id}"
+					]
 				}
 			},
 			"response": {
@@ -88,10 +111,14 @@
 					"formdata": []
 				},
 				"url": {
-					"raw": "{{baseUrl}}/api/admin/{moduleName}",
+					"raw": "{{baseUrl}}/api/admin/{routeUri}",
+					"host": "{{host}}",
+					"protocol": "{{protocol}}",
 					"path": [
+						"{{baseUrl}}",
 						"api",
-						"admin"
+						"admin",
+						"{routeUri}"
 					]
 				}
 			},
@@ -106,6 +133,9 @@
 		},
 		{
 			"name": "[admin] Get {singleModuleName}",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
 			"request": {
 				"method": "GET",
 				"header": [
@@ -119,7 +149,16 @@
 					}
 				],
 				"url": {
-					"raw": "{{baseUrl}}/api/admin/{routeUri}/{id}"
+					"raw": "{{baseUrl}}/api/admin/{routeUri}/{id}",
+					"host": "{{host}}",
+					"protocol": "{{protocol}}",
+					"path": [
+						"{{baseUrl}}",
+						"api",
+						"admin",
+						"{routeUri}",
+						"{id}"
+					]
 				}
 			},
 			"response": {
@@ -133,6 +172,9 @@
 		},
 		{
 			"name": "[admin] Delete {singleModuleName}",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
 			"request": {
 				"method": "DELETE",
 				"header": [
@@ -146,7 +188,16 @@
 					}
 				],
 				"url": {
-					"raw": "{{baseUrl}}/api/admin/{routeUri}/{id}"
+					"raw": "{{baseUrl}}/api/admin/{routeUri}/{id}",
+					"host": "{{host}}",
+					"protocol": "{{protocol}}",
+					"path": [
+						"{{baseUrl}}",
+						"api",
+						"admin",
+						"{routeUri}",
+						"{id}"
+					]
 				}
 			},
 			"response": {
@@ -160,6 +211,9 @@
 		},
 		{
 			"name": "[site] Show single record of {moduleName}",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
 			"request": {
 				"method": "GET",
 				"header": [
@@ -173,7 +227,15 @@
 					}
 				],
 				"url": {
-					"raw": "{{baseUrl}}/api/{routeUri}/{id}"
+					"raw": "{{baseUrl}}/api/{routeUri}/{id}",
+					"host": "{{host}}",
+					"protocol": "{{protocol}}",
+					"path": [
+						"{{baseUrl}}",
+						"api",
+						"{routeUri}",
+						"{id}"
+					]
 				}
 			},
 			"response": {
@@ -187,6 +249,9 @@
 		},
 		{
 			"name": "[site] Show list {moduleName}",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
 			"request": {
 				"method": "GET",
 				"header": [
@@ -200,7 +265,14 @@
 					}
 				],
 				"url": {
-					"raw": "{{baseUrl}}/api/{routeUri}"
+					"raw": "{{baseUrl}}/api/{routeUri}",
+					"host": "{{host}}",
+					"protocol": "{{protocol}}",
+					"path": [
+						"{{baseUrl}}",
+						"api",
+						"{routeUri}"
+					]
 				}
 			},
 			"response": {
@@ -211,6 +283,29 @@
 					}
 				]
 			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"type": "string"
+		},
+		{
+			"key": "host",
+			"type": "string"
+		},
+		{
+			"key": "protocol",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"type": "string"
+		},
+		{
+			"key": "tokenType",
+			"value": "Bearer",
+			"type": "string"
 		}
 	]
 }

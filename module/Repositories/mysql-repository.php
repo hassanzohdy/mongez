@@ -58,21 +58,21 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
      * 
      * @cont array  
      */
-    const INTEGER_DATA = [];
+    const INTEGER_DATA = [INTEGER_LIST];
 
     /**
      * Set columns list of float values.
      * 
      * @cont array  
      */
-    const FLOAT_DATA = [];
+    const FLOAT_DATA = [FLOAT_LIST];
 
     /**
      * Set columns of booleans data type.
      * 
      * @cont array  
      */
-    const BOOLEAN_DATA = [];
+    const BOOLEAN_DATA = [BOOL_LIST];
     
     /**
      * Add the column if and only if the value is passed in the request.
@@ -138,4 +138,16 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
     {
         // 
     }
+
+    /**
+     * Get a specific record with full details
+     * 
+     * @param  int id
+     * @return mixed
+     */
+    public function get(int $id) 
+    {
+        //
+    }
+
 }

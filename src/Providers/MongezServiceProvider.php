@@ -2,8 +2,10 @@
 
 namespace HZ\Illuminate\Mongez\Providers;
 
+use File;
 use Closure;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Artisan;
@@ -55,7 +57,7 @@ class MongezServiceProvider extends ServiceProvider
     public function boot()
     {
         if (!$this->app->runningInConsole()) return;
-
+        
         // register commands
         $this->commands(static::COMMANDS_LIST);
 
@@ -73,7 +75,9 @@ class MongezServiceProvider extends ServiceProvider
      * @return void
      */
     private function prepareForFirstTime()
-    {
+    { 
+        $this->addingCommentToAppConfig();
+        
         Mongez::install();
 
         $database = config('database.default');
@@ -83,6 +87,24 @@ class MongezServiceProvider extends ServiceProvider
         $path = Mongez::packagePath('src/Database/migrations/mongodb');
 
         Artisan::call('migrate', ['--path' => $path]);
+    }
+
+    /**
+     * Add line replacementLine to app/config file.
+     * 
+     * @return void 
+     */
+    private function addingCommentToAppConfig()
+    {
+        $config = File::get(base_path($configPath = 'config/app.php'));
+        
+        $searchString = '// Auto generated providers here: DO NOT remove this line.';
+        
+        if (Str::contains($config, $searchString)) return;
+        $replacedString = "App\Providers\RouteServiceProvider::class,\n\n\t\t/** \n\t\t * Modules Service Providers...\n\t\t */\n\t\t$searchString\n";
+        $updatedConfig = str_ireplace("App\Providers\RouteServiceProvider::class,", $replacedString, $config);
+
+        File::put($configPath, $updatedConfig);
     }
 
     /**

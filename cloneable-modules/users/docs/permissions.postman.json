@@ -1,0 +1,275 @@
+{
+    "info": {
+        "name": "permissions",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "[admin] Create new Permission",
+            "protocolProfileBehavior": {
+                "disableBodyPruning": true
+            },
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/x-www-form-urlencoded"
+                    },
+                    {
+                        "key": "Authorization",
+                        "value": "{{tokenType}} {{token}}"
+                    }
+                ],
+                "body": {
+                    "mode": "formdata",
+                    "formdata": [
+                        {
+                            "key": "name",
+                            "type": "text"
+                        },
+                        {
+                            "key": "permission",
+                            "type": "text"
+                        },
+                        {
+                            "key": "key",
+                            "type": "text"
+                        },
+                        {
+                            "key": "group",
+                            "type": "text"
+                        }
+                    ]
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/admin/users/permissions",
+                    "host": "{{host}}",
+                    "protocol": "{{protocol}}",
+                    "path": [
+                        "{{baseUrl}}",
+                        "api",
+                        "admin",
+                        "users",
+                        "permissions"
+                    ]
+                }
+            },
+            "response": {
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/x-www-form-urlencoded"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "[admin] Update Permission",
+            "protocolProfileBehavior": {
+                "disableBodyPruning": true
+            },
+            "request": {
+                "method": "PUT",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/x-www-form-urlencoded"
+                    },
+                    {
+                        "key": "Authorization",
+                        "value": "{{tokenType}} {{token}}"
+                    }
+                ],
+                "body": {
+                    "mode": "urlencoded",
+                    "urlencoded": [
+                        {
+                            "key": "name",
+                            "type": "text"
+                        },
+                        {
+                            "key": "permission",
+                            "type": "text"
+                        },
+                        {
+                            "key": "key",
+                            "type": "text"
+                        },
+                        {
+                            "key": "group",
+                            "type": "text"
+                        }
+                    ]
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/admin/users/permissions/{id}",
+                    "host": "{{host}}",
+                    "protocol": "{{protocol}}",
+                    "path": [
+                        "{{baseUrl}}",
+                        "api",
+                        "admin",
+                        "users",
+                        "permissions",
+                        "{id}"
+                    ]
+                }
+            },
+            "response": {
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/x-www-form-urlencoded"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "[admin] List permissions",
+            "protocolProfileBehavior": {
+                "disableBodyPruning": true
+            },
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/x-www-form-urlencoded"
+                    },
+                    {
+                        "key": "Authorization",
+                        "value": "{{tokenType}} {{token}}"
+                    }
+                ],
+                "body": {
+                    "mode": "formdata",
+                    "formdata": []
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/admin/users/permissions",
+                    "host": "{{host}}",
+                    "protocol": "{{protocol}}",
+                    "path": [
+                        "{{baseUrl}}",
+                        "api",
+                        "admin",
+                        "users",
+                        "permissions"
+                    ]
+                }
+            },
+            "response": {
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/x-www-form-urlencoded"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "[admin] Get Permission",
+            "protocolProfileBehavior": {
+                "disableBodyPruning": true
+            },
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "{{tokenType}} {{token}}"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/x-www-form-urlencoded"
+                    }
+                ],
+                "url": {
+                    "raw": "{{baseUrl}}/api/admin/users/permissions/{id}",
+                    "host": "{{host}}",
+                    "protocol": "{{protocol}}",
+                    "path": [
+                        "{{baseUrl}}",
+                        "api",
+                        "admin",
+                        "users",
+                        "permissions",
+                        "{id}"
+                    ]
+                }
+            },
+            "response": {
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/x-www-form-urlencoded"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "[admin] Delete Permission",
+            "protocolProfileBehavior": {
+                "disableBodyPruning": true
+            },
+            "request": {
+                "method": "DELETE",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "{{tokenType}} {{token}}"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/x-www-form-urlencoded"
+                    }
+                ],
+                "url": {
+                    "raw": "{{baseUrl}}/api/admin/users/permissions/{id}",
+                    "host": "{{host}}",
+                    "protocol": "{{protocol}}",
+                    "path": [
+                        "{{baseUrl}}",
+                        "api",
+                        "admin",
+                        "users",
+                        "permissions",
+                        "{id}"
+                    ]
+                }
+            },
+            "response": {
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/x-www-form-urlencoded"
+                    }
+                ]
+            }
+        }
+    ],
+    "variable": [
+		{
+			"key": "baseUrl",
+			"type": "string"
+		},
+		{
+			"key": "host",
+			"type": "string"
+		},
+		{
+			"key": "protocol",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"type": "string"
+		},
+		{
+			"key": "tokenType",
+			"value": "Bearer",
+			"type": "string"
+		}
+	]
+}

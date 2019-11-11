@@ -72,9 +72,15 @@ class EngezController extends Command implements EngezInterface
      */
     public function validateArguments()
     {
+        $controllerName = basename(str_replace('\\', '/', $this->info['controllerName']));
+        if (File::exists($this->modulePath("Controllers/Admin/{$controllerName}Controller.php"))) {
+            Command::error('You already have this controller');
+            die(); 
+        }
+
         $availableModules = Mongez::getStored('modules');
         
-        if (!$this->option('module')) {
+        if (!$this->optionHasValue('module')) {
             return $this->missingRequiredOption('Module option is required');
         }
 
@@ -85,10 +91,9 @@ class EngezController extends Command implements EngezInterface
         if (!in_array($this->info['type'], static::CONTROLLER_TYPES)) {
             return $this->missingRequiredOption('This controller type does not exits');
         }
-
-        if ($this->option('parent')) {
+        if ($this->optionHasValue('parent')) {
             if (! in_array(strtolower($this->info['parent']), $availableModules)) {
-                return Command::error('This parent module is not available');
+                Command::error('This parent module is not available');
                 die();
             }    
         }
@@ -106,12 +111,13 @@ class EngezController extends Command implements EngezInterface
         $this->info['type'] = $this->option('type');
 
         $repositoryName = $this->info['controllerName'];
-        if ($this->option('repository')) {
+        
+        if ($this->optionHasValue('repository')) {
             $repositoryName = $this->option('repository');
         }
         $this->info['repositoryName'] = $repositoryName;
     
-        if ($this->option('parent')) {
+        if ($this->optionHasValue('parent')) {
             $this->info['parent'] = $this->option('parent');
         }
     }
@@ -164,8 +170,8 @@ class EngezController extends Command implements EngezInterface
 
         // replace module name
         $content = str_ireplace("ModuleName", $targetModule, $content);
-
-        // repository name 
+        
+        // repository name  
         $content = str_ireplace('repo-name', $this->repositoryShortcutName($this->info['repositoryName']), $content);
 
         $controllerDirectory = $this->modulePath("Controllers/$bigControllerType");

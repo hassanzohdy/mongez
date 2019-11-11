@@ -19,6 +19,14 @@ class EngezModel extends Command implements EngezInterface
     protected $signature = 'engez:model {model} 
                                         {--module=} 
                                         {--data=}
+                                        {--uploads=}
+                                        {--index=}
+                                        {--int=}
+                                        {--bool}
+                                        {--double=}
+                                        {--table=}                                        
+                                        {--unique=}
+                                        {--index=}
                                         {--parent=}
                                         ';
 
@@ -57,7 +65,7 @@ class EngezModel extends Command implements EngezInterface
         if ($this->databaseName == 'mongodb' && $this->option('data')) {
             $this->createSchema();
         }
-
+        $this->createMigration();
         $this->info('Model created successfully');
     }
     
@@ -87,7 +95,7 @@ class EngezModel extends Command implements EngezInterface
     }
 
     /**
-     * Set controller info
+     * Set controller info.
      * 
      * @return void
      */
@@ -98,7 +106,7 @@ class EngezModel extends Command implements EngezInterface
         $this->info['modelName'] = Str::studly($this->argument('model'));
         $this->info['moduleName'] = Str::studly($this->option('module'));    
         
-        if ($this->hasOption('parent')) {
+        if ($this->optionHasValue('parent')) {
             $this->info['parent'] = $this->option('parent');
         }
     }

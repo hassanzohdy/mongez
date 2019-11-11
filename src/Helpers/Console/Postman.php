@@ -67,12 +67,19 @@ class Postman
         $this->data = [];
         $this->singleModuleName = $data['modelName'];
         $this->moduleName = strtolower(str::plural($this->singleModuleName));
-        
-        foreach ($data['data'] as $input) {
-            $this->data[] = [
-                'key' => $input,
-                'type' => 'text',
+
+        foreach($data['data'] as $textInput => $dataType) {
+            $this->data [] = [
+                'key'   => $textInput, 
+                'type'  => 'text',
+                'value' => $dataType
             ];
+            
+        }
+
+        foreach(explode("," ,$data['uploads']) as $uploadInput) {
+            $this->data[] = ['key'=> $uploadInput, 'type'=>'file'];
+            
         }
 
         $this->formDataArray = [
@@ -113,7 +120,7 @@ class Postman
         // Set request details
         foreach ($content->item as $item) {
             // set parameters of Add and update request
-            if (in_array($item->request->method, $this->formDataArray)) {
+            if (array_key_exists($item->request->method, $this->formDataArray)) {
                 $request = $this->formDataArray[$item->request->method];
                 $item->request->body->{$request['type']} = $this->data;
             }

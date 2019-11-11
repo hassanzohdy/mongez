@@ -23,6 +23,9 @@ class EngezRepository extends Command implements EngezInterface
                                                 {--model=}
                                                 {--data=}
                                                 {--uploads=}
+                                                {--int=}
+                                                {--bool=}
+                                                {--double=}
                                                 {--resource=}
                                                 {--parent=}
                                                 ';
@@ -90,24 +93,37 @@ class EngezRepository extends Command implements EngezInterface
      * @return void
      */
     public function init()
-    {
+    {                
         $this->info['repository'] = Str::studly($this->argument('repository'));
+        $this->info['repositoryName'] = Str::camel(basename(str_replace('\\', '/', $this->info['repository'])));
         $this->info['moduleName'] = Str::studly($this->option('module'));
 
         $this->info['modelName'] = Str::singular($this->option('model') ?: $this->option('module'));
 
         $this->info['resourceName'] = Str::singular($this->option('model') ?: $this->option('module'));
         
-        if ($this->hasOption('parent')) {
+        if ($this->optionHasValue('parent')) {
             $this->info['parent'] = $this->option('parent');
         }
 
-        if ($this->hasOption('data')) {
-            $this->info['data'] = $this->option('data');
+        if ($this->optionHasValue('data')) {
+            $this->info['data'] = explode(",",$this->option('data'));
         }
 
-        if ($this->hasOption('uploads')) {
-            $this->info['uploads'] = $this->option('uploads');
+        if ($this->optionHasValue('uploads')) {
+            $this->info['uploads'] = explode(",",$this->option('uploads'));
+        }
+
+        if ($this->optionHasValue('bool')) {
+            $this->info['bool'] = explode(",",$this->option('bool'));
+        }
+
+        if ($this->optionHasValue('double')) {
+            $this->info['double'] = explode(",",$this->option('double'));
+        }
+
+        if ($this->optionHasValue('int')) {
+            $this->info['int'] = explode(",",$this->option('int'));
         }
     }
 
@@ -127,8 +143,8 @@ class EngezRepository extends Command implements EngezInterface
         $content = File::get($this->path("Repositories/{$database}-repository.php"));
 
         // replace repository name
-        $content = str_ireplace("RepositoryName", Str::camel($repositoryName), $content);
-
+        $content = str_ireplace("RepositoryName", Str::camel($repositoryName), $content); 
+        
         $targetModule = $this->info['moduleName'];    
         if (isset($this->info['parent'])) {
             $targetModule = str::studly($this->info['parent']);
@@ -143,11 +159,10 @@ class EngezRepository extends Command implements EngezInterface
         // replace resource path
         $content = str_ireplace("ResourceName", $this->info['resourceName'], $content);
 
-        // repository name 
         $content = str_ireplace('repo-name', $this->adjustRepositoryName($this->info['repository']), $content);
 
         $dataList = '';
-
+        
         if (!empty($this->info['data'])) {
             if (in_array('id', $this->info['data'])) {
                 $this->info['data'] = Arr::remove($this->info['data'], 'id');
@@ -155,18 +170,42 @@ class EngezRepository extends Command implements EngezInterface
 
             $dataList = "'" . implode("', '", $this->info['data']) . "'";
         }
-
+        
         // replace repository data
         $content = str_ireplace("DATA_LIST", $dataList, $content);
 
-        // uploads
+        // uploads data
         $uploadsList = '';
-
         if (!empty($this->info['uploads'])) {
             $uploadsList = "'" . implode("', '", $this->info['uploads']) . "'";
         }
 
-        // replace repository data
+        // int data
+        $intList = '';
+        if (!empty($this->info['int'])) {
+            $intList = "'" . implode("', '", $this->info['int']) . "'";
+        }
+        
+        // double data
+        $doubleList = '';
+        if (!empty($this->info['double'])) {
+            $doubleList = "'" . implode("', '", $this->info['double']) . "'";
+        }
+
+        // bool data
+        $boolList = '';
+        if (!empty($this->info['bool'])) {
+            $boolList = "'" . implode("', '", $this->info['bool']) . "'";
+        }
+        // replace repository bool
+        $content = str_ireplace("BOOL_LIST", $boolList, $content);
+        // replace repository double
+        $content = str_ireplace("FLOAT_LIST", $doubleList, $content);
+        // replace repository integer
+        $content = str_ireplace("INTEGER_LIST", $intList, $content);
+
+
+        // replace repository Upload
         $content = str_ireplace("UPLOADS_LIST", $uploadsList, $content);
 
         $repositoryDirectory = $this->modulePath("Repositories/");
@@ -175,34 +214,5 @@ class EngezRepository extends Command implements EngezInterface
 
         // create the file
         $this->createFile("$repositoryDirectory/{$repositoryName}Repository.php", $content, 'Repository');
-    }
-
-    /**
-     * Update configurations
-     *
-     * @return void
-     */
-    protected function updateConfig(): void
-    {
-        $config = File::get($mongezPath =  base_path('config/mongez.php'));
-
-        $replacementLine = '// Auto generated repositories here: DO NOT remove this line.';
-
-        if (!Str::contains($config, $replacementLine)) return;
-
-        $repositoryClassName = basename(str_replace('\\', '/', $this->info['repository']));
-
-        $repositoryShortcut = $this->repositoryShortcutName($this->info['repository']);
-
-        $module = $this->info['moduleName'];
-        if (isset($this->info['parent'])) {
-            $module = $this->info['parent'];
-        }
-
-        $replacedString = "'{$repositoryShortcut}' => App\\Modules\\$module\\Repositories\\{$repositoryClassName}Repository::class,\n \t\t $replacementLine";
-
-        $updatedConfig = str_replace($replacementLine, $replacedString, $config);
-
-        File::put($mongezPath, $updatedConfig);
     }
 }

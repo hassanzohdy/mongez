@@ -13,7 +13,7 @@ class className extends Migration
      */
     public function up()
     {
-        Schema::create('TableName', function (Blueprint $table) {
+        Schema::{'type'}('TableName', function (Blueprint $table) {
             // this is very important to create a unique index for the id
             $table->unique('id');
             // Index of createdBy id

@@ -269,7 +269,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * @var \Illuminate\Http\Request
      */
     protected $request;
-
+    
     /**
      * Events Object
      *
@@ -326,12 +326,10 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $this->user = user();
 
-        if (!empty(static::EVENTS_LIST)) {
-            $this->eventName = static::EVENT ?: static::NAME;
+        $this->eventName = static::EVENT ?: static::NAME; 
 
-            // register events
-            $this->registerEvents();
-        }
+        // register events
+        $this->registerEvents();
     }
 
     /**
@@ -401,11 +399,9 @@ abstract class RepositoryManager implements RepositoryInterface
                 $this->query->whereNull($deletedAtColumn);
             } elseif ($retrieveMode == static::RETRIEVE_DELETED_RECORDS) {
                 $deletedAtColumn = $this->column(static::DELETED_AT);
-
                 $this->query->whereNotNull($deletedAtColumn);
             }
         }
-
         foreach (static::FILTER_BY as $column => $option) {
             if ($value = $this->option($option)) {
                 $column = is_numeric($column) ? $option : $column;
@@ -547,10 +543,11 @@ abstract class RepositoryManager implements RepositoryInterface
     {
         if (static::MODEL) {
             $model = static::MODEL;
-            return $model::table();
+            $table = $model::getTableName();
         } else {
-            return DB::table($this->tableName);
+            $table = $this->tableName;
         }
+        return DB::table($table);
     }
 
     /**
@@ -687,8 +684,8 @@ abstract class RepositoryManager implements RepositoryInterface
         $model->save();
 
         $this->trigger("save create", $model, $request);
-
-        return $model;
+        
+        return $model;  
     }
 
     /**
@@ -1001,5 +998,5 @@ abstract class RepositoryManager implements RepositoryInterface
     public function isUsingSoftDelete(): bool
     {
         return static::USING_SOFT_DELETE;
-    }
+    }    
 }

@@ -1,0 +1,259 @@
+{
+    "info": {
+        "name": "usersgroups",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "[admin] Create new UsersGroup",
+            "protocolProfileBehavior": {
+                "disableBodyPruning": true
+            },
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/x-www-form-urlencoded"
+                    },
+                    {
+                        "key": "Authorization",
+                        "value": "{{tokenType}} {{token}}"
+                    }
+                ],
+                "body": {
+                    "mode": "formdata",
+                    "formdata": [
+                        {
+                            "key": "name",
+                            "type": "text"
+                        },
+                        {
+                            "key": "permissions",
+                            "type": "text"
+                        }
+                    ]
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/admin/users/groups",
+                    "host": "{{host}}",
+                    "protocol": "{{protocol}}",
+                    "path": [
+                        "{{baseUrl}}",
+                        "api",
+                        "admin",
+                        "users",
+                        "groups"
+                    ]
+                }
+            },
+            "response": {
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/x-www-form-urlencoded"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "[admin] Update UsersGroup",
+            "protocolProfileBehavior": {
+                "disableBodyPruning": true
+            },
+            "request": {
+                "method": "PUT",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/x-www-form-urlencoded"
+                    },
+                    {
+                        "key": "Authorization",
+                        "value": "{{tokenType}} {{token}}"
+                    }
+                ],
+                "body": {
+                    "mode": "urlencoded",
+                    "urlencoded": [
+                        {
+                            "key": "name",
+                            "type": "text"
+                        },
+                        {
+                            "key": "permissions",
+                            "type": "text"
+                        }
+                    ]
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/admin/users/groups/{id}",
+                    "host": "{{host}}",
+                    "protocol": "{{protocol}}",
+                    "path": [
+                        "{{baseUrl}}",
+                        "api",
+                        "admin",
+                        "users",
+                        "groups",                        
+                        "{id}"
+                    ]
+                }
+            },
+            "response": {
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/x-www-form-urlencoded"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "[admin] List usersgroups",
+            "protocolProfileBehavior": {
+                "disableBodyPruning": true
+            },
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/x-www-form-urlencoded"
+                    },
+                    {
+                        "key": "Authorization",
+                        "value": "{{tokenType}} {{token}}"
+                    }
+                ],
+                "body": {
+                    "mode": "formdata",
+                    "formdata": []
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/admin/users/groups",
+                    "host": "{{host}}",
+                    "protocol": "{{protocol}}",
+                    "path": [
+                        "{{baseUrl}}",
+                        "api",
+                        "admin",
+                        "users",
+                        "groups"                    
+                    ]
+                }
+            },
+            "response": {
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/x-www-form-urlencoded"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "[admin] Get UsersGroup",
+            "protocolProfileBehavior": {
+                "disableBodyPruning": true
+            },
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "{{tokenType}} {{token}}"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/x-www-form-urlencoded"
+                    }
+                ],
+                "url": {
+                    "raw": "{{baseUrl}}/api/admin/users/groups/{id}",
+                    "host": "{{host}}",
+                    "protocol": "{{protocol}}",
+                    "path": [
+                        "{{baseUrl}}",
+                        "api",
+                        "admin",
+                        "users",
+                        "groups",
+                        "{id}"
+                    ]
+                }
+            },
+            "response": {
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/x-www-form-urlencoded"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "[admin] Delete UsersGroup",
+            "protocolProfileBehavior": {
+                "disableBodyPruning": true
+            },
+            "request": {
+                "method": "DELETE",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "{{tokenType}} {{token}}"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/x-www-form-urlencoded"
+                    }
+                ],
+                "url": {
+                    "raw": "{{baseUrl}}/api/admin/users/groups/{id}",
+                    "host": "{{host}}",
+                    "protocol": "{{protocol}}",
+                    "path": [
+                        "{{baseUrl}}",
+                        "api",
+                        "admin",
+                        "users",
+                        "groups",
+                        "{id}"
+                    ]
+                }
+            },
+            "response": {
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/x-www-form-urlencoded"
+                    }
+                ]
+            }
+        }
+    ],
+    "variable": [
+		{
+			"key": "baseUrl",
+			"type": "string"
+		},
+		{
+			"key": "host",
+			"type": "string"
+		},
+		{
+			"key": "protocol",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"type": "string"
+		},
+		{
+			"key": "tokenType",
+			"value": "Bearer",
+			"type": "string"
+		}
+	]
+}

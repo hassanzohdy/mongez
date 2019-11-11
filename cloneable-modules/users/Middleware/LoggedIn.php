@@ -12,9 +12,8 @@ class LoggedIn
      */
     public function handle(Request $request, Closure $next)
     {          
-        
         if (user()) return $next($request);
-
+        
         $accessToken = $request->authorizationValue();
 
         $repositoryName = config('app.users-repo');

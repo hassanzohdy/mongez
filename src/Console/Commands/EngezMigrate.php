@@ -50,7 +50,6 @@ class EngezMigrate extends Command
             $this->paths[] = Mongez::packagePath('src/database/migrations/' . config('database.default'));
             $this->availableModules = Mongez::getStored('modules');
         }
-
         $this->generateModulesPaths();
         $this->makeMigrate();
     }
