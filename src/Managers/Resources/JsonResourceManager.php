@@ -3,8 +3,10 @@
 namespace HZ\Illuminate\Mongez\Managers\Resources;
 
 use DateTime;
+use Illuminate\Database\Eloquent\Model;
 use MongoDB\BSON\UTCDateTime;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Arr;
 
 abstract class JsonResourceManager extends JsonResource
 {
@@ -150,8 +152,10 @@ abstract class JsonResourceManager extends JsonResource
         $this->extend($request);
 
         // unset all data from the resource
-        foreach (static::$disabledKeys as $key) {
-            unset($this->data[$key]);
+        if (! empty(static::$disabledKeys)) {
+            foreach (static::$disabledKeys as $key) {
+                unset($this->data[$key]);
+            }    
         }
 
         if (! empty(static::$allowedKeys)) {
@@ -224,17 +228,29 @@ abstract class JsonResourceManager extends JsonResource
      */
     public function collectAssets(array $columns): JsonResourceManager
     {
+        if ($this->resource instanceof Model) {
+            if (method_exists($this->resource, 'info')) {
+                $resource = $this->resource->info();
+            } else {
+                $resource = $this->resource->getAttributes();
+            }
+        } else {
+            $resource = (array) $this->resource;
+        }
+
         foreach ($columns as $column) {
-            if (!isset($this->$column)) {
-                $this->data[$column] = null;
+            $asset = Arr::get($resource, $column, null);
+            
+            if (null === $asset) {
+                Arr::set($this->data, $column, null);
                 continue;
             }
 
-            $asset = $this->$column;
-
-            $this->data[$column] =  !is_array($asset) ? call_user_func($this->assetsUrlFunction, $asset) : array_map(function ($asset) {
+            $assetUrl =  !is_array($asset) ? call_user_func($this->assetsUrlFunction, $asset) : array_map(function ($asset) {
                 return call_user_func($this->assetsUrlFunction, $asset);
             }, $asset);
+
+            Arr::set($this->data, $column, $assetUrl);
         }
         return $this;
     }
@@ -445,22 +461,26 @@ abstract class JsonResourceManager extends JsonResource
     /**
      * Set more data from outside the resource
      * 
-     * @param   string $key
-     * @param   mixed $value
+     * @param  string $key
+     * @param  mixed $value
+     * @return $this
      */
     public function set(string $key, $value)
     {
         $this->data[$key] = $value;
+
+        return $this;
     }
 
     /**
      * Append the given key from the resource to the data array
      * 
-     * @param   string $key
+     * @param  string $key
+     * @return $this
      */
     public function append(string $key)
     {
-        $this->set($key, $this->$key);
+        return $this->set($key, $this->$key);
     }
 
     /**
