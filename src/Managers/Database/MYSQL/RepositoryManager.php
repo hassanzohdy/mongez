@@ -425,7 +425,9 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $defaultOrderBy = [];
 
-        if (!empty(static::ORDER_BY)) {
+        if ($orderBy = $this->option('orderBy')) {
+            $defaultOrderBy = $orderBy;
+        } elseif (!empty(static::ORDER_BY)) {
             $defaultOrderBy = [$this->column(static::ORDER_BY[0]), static::ORDER_BY[1]];
         }
 
@@ -452,6 +454,10 @@ abstract class RepositoryManager implements RepositoryInterface
                 $this->query->select(...$this->select->list());
             }
 
+            if ($limit = $this->option('limit')) {
+                $this->query->limit((int) $limit);
+            }
+    
             $records = $this->query->get();
         }
 

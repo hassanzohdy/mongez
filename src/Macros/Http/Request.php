@@ -33,11 +33,11 @@ class Request
     public function uri()
     {
         return function () {
-            // $script = str_replace('/index.php', '', $this->server('SCRIPT_NAME'));
+            $script = str_replace('/index.php', '', $this->server('SCRIPT_NAME'));
 
-            // return Str::removeFirst($script, $this->server('REQUEST_URI'));
+            return '/' . ltrim(Str::removeFirst($script, $this->server('REQUEST_URI')), '/');
 
-            return $this->server('PATH_INFO');
+            // return $this->server('PATH_INFO');
         };
     }
 
