@@ -178,6 +178,8 @@ class EngezModel extends Command implements EngezInterface
         
         $path = $this->modulePath("database/migrations");
         
+        $this->checkDirectory($path);
+
         $customData = explode(',', $this->option('data')) ?? [];
         
         unset($customData['id'], $customData['_id']);

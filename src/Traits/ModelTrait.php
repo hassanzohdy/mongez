@@ -6,6 +6,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 trait ModelTrait
 {
     /**
+     * If set to true, it will disable updated by during timeline
+     *
+     * @var boolean
+     */
+    public static $disableUpdateTime = false;
+
+    /**
      * Determine if the current model uses the given trait
      *
      * @param  string $trait
@@ -63,15 +70,15 @@ trait ModelTrait
         // before creating, we will check if the created_by column has value
         // if so, then we will update the column for the current user id
         static::creating(function ($model) {
-            if (static::CREATED_BY) {
+            if (static::CREATED_BY && ! $model->{static::CREATED_BY}) {
                 $model->{static::CREATED_BY} = $model->byUser();
             } 
             
-            if (static::UPDATED_BY) {
-                $model->{static::UPDATED_BY} = null;
+            if (static::UPDATED_BY && ! $model->{static::UPDATED_BY}) {
+                $model->{static::UPDATED_BY} = $model->byUser();
             } 
 
-            if (static::DELETED_BY) {
+            if (static::DELETED_BY && ! $model->{static::DELETED_BY}) {
                 $model->{static::DELETED_BY} = null;
             } 
         });
@@ -91,5 +98,15 @@ trait ModelTrait
                 $model->{static::DELETED_BY} = $model->byUser();
             } 
         });
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setUpdatedAt($value)
+    {
+        if (static::$disableUpdateTime) return $this;
+
+        return parent::setUpdatedAt($value);
     }
 }

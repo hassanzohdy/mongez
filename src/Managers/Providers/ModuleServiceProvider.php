@@ -1,4 +1,5 @@
 <?php
+
 namespace HZ\Illuminate\Mongez\Managers\Providers;
 
 use Illuminate\Support\Facades\Route;
@@ -6,10 +7,10 @@ use Illuminate\Support\ServiceProvider;
 use HZ\Illuminate\Mongez\Contracts\Providers\ModuleServiceProviderInterface;
 
 abstract class ModuleServiceProvider extends ServiceProvider implements ModuleServiceProviderInterface
-{    
+{
     /**
      * {@inheritDoc}
-     */    
+     */
     public function boot()
     {
         $this->map();
@@ -34,14 +35,14 @@ abstract class ModuleServiceProvider extends ServiceProvider implements ModuleSe
 
     /**
      * {@inheritDoc}
-     */    
+     */
     public function mapApiRoutes()
     {
         foreach (static::ROUTES_TYPES as $routeType) {
             $prefix = $routeType == 'admin' ? '/admin' : '';
 
-            $routeFilePath = 'routes/' .$routeType .'.php';
-            $routeFilePath = $this->namespace .'/' .$routeFilePath;
+            $routeFilePath = 'routes/' . $routeType . '.php';
+            $routeFilePath = lcfirst($this->namespace) . $routeFilePath;
             Route::prefix('api' . $prefix)
                 ->middleware('api')
                 ->namespace('App')
@@ -58,7 +59,7 @@ abstract class ModuleServiceProvider extends ServiceProvider implements ModuleSe
     {
         return $this->app->routesAreCached();
     }
-    
+
     /**
      * Load the cached routes for the application.
      *
