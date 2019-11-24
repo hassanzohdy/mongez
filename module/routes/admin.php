@@ -11,7 +11,7 @@
 */
 Route::group([
     'namespace' => 'Modules\ModuleName\Controllers\Admin',
-    'middleware' => ['auth','logged-in'], // this middleware is used to check if user/admin is logged in
+    'middleware' => [middlewareList], // this middleware is used to check if user/admin is logged in
 ], function () {
     // Sub API CRUD routes
     // Main API CRUD routes 

@@ -108,7 +108,7 @@ class EngezMigration extends Command implements EngezInterface
         if ($this->optionHasValue('double')) {
             $this->info['double'] = explode(',', $this->option('double'));
         }
-
+        
         if ($this->optionHasValue('parent')) {
             $this->info['parent'] = $this->option('parent');
         }
@@ -205,7 +205,7 @@ class EngezMigration extends Command implements EngezInterface
             }
         }
         $allData = array_filter(array_unique(array_merge($this->info['data'], $this->info['int'], $this->info['bool'], $this->info['index'], $this->info['unique'], $this->info['double'])));
-        
+
         if (! empty($allData)) {
             $schema = '';
             $tabs = "\n" . str_repeat("\t", 3);
@@ -222,14 +222,36 @@ class EngezMigration extends Command implements EngezInterface
 
                 if (in_array($data, $this->info['int'])) {
                     $dataSchema = "{$tabs}\$table->integer('$data');";
+                    if (in_array($data, $this->info['index'])){
+                        $dataSchema = "{$tabs}\$table->integer('$data')->index();";
+                    }
+
+                    if (in_array($data, $this->info['unique'])){
+                        $dataSchema = "{$tabs}\$table->integer('$data')->unique();";
+                    }
                 }
 
                 if (in_array($data, $this->info['double'])) {
                     $dataSchema = "{$tabs}\$table->double('$data');";
+                    if (in_array($data, $this->info['index'])){
+                        $dataSchema = "{$tabs}\$table->double('$data')->index();";
+                    }
+
+                    if (in_array($data, $this->info['unique'])){
+                        $dataSchema = "{$tabs}\$table->double('$data')->unique();";
+                    }
+
                 }
                 
                 if (in_array($data, $this->info['bool'])) {
-                    $dataSchema = "{$tabs}\$table->bool('$data');";
+                    $dataSchema = "{$tabs}\$table->boolean('$data');";
+                    if (in_array($data, $this->info['index'])){
+                        $dataSchema = "{$tabs}\$table->boolean('$data')->index();";
+                    }
+
+                    if (in_array($data, $this->info['unique'])){
+                        $dataSchema = "{$tabs}\$table->boolean('$data')->unique();";
+                    }
                 }
                 $schema .= $dataSchema;
             }

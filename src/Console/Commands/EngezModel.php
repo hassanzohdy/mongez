@@ -26,7 +26,6 @@ class EngezModel extends Command implements EngezInterface
                                         {--double=}
                                         {--table=}                                        
                                         {--unique=}
-                                        {--index=}
                                         {--parent=}
                                         ';
 
@@ -141,6 +140,7 @@ class EngezModel extends Command implements EngezInterface
         // replace model name
         $content = str_ireplace("ModelName", "{$modelName}", $content);
 
+        if ($this->databaseName == 'mongodb') $this->databaseName = 'MongoDB';
         // replace database name 
         $content = str_replace('DatabaseName', $this->databaseName, $content);
 
@@ -178,6 +178,8 @@ class EngezModel extends Command implements EngezInterface
         
         $path = $this->modulePath("database/migrations");
         
+        $this->checkDirectory($path);
+
         $customData = explode(',', $this->option('data')) ?? [];
         
         unset($customData['id'], $customData['_id']);
