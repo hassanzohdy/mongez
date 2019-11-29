@@ -8,7 +8,7 @@ class UserServiceProvider extends ModuleServiceProvider
     /**
      * {@inheritDoc}
      */
-    const ROUTES_TYPES = ["admin","site"];
+    const ROUTES_TYPES = ["admin"];
     
     /**
      * {@inheritDoc}

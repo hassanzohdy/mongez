@@ -365,6 +365,7 @@ class ModuleBuilder extends Command
      */
     protected function createRepository()
     {
+        
         $repositoryOptions = [
             'repository' => $this->info['repositoryName'],
             '--module' => $this->moduleName,
@@ -375,7 +376,7 @@ class ModuleBuilder extends Command
             'data',
             'int',
             'double',
-            'bool'
+            'bool',
         ]);
         
         $this->call('engez:repository', array_merge($repositoryOptions, $options));
@@ -528,7 +529,7 @@ class ModuleBuilder extends Command
         $dataOptions = [
             'double' =>  'Double',
             'bool'   =>  'Bool', 
-            'int'    =>  'Int'
+            'int'    =>  'Int',
         ];
         $options = [];
         foreach ($dataOptions as $dataOption => $value) {
@@ -541,7 +542,7 @@ class ModuleBuilder extends Command
         
         $postman =  new Postman([
             'modelName'  => $this->info['modelName'],
-            'data'       => array_merge($data, $dataOptions),
+            'data'       => array_merge($data, $options),
             'uploads'    => $uploads
         ]);
 

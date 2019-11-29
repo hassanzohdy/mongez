@@ -161,6 +161,10 @@ trait EngezTrait
             $migrationsOptions['--int'] = $this->option('int');
         }
 
+        if ($this->optionHasValue('bool')) {
+            $migrationsOptions['--bool'] = $this->option('bool');
+        }
+        
         if ($this->optionHasValue('double')) {
             $migrationsOptions['--double'] = $this->option('double');
         }
@@ -242,7 +246,15 @@ trait EngezTrait
             
             // replace module name
             $content = str_ireplace("ModuleName", "{$targetModule}", $content);
+            
+            $middleware = "";
+            if (in_array('users', Mongez::getStored('modules'))){
+                $middleware = "'logged-in','check-permission'"; 
+            } 
 
+            // Set middleware list
+            $content = str_ireplace("middlewareList", $middleware, $content);
+            
             // replace route prefix
             $routePrefix = strtolower($this->info['moduleName']);
             $content = str_ireplace("route-prefix", "{$routePrefix}", $content);
