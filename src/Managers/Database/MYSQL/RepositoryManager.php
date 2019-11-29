@@ -493,6 +493,7 @@ abstract class RepositoryManager implements RepositoryInterface
     protected function setPaginateInfo($data)
     {
         $this->paginationInfo = [
+            'currentResults' => $data->count(),
             'totalRecords' => $data->total(),
             'numberOfPages' => $data->lastPage(),
             'itemsPerPage' => $data->perPage(),
@@ -999,4 +1000,15 @@ abstract class RepositoryManager implements RepositoryInterface
     {
         return static::USING_SOFT_DELETE;
     }    
+
+    /**
+     * Remove the given file path from storage 
+     * 
+     * @param  string $path
+     * @return mixed
+     */
+    public function unlink(string $path)
+    {
+        return Storage::delete($path);
+    }
 }
