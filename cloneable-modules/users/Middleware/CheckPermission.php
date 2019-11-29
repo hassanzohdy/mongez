@@ -65,7 +65,6 @@ class CheckPermission
         }
         
         $userGroupId = request()->user()->user_group_id;
-
         $userGroup = UserGroup::find($userGroupId);
         $userGroupPermissions = explode(',', $userGroup->permissions);
 

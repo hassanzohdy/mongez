@@ -9,5 +9,5 @@ class UserGroup extends Model
     /**
      * {@inheritDoc}
      */
-    protected $collection = 'usersGroups';
+    protected $collection = 'users_groups';
 }

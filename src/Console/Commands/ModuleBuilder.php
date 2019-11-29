@@ -347,13 +347,25 @@ class ModuleBuilder extends Command
 
         $uploadsData = $this->info['uploads'] ?? [];
 
+        $intData = $this->optionHasValue('int') ? explode(",",$this->option('int')) : [];
+        
+        $doubleData = $this->optionHasValue('double') ? explode(",",$this->option('double')) : [];
+
+        $boolData = $this->optionHasValue('bool') ? explode(",",$this->option('bool')) : [];
+
         unset($customData['id'], $customData['_id']);
 
         $customData = array_fill_keys($customData, 'string');
 
         $uploadsData = array_fill_keys($uploadsData, 'string');
+        
+        $intData = array_fill_keys($intData, 'int');
 
-        $content = array_merge($defaultContent, $customData, $uploadsData);
+        $doubleData = array_fill_keys($doubleData, 'double');
+
+        $boolData = array_fill_keys($boolData, 'boolean');
+
+        $content = array_merge($defaultContent, $customData, $uploadsData, $intData, $doubleData, $boolData);
 
         $this->createFile("$path/{$databaseFileName}.json", json_encode($content, JSON_PRETTY_PRINT), 'Schema');
     }
@@ -365,7 +377,6 @@ class ModuleBuilder extends Command
      */
     protected function createRepository()
     {
-        
         $repositoryOptions = [
             'repository' => $this->info['repositoryName'],
             '--module' => $this->moduleName,
@@ -529,7 +540,7 @@ class ModuleBuilder extends Command
         $dataOptions = [
             'double' =>  'Double',
             'bool'   =>  'Bool', 
-            'int'    =>  'Int',
+            'int'    =>  'Int'
         ];
         $options = [];
         foreach ($dataOptions as $dataOption => $value) {
@@ -539,11 +550,15 @@ class ModuleBuilder extends Command
                 }
             }
         }
-        
+    
+        $parent = '';
+        if (isset($this->info['parent'])) $parent = $this->info['parent'];
+     
         $postman =  new Postman([
             'modelName'  => $this->info['modelName'],
             'data'       => array_merge($data, $options),
-            'uploads'    => $uploads
+            'uploads'    => $uploads,
+            'parent'     => $parent
         ]);
 
         $path = $this->modulePath("docs");
