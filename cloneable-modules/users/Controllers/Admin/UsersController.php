@@ -21,7 +21,6 @@ class UsersController extends AdminApiController
         'rules' => [
             'all' => [
                 'name' => 'required|string',
-                'user_group_id' => 'required|exists:users_groups,id',
             ],
             'store' => [],
             'update' => [],
@@ -45,7 +44,6 @@ class UsersController extends AdminApiController
                 }),
             ],
             'password' => 'required',
-            'user_group_id' => 'required|exists:users_groups,id',
         ];
     }
 

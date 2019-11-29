@@ -372,7 +372,7 @@ trait EngezTrait
         
         $module = $this->info['moduleName'];
         if (isset($this->info['parent'])) {
-            $module = $this->info['parent'];
+            $module = Str::studly($this->info['parent']);
         }
 
         $replacedString = "'{$repositoryShortcut}' => App\\Modules\\$module\\Repositories\\{$repositoryClassName}Repository::class,\n \t\t $replacementLine";

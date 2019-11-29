@@ -168,7 +168,7 @@ class permissionsRepository extends RepositoryManager implements RepositoryInter
                 'name' => 'Create new ' .$modelName,
                 'route' => '/api/admin/' .$routeName,
                 'type' => 'create',
-                'key' => $routeName. '.create'
+                'key' => $routeName. '.store'
             ],
             [
                 'name' => 'Update ' .$modelName,
@@ -186,16 +186,16 @@ class permissionsRepository extends RepositoryManager implements RepositoryInter
                 'name' => 'Delete ' .$modelName,
                 'route' => '/api/admin/' .$routeName .'/{' .$modelName .'}',
                 'type' => 'delete',
-                'key' => $routeName .'.delete'
+                'key' => $routeName .'.destroy'
             ],
             [
                 'name' => 'List of ' .$routeName,
                 'route' => '/api/admin/' .$routeName,
                 'type' => 'list',
-                'key' => $routeName .'.list'
+                'key' => $routeName .'.index'
             ]
         ];
-
+        
         foreach ($modulePermissions as $modulePermission) {
             $request = new Request;
             $request->replace($modulePermission);

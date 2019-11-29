@@ -13,6 +13,11 @@ class User extends Model implements Authenticatable
     use AuthenticatableTrait, updatePassword, RecycleBin;
 
     /**
+     * {@inheritDoc}
+     */
+    protected $collection = 'users';
+
+    /**
      * Get shared info for the user that will be stored as a sub document of another collection
      * 
      * @return array

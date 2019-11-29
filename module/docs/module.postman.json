@@ -292,13 +292,11 @@
 		},
 		{
 			"key": "host",
-			"type": "string",
-			"value": "{host}"
+			"type": "string"
 		},
 		{
 			"key": "protocol",
-			"type": "string",
-			"value": "{protocol}"
+			"type": "string"
 		},
 		{
 			"key": "token",

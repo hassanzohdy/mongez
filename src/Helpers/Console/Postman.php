@@ -29,6 +29,13 @@ class Postman
      * @var array
      */
     protected $data;
+    
+    /**
+     * Module parent
+     *
+     * @var string
+     */
+    protected $parent;
 
     /**
      * Data of PUT and Post form.
@@ -65,6 +72,7 @@ class Postman
     protected function prepareData($data)
     {
         $this->data = [];
+        $this->parent = $data['parent'];
         $this->singleModuleName = $data['modelName'];
         $this->moduleName = strtolower(str::plural($this->singleModuleName));
 
@@ -78,8 +86,9 @@ class Postman
         }
 
         foreach(explode("," ,$data['uploads']) as $uploadInput) {
-            $this->data[] = ['key'=> $uploadInput, 'type'=>'file'];
-            
+            if ($uploadInput) {
+                $this->data[] = ['key'=> $uploadInput, 'type'=>'file'];
+            }            
         }
 
         $this->formDataArray = [
@@ -105,15 +114,18 @@ class Postman
 
         // replace postman name
         $content = str_ireplace("{postmanName}", $this->moduleName . ' Module', $content);
-
+        
         // replace module name
         $content = str_ireplace("{moduleName}", $this->moduleName, $content);
 
         // replace single module name
         $content = str_ireplace("{singleModuleName}", $this->singleModuleName, $content);
 
+        $routeUri = $this->moduleName;
+        if ($this->parent) $routeUri = $this->parent .'/' .$this->moduleName;
+
         // replace routeUri
-        $content = str_ireplace("{routeUri}", $this->moduleName, $content);
+        $content = str_ireplace("{routeUri}", $routeUri, $content);
 
         $content = json_decode($content);
 

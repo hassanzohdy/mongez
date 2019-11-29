@@ -171,6 +171,7 @@ class EngezMigration extends Command implements EngezInterface
         $this->info['migrationType'] = 'create';
         if (!$create) $this->info['migrationType'] = 'table';
     }
+    
     /**
      * Make migration file for module
      *
