@@ -199,7 +199,7 @@ abstract class JsonResourceManager extends JsonResource
     public function collectData(array $columns): JsonResourceManager
     {
         foreach ($columns as $column) {
-            $this->data[$column] = $this->$column ?? null;
+            $this->data[$column] = $this->resource->$column ?? null;
         }
 
         return $this;
