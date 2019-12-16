@@ -1,9 +1,11 @@
 <?php
 namespace HZ\Illuminate\Mongez\Managers;
 
+use App;
 use Illuminate\Http\Response;
 use Illuminate\Support\MessageBag;
 use App\Http\Controllers\Controller;
+use HZ\Illuminate\Mongez\Events\Events;
 use HZ\Illuminate\Mongez\Traits\RepositoryTrait;
 
 abstract class ApiController extends Controller
@@ -18,11 +20,19 @@ abstract class ApiController extends Controller
     protected $repository = null;
 
     /**
+     * Events Object
+     * 
+     * @var Events
+     */
+    protected $events;
+
+    /**
      * Constructor
      *
      */
     public function __construct()
     {
+        $this->events = App::make(Events::class);
         if ($this->repository) {
             $this->repository = repo($this->repository);
         }
@@ -39,6 +49,10 @@ abstract class ApiController extends Controller
         $data = $data ?: [
             'success' => true,
         ];
+
+        if (($eventResponse = $this->events->trigger('response.success', $data)) && is_array($eventResponse)) {
+            $data = $eventResponse;
+        }
         
         return $this->send(Response::HTTP_OK, $data);
     }
@@ -65,6 +79,10 @@ abstract class ApiController extends Controller
             ];
         }
 
+        if (($eventResponse = $this->events->trigger('response.badRequest', $data)) && is_array($eventResponse)) {
+            $data = $eventResponse;
+        }
+        
         return $this->send(Response::HTTP_BAD_REQUEST, $data);
     }
 
@@ -78,6 +96,10 @@ abstract class ApiController extends Controller
     {
         $message = ['error' => $message];
 
+        if (($eventResponse = $this->events->trigger('response.unauthorized', $message)) && is_array($eventResponse)) {
+            $message = $eventResponse;
+        }
+        
         return $this->send(Response::HTTP_UNPROCESSABLE_ENTITY, $message);
     }
 
@@ -90,6 +112,10 @@ abstract class ApiController extends Controller
      */
     protected function send(int $statusCode, array $message)
     {
+        if (($eventResponse = $this->events->trigger('response.send', $message)) && is_array($eventResponse)) {
+            $message = $eventResponse;
+        }
+
         return response()->json($message, $statusCode);
     }
 }

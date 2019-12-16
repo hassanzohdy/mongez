@@ -2,6 +2,7 @@
 namespace HZ\Illuminate\Mongez\Managers\Database\MongoDB;
 
 use DB;
+use DateTime;
 use HZ\Illuminate\Mongez\Traits\ModelTrait;
 use Jenssegers\Mongodb\Eloquent\Model as BaseModel;
 
@@ -160,25 +161,16 @@ abstract class Model extends BaseModel
      */
     public function sharedInfo(): array
     {
-        return ! empty(static::SHARED_INFO) ? $this->getValues(...static::SHARED_INFO) 
-                                            : $this->getAttributes();
-    }
+        $info = ! empty(static::SHARED_INFO) ? $this->pluck(static::SHARED_INFO) 
+                                             : $this->getAttributes();
 
-    /**
-     * Get values of the given columns
-     * 
-     * @param ...$columns
-     * @return array
-     */
-    public function getValues(...$columns): array
-    {
-        $data = [];
-
-        foreach ($columns as $column) {
-            $data[$column] = $this->$column;
+        foreach ($info as & $value) {
+            if ($value instanceof DateTime) {
+                $value = $value->getTimestamp();                
+            }
         }
 
-        return $data;
+        return $info;
     }
 
     /**

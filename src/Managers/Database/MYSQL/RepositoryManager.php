@@ -3,8 +3,8 @@
 namespace HZ\Illuminate\Mongez\Managers\Database\MYSQL;
 
 use DB;
+use Storage;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -945,6 +945,11 @@ abstract class RepositoryManager implements RepositoryInterface
         $model = (static::MODEL)::find($id);
 
         if (!$model) return false;
+
+        // delete uploaded files
+        foreach (static::UPLOADS as $file) {
+            $this->unlink($file);
+        }
 
         if ($this->trigger("deleting", $model, $id) === false) return false;
 

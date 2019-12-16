@@ -57,16 +57,16 @@ class MongezServiceProvider extends ServiceProvider
     public function boot()
     {
         if (!$this->app->runningInConsole()) return;
-        
+
         // register commands
         $this->commands(static::COMMANDS_LIST);
 
         // Initialize Mongez 
         Mongez::init();
 
-        if (! Mongez::isInstalled()) {
+        if (!Mongez::isInstalled()) {
             $this->prepareForFirstTime();
-        }        
+        }
     }
 
     /**
@@ -75,9 +75,9 @@ class MongezServiceProvider extends ServiceProvider
      * @return void
      */
     private function prepareForFirstTime()
-    { 
+    {
         $this->addingCommentToAppConfig();
-        
+
         Mongez::install();
 
         $database = config('database.default');
@@ -97,9 +97,9 @@ class MongezServiceProvider extends ServiceProvider
     private function addingCommentToAppConfig()
     {
         $config = File::get(base_path($configPath = 'config/app.php'));
-        
+
         $searchString = '// Auto generated providers here: DO NOT remove this line.';
-        
+
         if (Str::contains($config, $searchString)) return;
         $replacedString = "App\Providers\RouteServiceProvider::class,\n\n\t\t/** \n\t\t * Modules Service Providers...\n\t\t */\n\t\t$searchString\n";
         $updatedConfig = str_ireplace("App\Providers\RouteServiceProvider::class,", $replacedString, $config);
@@ -191,7 +191,8 @@ class MongezServiceProvider extends ServiceProvider
             if ($original == QueryBuilder::class) {
                 foreach (get_class_methods($mixinObject) as $method) {
                     $callback = $mixinObject->$method();
-                    EloquentBuilder::macro($method, Closure::bind($callback, null, EloquentBuilder::class));
+                    // EloquentBuilder::macro($method, Closure::bind($callback, null, EloquentBuilder::class));
+                    EloquentBuilder::macro($method, $callback);
                 }
             }
         }
