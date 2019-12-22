@@ -190,9 +190,16 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     protected function setDocumentData($model, $request)
     {
         foreach (static::DOCUMENT_DATA as $column => $documentModelClass) {
+            if (is_array($documentModelClass)) {
+                list($class, $method) = $documentModelClass;
+                $documentModelClass = $class;
+            } else {
+              $method = 'sharedInfo';  
+            }
+            
             $documentModel = $documentModelClass::find((int) $request->$column);
 
-            $model->$column = $documentModel ? $documentModel->sharedInfo() : [];
+            $model->$column = $documentModel ? $documentModel->{$method}() : [];
         }
     }
 

@@ -3,7 +3,9 @@
 namespace HZ\Illuminate\Mongez\Managers\Database\MYSQL;
 
 use DB;
+use File;
 use Storage;
+use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -14,6 +16,7 @@ use HZ\Illuminate\Mongez\Traits\RepositoryTrait;
 use HZ\Illuminate\Mongez\Helpers\Repository\Select;
 use HZ\Illuminate\Mongez\Contracts\Repositories\RepositoryInterface;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\UploadedFile;
 
 abstract class RepositoryManager implements RepositoryInterface
 {
@@ -65,6 +68,13 @@ abstract class RepositoryManager implements RepositoryInterface
      * @const string
      */
     const UPLOADS_DIRECTORY = '';
+
+    /**
+     * If set to true, then the file will be stored as its uploaded name
+     * 
+     * @const bool
+     */
+    const UPLOADS_KEEP_FILE_NAME = false;
 
     /**
      * Event name to be triggered
@@ -269,7 +279,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * @var \Illuminate\Http\Request
      */
     protected $request;
-    
+
     /**
      * Events Object
      *
@@ -326,7 +336,7 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $this->user = user();
 
-        $this->eventName = static::EVENT ?: static::NAME; 
+        $this->eventName = static::EVENT ?: static::NAME;
 
         // register events
         $this->registerEvents();
@@ -453,7 +463,7 @@ abstract class RepositoryManager implements RepositoryInterface
             if ($limit = $this->option('limit')) {
                 $this->query->limit((int) $limit);
             }
-    
+
             $records = $this->query->get();
         }
 
@@ -685,8 +695,8 @@ abstract class RepositoryManager implements RepositoryInterface
         $model->save();
 
         $this->trigger("save create", $model, $request);
-        
-        return $model;  
+
+        return $model;
     }
 
     /**
@@ -782,25 +792,37 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     protected function setUploadsData($model, $request)
     {
+        $storageDirectory = $this->getUploadsStorageDirectoryName();
+
+        if (true === static::UPLOADS_KEEP_FILE_NAME) {
+            $storageDirectory .= '/' . $model->getId();
+        }
+
+        $getFileName = function (UploadedFile $fileObject): string {
+            $originalName = $fileObject->getClientOriginalName();
+            $extension = File::extension($originalName) ?: $fileObject->guessExtension();
+            $fileName = false === static::UPLOADS_KEEP_FILE_NAME ? Str::random(40) . '.' . $extension : $originalName;
+            return $fileName;
+        };
+
         foreach (static::UPLOADS as $column => $name) {
             if (is_numeric($column)) {
                 $column = $name;
             }
 
-            if ($request->$name) {
-                $file = $request->$name;
-                if (is_array($request->$name)) {
-                    $files = [];
-                    $storageDirectory = $this->getUploadsStorageDirectoryName();
+            if (! $request->$name) continue;
 
-                    foreach ($file as $fileObject) {
-                        $files[] = $fileObject->store($storageDirectory);
-                    }
+            $file = $request->$name;
+            if (is_array($file)) {
+                $files = [];
 
-                    $model->$column = $files;
-                } else {
-                    $model->$column = $request->$name->store($this->getUploadsStorageDirectoryName());
+                foreach ($file as $fileObject) {
+                    $files[] = $fileObject->storeAs($storageDirectory, $getFileName($fileObject));
                 }
+
+                $model->$column = $files;
+            } else {
+                $model->$column = $file->storeAs($storageDirectory, $getFileName($file));
             }
         }
     }
@@ -948,7 +970,15 @@ abstract class RepositoryManager implements RepositoryInterface
 
         // delete uploaded files
         foreach (static::UPLOADS as $file) {
-            $this->unlink($file);
+            if (! $model->$file) continue;
+            
+            if (is_array($model->$file)) {
+                foreach ($model->$file as $singleFile) {
+                    $this->unlink($singleFile);
+                }
+            } else {
+                $this->unlink($model->$file);
+            }
         }
 
         if ($this->trigger("deleting", $model, $id) === false) return false;
@@ -1004,7 +1034,7 @@ abstract class RepositoryManager implements RepositoryInterface
     public function isUsingSoftDelete(): bool
     {
         return static::USING_SOFT_DELETE;
-    }    
+    }
 
     /**
      * Remove the given file path from storage 
