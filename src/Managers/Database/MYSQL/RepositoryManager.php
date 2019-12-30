@@ -778,6 +778,7 @@ abstract class RepositoryManager implements RepositoryInterface
     protected function setArraybleData($model, $request)
     {
         foreach (static::ARRAYBLE_DATA as $column) {
+            if (in_array($column, static::WHEN_AVAILABLE_DATA) && !isset($request->$column)) continue;
             $value = array_filter((array) $request->$column);
             $value = $this->handleArrayableValue($value);
             $model->$column = $value;
