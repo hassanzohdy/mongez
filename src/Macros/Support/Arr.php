@@ -1,4 +1,5 @@
 <?php
+
 namespace HZ\Illuminate\Mongez\Macros\Support;
 
 class Arr
@@ -22,6 +23,21 @@ class Arr
             }
 
             return $array;
+        };
+    }
+
+    /**
+     * Get the all values that are not duplicated in the given arrays
+     * 
+     * @param  ...$arrays
+     * @return array 
+     */
+    public static function outer()
+    {
+        return function (...$arrays) {
+            $union_array = array_merge(...$arrays);
+            $intersect_array = array_intersect(...$arrays);
+            return array_diff($union_array, $intersect_array);
         };
     }
 }

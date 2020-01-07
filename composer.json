@@ -1,9 +1,9 @@
 {
     "name": "hassanzohdy/mongez",
     "description": "A Robust application handler for building neat laravel application(s).",
-    "keywords": ["laravel","mongez"],
+    "keywords": ["laravel","mongez", "module", "builder"],
     "license": "MIT",
-    "version": "1.5.31",
+    "version": "1.5.32",
     "require": {
         "php": ">=7",
         "illuminate/support": "5.6.x|5.7.x|5.8.x|6.x.x"
