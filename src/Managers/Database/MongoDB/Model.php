@@ -65,7 +65,7 @@ abstract class Model extends BaseModel
      * @const array
      */
     const SHARED_INFO = [];
-
+    
     /**
      * Disable guarded fields
      *
