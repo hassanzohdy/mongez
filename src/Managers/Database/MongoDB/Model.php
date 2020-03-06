@@ -1,4 +1,5 @@
 <?php
+
 namespace HZ\Illuminate\Mongez\Managers\Database\MongoDB;
 
 use DB;
@@ -161,12 +162,14 @@ abstract class Model extends BaseModel
      */
     public function sharedInfo(): array
     {
-        $info = ! empty(static::SHARED_INFO) ? $this->pluck(static::SHARED_INFO) 
-                                             : $this->getAttributes();
+        $info = !empty(static::SHARED_INFO) ? $this->pluck(static::SHARED_INFO)
+            : $this->getAttributes();
 
-        foreach ($info as & $value) {
+        unset($info['_id']);
+
+        foreach ($info as &$value) {
             if ($value instanceof DateTime) {
-                $value = $value->getTimestamp();                
+                $value = $value->getTimestamp();
             }
         }
 

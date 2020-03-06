@@ -1,7 +1,6 @@
 <?php
 namespace HZ\Illuminate\Mongez\Contracts\Repositories;
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
 interface RepositoryInterface
@@ -9,19 +8,19 @@ interface RepositoryInterface
     /**
      * Create new record
      * 
-     * @param  \Illuminate\Http\Request $request
+     * @param  \Illuminate\Http\Request|array $data
      * @return Illuminate\Database\Eloquent\Model
      */
-    public function create(Request $request);
+    public function create($data);
 
     /**
      * Update a specific record
      * 
      * @param  int id
-     * @param  \Illuminate\Http\Request $request
+     * @param  \Illuminate\Http\Request|array $data
      * @return Illuminate\Database\Eloquent\Model
      */
-    public function update(int $id, Request $request);
+    public function update(int $id, $data);
 
     /**
      * Delete a specific record

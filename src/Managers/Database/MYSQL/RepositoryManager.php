@@ -207,6 +207,13 @@ abstract class RepositoryManager implements RepositoryInterface
     const FLOAT_DATA = [];
 
     /**
+     * Set columns list of date values.
+     * 
+     * @cont array  
+     */
+    const DATE_DATA = [];
+
+    /**
      * Set columns of booleans data type.
      * 
      * @cont array  
@@ -412,6 +419,7 @@ abstract class RepositoryManager implements RepositoryInterface
                 $this->query->whereNotNull($deletedAtColumn);
             }
         }
+
         foreach (static::FILTER_BY as $column => $option) {
             if ($value = $this->option($option)) {
                 $column = is_numeric($column) ? $option : $column;
@@ -680,11 +688,14 @@ abstract class RepositoryManager implements RepositoryInterface
     /**
      * {@inheritDoc}
      */
-    public function create(Request $request)
+    public function create($data)
     {
         $modelName = static::MODEL;
 
+
         $model = new $modelName;
+
+        $request = $this->getRequestWithData($data);
 
         $this->trigger("saving creating", $model, $request);
 
@@ -702,13 +713,15 @@ abstract class RepositoryManager implements RepositoryInterface
     /**
      * {@inheritDoc}
      */
-    public function update(int $id, Request $request)
+    public function update(int $id, $data)
     {
         $model = (static::MODEL)::find($id);
 
         $oldModel = clone $model;
 
         $this->oldModel = $oldModel;
+
+        $request = $this->getRequestWithData($data);
 
         $this->trigger("saving updating", $model, $request, $oldModel);
 
@@ -724,6 +737,26 @@ abstract class RepositoryManager implements RepositoryInterface
     }
 
     /**
+     * Get request object with data
+     * 
+     * @param  Request|array $data
+     * @return Request
+     */
+    protected function getRequestWithData($data): Request
+    {
+        if (is_array($data)) {
+            $request = $this->request;
+            foreach ($data as $key => $value) {
+                Arr::set($request, $key, $value);
+            }
+        } else {
+            $request = $data;
+        }
+
+        return $request;
+    }
+
+    /**
      * Set data automatically from the DATA array
      * 
      * @param  \Model $model
@@ -736,13 +769,39 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $this->setArraybleData($model, $request);
 
-        $this->setUploadsData($model, $request);
+        $this->upload($model, $request);
 
         $this->setIntData($model, $request);
 
         $this->setFloatData($model, $request);
 
+        $this->setDateData($model, $request);
+
         $this->setBoolData($model, $request);
+    }
+
+    /**
+     * Set date data
+     * 
+     * @param  Model $model
+     * @param  Request $request
+     * @return void
+     */
+    protected function setDateData($model, $request, $columns = null)
+    {
+        if (! $columns) {
+            $columns = static::DATE_DATA;
+        }
+        
+        foreach ((array) $columns as $column) {
+            if (in_array($column, static::WHEN_AVAILABLE_DATA) && !isset($request->$column)) continue;
+
+            $date = $request->input($column);
+
+            if (! $date) continue;
+
+            $model->$column = is_numeric($date) ? $date : strtotime($date);
+        }
     }
 
     /**
@@ -757,7 +816,7 @@ abstract class RepositoryManager implements RepositoryInterface
         foreach (static::DATA as $column) {
             if (in_array($column, static::WHEN_AVAILABLE_DATA) && !isset($request->$column)) continue;
 
-            if (!$request->$column) {
+            if (! isset($request->$column)) {
                 $model->$column = null;
             } else {
                 if ($column == 'password' && $request->password) {
@@ -791,8 +850,12 @@ abstract class RepositoryManager implements RepositoryInterface
      * @param  \Request $request
      * @return void  
      */
-    protected function setUploadsData($model, $request)
+    protected function upload($model, $request, $columns = null)
     {
+        if (!$columns) {
+            $columns = static::UPLOADS;
+        }
+
         $storageDirectory = $this->getUploadsStorageDirectoryName();
 
         if (true === static::UPLOADS_KEEP_FILE_NAME) {
@@ -806,24 +869,29 @@ abstract class RepositoryManager implements RepositoryInterface
             return $fileName;
         };
 
-        foreach (static::UPLOADS as $column => $name) {
+        foreach ((array) $columns as $column => $name) {
             if (is_numeric($column)) {
                 $column = $name;
             }
 
-            if (! $request->$name) continue;
+            $file = $request->file($name);
 
-            $file = $request->$name;
+            if (!$file) continue;
+
             if (is_array($file)) {
                 $files = [];
 
                 foreach ($file as $fileObject) {
+                    if (!$file->isValid()) continue;
+
                     $files[] = $fileObject->storeAs($storageDirectory, $getFileName($fileObject));
                 }
 
                 $model->$column = $files;
             } else {
-                $model->$column = $file->storeAs($storageDirectory, $getFileName($file));
+                if ($file instanceof UploadedFile && $file->isValid()) {
+                    $model->$column = $file->storeAs($storageDirectory, $getFileName($file));
+                }
             }
         }
     }
@@ -845,11 +913,11 @@ abstract class RepositoryManager implements RepositoryInterface
      * @param  \Request $request
      * @return void  
      */
-    protected function setIntData($model, $request)
+    protected function setIntData($model, Request $request)
     {
         foreach (static::INTEGER_DATA as $column) {
             if (in_array($column, static::WHEN_AVAILABLE_DATA) && !isset($request->$column)) continue;
-            $model->$column = (int) $request->$column;
+            $model->$column = (int) $request->input($column);
         }
     }
 
@@ -860,11 +928,11 @@ abstract class RepositoryManager implements RepositoryInterface
      * @param  \Request $request
      * @return void  
      */
-    protected function setFloatData($model, $request)
+    protected function setFloatData($model, Request $request)
     {
         foreach (static::FLOAT_DATA as $column) {
             if (in_array($column, static::WHEN_AVAILABLE_DATA) && !isset($request->$column)) continue;
-            $model->$column = (float) $request->$column;
+            $model->$column = (float) $request->input($column);
         }
     }
 
@@ -875,11 +943,11 @@ abstract class RepositoryManager implements RepositoryInterface
      * @param  \Request $request
      * @return void  
      */
-    protected function setBoolData($model, $request)
+    protected function setBoolData($model, Request $request)
     {
         foreach (static::BOOLEAN_DATA as $column) {
             if (in_array($column, static::WHEN_AVAILABLE_DATA) && !isset($request->$column)) continue;
-            $model->$column = (bool) $request->$column;
+            $model->$column = (bool) $request->input($column);
         }
     }
 
@@ -971,8 +1039,8 @@ abstract class RepositoryManager implements RepositoryInterface
 
         // delete uploaded files
         foreach (static::UPLOADS as $file) {
-            if (! $model->$file) continue;
-            
+            if (!$model->$file) continue;
+
             if (is_array($model->$file)) {
                 foreach ($model->$file as $singleFile) {
                     $this->unlink($singleFile);

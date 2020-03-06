@@ -2,6 +2,7 @@
 namespace HZ\Illuminate\Mongez\Managers\Database\MongoDB;
 
 use Illuminate\Support\Collection;
+use HZ\Illuminate\Mongez\Helpers\Database\MongoDB\Aggregation;
 use HZ\Illuminate\Mongez\Contracts\Repositories\RepositoryInterface;
 use HZ\Illuminate\Mongez\Managers\Database\MYSQL\RepositoryManager as BaseRepositoryManager;
 
@@ -73,6 +74,16 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     protected function handleArrayableValue(array $value)
     {
         return $value;
+    }
+
+    /**
+     * Get Aggregation framework
+     * 
+     * @return Aggregation
+     */
+    public function aggregate()
+    {
+        return new Aggregation($this->getQuery());
     }
 
     /**

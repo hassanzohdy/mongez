@@ -304,33 +304,41 @@ abstract class JsonResourceManager extends JsonResource
     public function collectDates(array $columns): JsonResourceManager
     {
         foreach ($columns as $key => $column) {
-            $format = 'd-m-Y h:i:s a';
-
-            if (!isset($this->$column)) {
-                $this->data[$column] = null;
-                continue;
-            }
+            $format = config('mongez.resources.dateFormat', 'd-m-Y h:i:s a');
 
             if (is_string($key)) {
                 $format = $column;
                 $column = $key;
             }
 
-            if ($this->$column instanceof UTCDateTime) {
-                $this->$column = $this->$column->toDateTime();
-            } elseif (is_int($this->$column)) {
-                $this->$column = new DateTime("@{$this->$column}");
-            } elseif (is_array($this->$column) && isset($this->$column['date'])) {
-                $this->$column = new DateTime($this->$column['date']);
+            if (!isset($this->$column)) {
+                $this->data[$column] = null;
+                continue;
             }
 
-            $this->data[$column] = [
-                'format' => $this->$column->format($format),
-                'timestamp' => $this->$column->getTimestamp(),
-            ];
+            $value = $this->$column;
+
+            if ($value instanceof UTCDateTime) {
+                $value = $value->toDateTime();
+            } elseif (is_numeric($value)) {
+                $value = new DateTime("@{$value}");
+            } elseif (is_array($value) && isset($value['date'])) {
+                $value = new DateTime($value['date']);
+            } elseif (is_string($value)) {
+                $value = new DateTime($value);  
+            } else {
+                continue;
+            }
+
+            $timestamp = config('mongez.resources.dateTimestamp', true);
+
+            $this->data[$column] = $timestamp ? [
+                'format' => $value->format($format),
+                'timestamp' => $value->getTimestamp(),
+            ] : $value->format($format);
         }
 
-        return $this;
+        return $this;        
     }
 
     /**

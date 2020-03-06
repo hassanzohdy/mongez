@@ -142,9 +142,8 @@ class EngezResource extends Command implements EngezInterface
 
         $assetsList = '';
 
-        if (!empty($this->info['data'])) {
-            // add the id to the list if not provided
-            $dataList = "'" . implode("', '", $this->info['data']) . "'";
+        if (!empty($this->info['assets'])) {
+            $assetsList = "'" . implode("', '", $this->info['assets']) . "'";
         }
 
         // replace resource data
