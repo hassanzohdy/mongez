@@ -152,6 +152,18 @@ class EngezModel extends Command implements EngezInterface
         
         $content = str_ireplace("ModuleName", $targetModule, $content);
         
+        // Add shared info constant in mongodb driver
+        if ($this->databaseName == 'mongodb') {
+            $tabs = "\n" . str_repeat("\t", 1);
+            $singleTab = "\n" . str_repeat("\t", 0);
+            $sharedInfo = "{$singleTab}{";
+            $sharedInfo .= $tabs;
+            $sharedInfo .= "/** {$tabs}* Shared info of the model  {$tabs}* This is used for getting simple info {$tabs}* {$tabs}* @const array {$tabs}*/";
+            $sharedInfo .= "{$tabs}const SHARED_INFO = [];";
+            $sharedInfo .= "{$singleTab}}";
+            $content = str_replace("{}", $sharedInfo, $content);   
+        }
+        
         $modelDirectory = $this->modulePath("Models/");
 
         $this->checkDirectory($modelDirectory);
