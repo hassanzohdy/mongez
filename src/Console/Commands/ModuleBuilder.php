@@ -14,6 +14,7 @@ use HZ\Illuminate\Mongez\Traits\Console\EngezTrait;
 class ModuleBuilder extends Command
 {
     use EngezTrait;
+    
     /**
      * Controller types
      * 
