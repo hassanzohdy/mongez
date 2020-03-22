@@ -113,7 +113,7 @@ class EngezMigration extends Command implements EngezInterface
     {   
         $availableModules = Mongez::getStored('modules');
         
-        if (! in_array(strtolower($this->info['moduleName']), $availableModules)) {
+        if (! in_array($this->info['moduleName'], $availableModules)) {
             return $this->missingRequiredOption('This module does not available in your modules');
         }
         if ($this->option('parent')) {
@@ -171,6 +171,7 @@ class EngezMigration extends Command implements EngezInterface
         $path = 'app/modules/' . $targetModule . '/database/migrations';
         $databaseFileName = $this->info['migrationName'];
         $className = Str::studly($databaseFileName);
+
         $this->checkDirectory($path);
         
         $content = File::get($this->path("Migrations/".$databaseDriver."-migration.php"));
