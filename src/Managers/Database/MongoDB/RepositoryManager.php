@@ -104,6 +104,19 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     }
 
     /**
+     * Get shared info for the given id
+     * 
+     * @param int $id
+     * @return mixed
+     */
+    public function sharedInfo($id)
+    {
+        $model = $this->getModel($id);
+
+        return $model ? $model->sharedInfo() : null;
+    }
+
+    /**
      * Get by the given column name
      * 
      * @param  string $column

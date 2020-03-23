@@ -451,6 +451,10 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $paginate = $this->option('paginate', static::PAGINATE);
 
+        if ($this->request->paginate === 'false') {
+            $paginate = false;
+        }
+
         if ($paginate === true || $paginate === null && config('mongez.pagination.paginate') === true) {
             $pageNumber = $this->option('page', 1);
 
@@ -554,19 +558,23 @@ abstract class RepositoryManager implements RepositoryInterface
     }
 
     /**
+     * Get table name of the primary model of the repo
+     * 
+     * @return string
+     */
+    public function getTableName(): string 
+    {
+        return static::TABLE ?: (static::MODEL)::getTableName();
+    }
+
+    /**
      * Get the query handler
      * 
      * @return mixed
      */
     protected function getQuery()
     {
-        if (static::MODEL) {
-            $model = static::MODEL;
-            $table = $model::getTableName();
-        } else {
-            $table = $this->tableName;
-        }
-        return DB::table($table);
+        return DB::table($this->getTableName());
     }
 
     /**
@@ -881,10 +889,10 @@ abstract class RepositoryManager implements RepositoryInterface
             if (is_array($file)) {
                 $files = [];
 
-                foreach ($file as $fileObject) {
-                    if (!$file->isValid()) continue;
+                foreach ($file as $index => $fileObject) {
+                    if (!$fileObject->isValid()) continue;
 
-                    $files[] = $fileObject->storeAs($storageDirectory, $getFileName($fileObject));
+                    $files[$index] = $fileObject->storeAs($storageDirectory, $getFileName($fileObject));
                 }
 
                 $model->$column = $files;

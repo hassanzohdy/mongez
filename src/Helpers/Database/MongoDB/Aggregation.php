@@ -1,6 +1,8 @@
 <?php
 namespace HZ\Illuminate\Mongez\Helpers\Database\MongoDB;
 
+use Illuminate\Support\Str;
+
 class Aggregation
 {
     // TODO: Sort
@@ -20,6 +22,13 @@ class Aggregation
      * @var array
      */
     protected $pipelines = [];
+
+    /**
+     * Current Pipeline
+     * 
+     * @var Pipeline
+     */
+    protected $currentPipeline;
 
     /**
      * Constructor
@@ -91,11 +100,11 @@ class Aggregation
      */
     public function pipeline(string $pipelineName): Pipeline 
     {
-        $pipeline = new Pipeline($this, $pipelineName);
+        $this->currentPipeline = new Pipeline($this, $pipelineName);
 
-        $this->pipelines[] = $pipeline;
+        $this->pipelines[] = $this->currentPipeline;
 
-        return $pipeline;
+        return $this->currentPipeline;
     }
 
     /**
@@ -127,6 +136,10 @@ class Aggregation
     public function __call($name, $arguments)
     {
         // for all where clause
-        return call_user_func_array([$this->pipeline('match'), $name], $arguments);
+        if (Str::startsWith($name, 'where')) {
+            return call_user_func_array([$this->pipeline('match'), $name], $arguments);
+        }
+
+        return call_user_func_array([$this->currentPipeline, $name], $arguments);
     }
 }

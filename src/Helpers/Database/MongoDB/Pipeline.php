@@ -224,7 +224,7 @@ class Pipeline
     {
         foreach ($columns as $column) {
             if (is_array($column)) {
-                list($alias, $column) = $column;
+                list($column, $alias) = $column;
             } else {
                 $alias = $column;
             }
@@ -247,7 +247,7 @@ class Pipeline
     {
         foreach ($columns as $column) {
             if (is_array($column)) {
-                list($alias, $column) = $column;
+                list($column, $alias) = $column;
             } else {
                 $alias = $column;
             }
