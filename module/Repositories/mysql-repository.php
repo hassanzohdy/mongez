@@ -158,4 +158,11 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
         // 
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public function onDelete($model, $request)
+    {
+        // 
+    }
 }

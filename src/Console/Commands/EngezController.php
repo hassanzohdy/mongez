@@ -84,7 +84,7 @@ class EngezController extends Command implements EngezInterface
             return $this->missingRequiredOption('Module option is required');
         }
 
-        if (!in_array(strtolower($this->info['moduleName']), $availableModules)) {
+        if (!in_array($this->info['moduleName'], $availableModules)) {
             return $this->missingRequiredOption('This module is not available');
         }
         
@@ -92,7 +92,7 @@ class EngezController extends Command implements EngezInterface
             return $this->missingRequiredOption('This controller type does not exits');
         }
         if ($this->optionHasValue('parent')) {
-            if (! in_array(strtolower($this->info['parent']), $availableModules)) {
+            if (! in_array(Str::Studly($this->info['parent']), $availableModules)) {
                 Command::error('This parent module is not available');
                 die();
             }    
