@@ -80,7 +80,7 @@ class EngezRepository extends Command implements EngezInterface
         }
 
         if ($this->option('parent')) {
-            if (! in_array(strtolower($this->info['parent']), $availableModules)) {
+            if (! in_array(Str::Studly($this->info['parent']), $availableModules)) {
                 Command::error('This parent module is not available');
                 die();
             }    

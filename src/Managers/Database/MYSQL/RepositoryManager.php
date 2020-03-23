@@ -714,7 +714,7 @@ abstract class RepositoryManager implements RepositoryInterface
         
         $this->trigger("save create", $model, $request);
 
-        $this->setCache(static::NAME.$model->id, $model);
+        // $this->setCache(static::NAME.$model->id, $model);
         
         return $model;
     }

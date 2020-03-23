@@ -136,7 +136,7 @@ class ModuleBuilder extends Command
         // if so, throw error        
         if (isset($this->info['parent'])) {
             $availableModules = Mongez::getStored('modules');
-            if (! in_array(strtolower($this->info['parent']), $availableModules)) {
+            if (! in_array(Str::Studly($this->info['parent']), $availableModules)) {
                 Command::error('This parent module is not available');
                 die();
             }

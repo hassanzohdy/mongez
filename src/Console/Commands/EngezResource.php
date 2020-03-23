@@ -66,7 +66,7 @@ class EngezResource extends Command implements EngezInterface
         }
 
         if ($this->optionHasValue('parent')) {
-            if (! in_array(strtolower($this->info['parent']), $availableModules)) {
+            if (! in_array(Str::Studly($this->info['parent']), $availableModules)) {
                 return Command::error('This parent module is not available');
                 die();
             }    
