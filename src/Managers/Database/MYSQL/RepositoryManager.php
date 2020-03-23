@@ -1,5 +1,4 @@
 <?php
-
 namespace HZ\Illuminate\Mongez\Managers\Database\MYSQL;
 
 use DB;
@@ -8,15 +7,16 @@ use Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Traits\Macroable;
 use HZ\Illuminate\Mongez\Events\Events;
+use Illuminate\Support\Traits\Macroable;
 use HZ\Illuminate\Mongez\Traits\RepositoryTrait;
+use Illuminate\Http\Resources\Json\JsonResource;
 use HZ\Illuminate\Mongez\Helpers\Repository\Select;
 use HZ\Illuminate\Mongez\Contracts\Repositories\RepositoryInterface;
-use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Http\UploadedFile;
 
 abstract class RepositoryManager implements RepositoryInterface
 {
@@ -102,6 +102,13 @@ abstract class RepositoryManager implements RepositoryInterface
      * @var bool
      */
     const USING_SOFT_DELETE = true;
+
+    /**
+     * Using redis cache
+     * 
+     * @var bool
+     */
+    const USING_REDIS_CACHE = false;
 
     /**
      * Deleted at column
@@ -699,8 +706,7 @@ abstract class RepositoryManager implements RepositoryInterface
     public function create($data)
     {
         $modelName = static::MODEL;
-
-
+        
         $model = new $modelName;
 
         $request = $this->getRequestWithData($data);
@@ -712,9 +718,11 @@ abstract class RepositoryManager implements RepositoryInterface
         $this->setData($model, $request);
 
         $model->save();
-
+        
         $this->trigger("save create", $model, $request);
 
+        // $this->setCache(static::NAME.$model->id, $model);
+        
         return $model;
     }
 
@@ -1122,5 +1130,32 @@ abstract class RepositoryManager implements RepositoryInterface
     public function unlink(string $path)
     {
         return Storage::delete($path);
+    }
+
+    /**
+     * Get record from redis cache
+     * 
+     * @param string $key
+     * @return mixed  
+     */
+    public function getCache($key)
+    {
+        // $key => singular of module name . id 
+        // user.1
+        return Redis::get($key);     
+    }
+
+    /**
+     * Set record to redis cache
+     * 
+     * @param string $key
+     * @param mixed $value
+     * @return void  
+     */
+    public function setCache($key, $value)
+    {
+        // $key => singular of module name . id 
+        // user.1
+        return Redis::set($key, $value);     
     }
 }

@@ -114,8 +114,8 @@ trait EngezTrait
      * @return void
      */
     protected function addModule()
-    {
-        Mongez::append('modules', strtolower($this->moduleName));
+    { 
+        Mongez::append('modules', $this->moduleName);
     }
 
     /**
@@ -137,7 +137,7 @@ trait EngezTrait
     protected function createMigration()
     {
         $migrationsOptions = [
-            'migrationName' => 'create_' .Str::plural(strtolower($this->info['modelName'])).'_table',
+            'migrationName' => 'create_' .Str::Studly(Str::plural(strtolower($this->info['modelName']))).Str::Studly(Str::plural(strtolower($this->info['modelName']))).'_table',
             'module' => $this->info['moduleName'],
         ];
 
@@ -195,14 +195,13 @@ trait EngezTrait
         if (isset($this->info['parent'])) {
             return $this->updateRoutes();
         }
-        
+
         // create routes directory
         $content = File::get($this->path("Controllers/Site/controller.php"));
 
         $routesDirectory = $this->modulePath("routes");
 
         $this->checkDirectory($routesDirectory);
-
 
         $controller = $this->info['controller'];
 
@@ -227,8 +226,8 @@ trait EngezTrait
             $content = str_ireplace("ModuleName", "{$targetModule}", $content);
 
             // replace route prefix
-            $routePrefix = strtolower($this->module);
-            $content = str_ireplace("route-prefix", "{$this->module}", $content);
+            $routePrefix = strtolower(str_replace('_', '-', Str::snake($this->module)));
+            $content = str_ireplace("route-prefix", "{$routePrefix}", $content);
 
             // create the route file
             $filePath = $routesDirectory . '/site.php';
@@ -256,7 +255,7 @@ trait EngezTrait
             $content = str_ireplace("middlewareList", $middleware, $content);
             
             // replace route prefix
-            $routePrefix = strtolower($this->info['moduleName']);
+            $routePrefix = strtolower(str_replace('_', '-', Str::snake($this->module)));
             $content = str_ireplace("route-prefix", "{$routePrefix}", $content);
 
             // create the route file
