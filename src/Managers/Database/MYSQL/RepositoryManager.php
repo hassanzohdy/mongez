@@ -9,7 +9,6 @@ use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Model;
 use HZ\Illuminate\Mongez\Events\Events;
@@ -1127,7 +1126,7 @@ abstract class RepositoryManager implements RepositoryInterface
     public function getCache($key)
     {
         $key = static::NAME .$key;
-        return Cache::store($this->getCacheDriver())->get($key);
+        return $this->getCacheDriver()->get($key);
     }
 
     /**
@@ -1140,7 +1139,7 @@ abstract class RepositoryManager implements RepositoryInterface
     public function setCache($key, $value)
     {
         $key = static::NAME .$key;
-        return Cache::store($this->getCacheDriver())->put($key, $value);
+        return $this->getCacheDriver()->put($key, $value);
     }
 
     /**
@@ -1153,7 +1152,7 @@ abstract class RepositoryManager implements RepositoryInterface
     public function forgetCache($key)
     {
         $key = static::NAME .$key;
-        return Cache::store($this->getCacheDriver())->forget($key);     
+        return $this->getCacheDriver()->forget($key);     
     }
 
     /**
@@ -1163,7 +1162,7 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     protected function getCacheDriver()
     {
-        return config('mongez.cache.driver');
+        return Cache::store(config('mongez.cache.driver'));
     } 
 
     /**
