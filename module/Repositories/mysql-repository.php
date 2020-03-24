@@ -105,6 +105,11 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
     const ITEMS_PER_PAGE = null;
 
     /**
+     * {@inheritDoc}
+     */
+    const USING_CACHE = null;
+
+    /**
      * Set any extra data or columns that need more customizations
      * Please note this method is triggered on create or update call
      * 

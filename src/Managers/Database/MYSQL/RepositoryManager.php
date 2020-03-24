@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Model;
 use HZ\Illuminate\Mongez\Events\Events;
 use Illuminate\Support\Traits\Macroable;
@@ -108,7 +109,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * 
      * @var bool
      */
-    const USING_REDIS_CACHE = false;
+    const USING_CACHE = false;
 
     /**
      * Deleted at column
@@ -232,7 +233,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * 
      * @cont array  
      */
-    const WHEN_AVAILABLE_DATA = [];
+    const WHEN_AVAILABLE_DATA = ['name', 'icon'];
 
     /**
      * Filter by columns used with `list` method only
@@ -704,17 +705,11 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $request = $this->getRequestWithData($data);
 
-        $this->trigger("saving creating", $model, $request);
-
         $this->setAutoData($model, $request);
 
         $this->setData($model, $request);
-
-        $model->save();
         
-        $this->trigger("save create", $model, $request);
-
-        // $this->setCache(static::NAME.$model->id, $model);
+        $this->save($model);
         
         return $model;
     }
@@ -732,15 +727,11 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $request = $this->getRequestWithData($data);
 
-        $this->trigger("saving updating", $model, $request, $oldModel);
-
         $this->setAutoData($model, $request);
 
         $this->setData($model, $request);
 
-        $model->save();
-
-        $this->trigger("save update", $model, $request, $oldModel);
+        $this->save($model, $oldModel);
 
         return $model;
     }
@@ -1063,6 +1054,8 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $model->delete();
 
+        if (static::USING_CACHE) $this->forgetCache($model->id);
+
         $this->trigger("delete", $model, $id);
 
         return true;
@@ -1133,9 +1126,8 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     public function getCache($key)
     {
-        // $key => singular of module name . id 
-        // user.1
-        return Redis::get($key);     
+        $key = static::NAME .$key;
+        return Cache::store($this->getCacheDriver())->get($key);
     }
 
     /**
@@ -1147,8 +1139,51 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     public function setCache($key, $value)
     {
-        // $key => singular of module name . id 
-        // user.1
-        return Redis::set($key, $value);     
+        $key = static::NAME .$key;
+        return Cache::store($this->getCacheDriver())->put($key, $value);
+    }
+
+    /**
+     * Forget from cache by key  
+     * 
+     * @param string $key
+     * @param mixed $value
+     * @return void  
+     */
+    public function forgetCache($key)
+    {
+        $key = static::NAME .$key;
+        return Cache::store($this->getCacheDriver())->forget($key);     
+    }
+
+    /**
+     * Get cache driver
+     * 
+     * @return string cache drive 
+     */
+    protected function getCacheDriver()
+    {
+        return config('mongez.cache.driver');
+    } 
+
+    /**
+     * Saving triggers 
+     * 
+     * @param object $model
+     * @return void 
+     */
+    protected function save($model, $oldModel = null)
+    {
+        if ($model->id) {
+            $this->trigger("saving updating", $model, $this->request, $oldModel);
+            $model->save();    
+            $this->trigger("save update", $model, $this->request, $oldModel);
+        } else {
+            $this->trigger("save create", $model, $this->request);
+            $model->save();
+            $this->trigger("saving creating", $model, $this->request);    
+        }
+
+        if (static::USING_CACHE) $this->setCache($model->id, $model);
     }
 }
