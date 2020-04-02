@@ -123,6 +123,12 @@ class MongezServiceProvider extends ServiceProvider
             $this->app->singleton($repositoryClass);
         }
 
+        $request = request();
+
+        if ($LocaleCode = $request->server('HTTP_LOCALE')) {
+            $request->request->set('locale', $LocaleCode);
+        }
+
         $this->app->singleton(Events::class);
 
         // register macros

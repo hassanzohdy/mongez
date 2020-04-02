@@ -199,7 +199,7 @@ abstract class JsonResourceManager extends JsonResource
     public function collectData(array $columns): JsonResourceManager
     {
         foreach ($columns as $column) {
-            $this->data[$column] = $this->resource->$column ?? null;
+            $this->set($column, $this->resource->$column ?? null);
         }
 
         return $this;
@@ -214,7 +214,7 @@ abstract class JsonResourceManager extends JsonResource
     public function collectLocalized(array $columns): JsonResourceManager
     {
         foreach ($columns as $column) {
-            $this->data[$column] = $this->locale($column);
+            $this->set($column, $this->locale($column));
         }
 
         return $this;
@@ -279,7 +279,7 @@ abstract class JsonResourceManager extends JsonResource
                 $collection = $this->$column;
                 $this->collect($column, $resource, $collection);
             } else {
-                $this->data[$column] = [];
+                $this->set($column, []);
             }
         }
 
@@ -297,9 +297,9 @@ abstract class JsonResourceManager extends JsonResource
         foreach ($columns as $column => $resource) {
             if (isset($this->$column)) {
                 $resourceData = $this->$column;
-                $this->data[$column] = new $resource((object) $resourceData);
+                $this->set($column, new $resource((object) $resourceData));
             } else {
-                $this->data[$column] = [];
+                $this->set($column, []);
             }
         }
 
@@ -324,7 +324,7 @@ abstract class JsonResourceManager extends JsonResource
             }
 
             if (!isset($this->$column)) {
-                $this->data[$column] = null;
+                $this->set($column, null);
                 continue;
             }
 
@@ -342,10 +342,10 @@ abstract class JsonResourceManager extends JsonResource
                 continue;
             }
 
-            $this->data[$column] = $timestamp ? [
+            $this->set($column, $timestamp ? [
                 'format' => $value->format($format),
                 'timestamp' => $value->getTimestamp(),
-            ] : $value->format($format);
+            ] : $value->format($format));
         }
 
         return $this;
@@ -368,7 +368,7 @@ abstract class JsonResourceManager extends JsonResource
                 !is_subclass_of($dataValue, self::class) &&
                 !$this->isEmptyValue($dataValue)
             ) {
-                $this->data[$column] = $dataValue ?? $value;
+                $this->set($column, $dataValue ?? $value);
             } else {
                 unset($this->data[$column]);
             }

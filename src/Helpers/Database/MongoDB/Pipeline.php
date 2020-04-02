@@ -54,7 +54,7 @@ class Pipeline
      * @param mixed $value
      * @return $this
      */
-    public function data($key, $value): Pipeline
+    public function data($key, $value = null): Pipeline
     {
         if (is_array($key)) {
             $this->data = array_merge($this->data, $key);
