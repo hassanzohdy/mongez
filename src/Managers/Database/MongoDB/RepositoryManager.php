@@ -62,6 +62,7 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
      */
     public function get(int $id)
     {
+        if (static::USING_CACHE) return $this->wrap($this->getCache((int) $id));
         return $this->getBy('id', (int) $id);
     }
 

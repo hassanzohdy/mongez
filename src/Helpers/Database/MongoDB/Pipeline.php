@@ -259,7 +259,7 @@ class Pipeline
 
         return $this;
     }
-
+    
     /**
      * Return the final name of the pipeline
      * 
@@ -278,6 +278,70 @@ class Pipeline
     public function getData(): array 
     {
         return $this->data;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function orderBy($columns)
+    {        
+        foreach ($columns as $key => $value ) {
+            $value = strtolower($value) == 'asc' ? 1 : -1;            
+            $columns['$'.$key] = $value;
+        }
+
+        $this->data($columns);
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function limit($number)
+    {        
+        $this->data((int) $number);
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function skip($number)
+    {        
+        $this->data((int)$number);
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function join($from, $localField, $foreignField, $as = null)
+    {
+        if (!$as) $as = $from;
+
+        $this->data([
+            'from' => $from,
+            'localField' => $localField, 
+            'foreignField' => $foreignField,
+            'as' => $as
+        ]);
+        return $this;
+    }
+    
+    /**
+     * @inheritDoc
+     */
+    public function unwind($path, $includeArrayIndex, $preserveNullAndEmptyArrays)
+    {   
+        $data = [
+            'path' => '$'.$path,
+            'includeArrayIndex' => $includeArrayIndex,
+            'preserveNullAndEmptyArrays' => $preserveNullAndEmptyArrays
+        ];
+        if (!$includeArrayIndex) unset($data['includeArrayIndex']);
+        $this->data($data);
+        return $this;
     }
 
     /**
