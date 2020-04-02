@@ -9,6 +9,7 @@ class Aggregation
     // TODO: Join
     // TODO: Unwind
     // TODO: GeoNear
+    
     /**
      * Query Builder
      */
@@ -59,6 +60,96 @@ class Aggregation
     public function where(...$args)
     {
         return $this->pipeline('match')->where(...$args);
+    }
+
+    /**
+     * Order returned records
+     *
+     * @param array $columns
+     * @return Pipeline
+     */
+    public function orderBy(array $columns)
+    {
+        return $this->pipeline('sort')->orderBy($columns);
+    }
+
+    /**
+     * Unwind the field list
+     *
+     * @param string  $path
+     * @param string  $includeArrayIndex
+     * @param boolean $preserveNullAndEmptyArrays
+     * 
+     * @return Pipeline
+     */
+    public function unwind(string $path, $includeArrayIndex = null, bool $preserveNullAndEmptyArrays = false)
+    {
+        return $this->pipeline('unwind')->unwind($path, $includeArrayIndex, $preserveNullAndEmptyArrays);
+    }
+
+    /**
+     * Extract the field list
+     *
+     * @param string  $path
+     * @param string  $includeArrayIndex
+     * @param boolean $preserveNullAndEmptyArrays
+     * 
+     * @return Pipeline
+     */
+    public function extract($path, $includeArrayIndex = null, bool $preserveNullAndEmptyArrays = false)
+    {
+        return $this->pipeline('unwind')->unwind($path, $includeArrayIndex, $preserveNullAndEmptyArrays);
+    }
+
+    /**
+     * Join
+     *
+     * @param string $from
+     * @param string $localField
+     * @param string $foreignField
+     * @param string $as
+     * 
+     * @return void
+     */
+    public function join($from, $localField, $foreignField, $as = null)
+    {
+        return $this->pipeline('join')->join($from, $localField, $foreignField, $as);
+    }
+
+    /**
+     * Limit number of records
+     *
+     * @param int $number
+     * @return Pipeline
+     */
+    public function limit($number, $offset = null)
+    {
+        if ($offset) {
+            $this->offset($offset);
+        }
+        return $this->pipeline('limit')->limit($number) ;
+    }
+
+    /**
+     * Skip number of records
+     *
+     * @param int $number
+     * @return Pipeline
+     */
+    public function skip($number)
+    {
+        return $this->pipeline('skip')->skip($number);
+    }
+
+    /**
+     * Offset number of records
+     * 
+     * @param int $number
+     * @return $this
+     */
+    public function offset($offset)
+    {
+        return $this->skip($offset);
     }
 
     /**
