@@ -655,7 +655,15 @@ abstract class RepositoryManager implements RepositoryInterface
     {
         if (empty($orderBy)) return;
 
-        $this->query->orderBy(...$orderBy);
+        // If there is no zero index in the array
+        // it means the order will be for multiple columns
+        if (! isset($orderBy[0])) {
+            foreach ($orderBy as $column => $columnOrder) {
+                $this->query->orderBy($column, $columnOrder);
+            }
+        } else {
+            $this->query->orderBy(...$orderBy);
+        }
     }
 
     /**
@@ -1072,13 +1080,13 @@ abstract class RepositoryManager implements RepositoryInterface
             }
         }
 
-        if ($this->trigger("deleting", $model, $model->id) === false) return false;
+        if ($this->trigger('deleting', $model, $model->id) === false) return false;
 
         $model->delete();
 
         if (static::USING_CACHE) $this->forgetCache($model->id);
 
-        $this->trigger("delete", $model, $id);
+        $this->trigger('delete', $model, $model->id);
 
         return true;
     }

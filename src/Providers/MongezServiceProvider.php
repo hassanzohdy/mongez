@@ -116,6 +116,24 @@ class MongezServiceProvider extends ServiceProvider
     {
         $this->publishes([$this->configPath() => config_path('mongez.php')]);
 
+        // beta database
+        $request = request();
+
+        if ($betaDBName = $request->server('HTTP_BETA')) {
+            $defaultDatabaseDriver = config('database.default');
+            $dbConfigName = 'database.connections.'. $defaultDatabaseDriver . '.database';
+
+            if ($betaDBName === 'true') {
+                $betaDBName = 'BETA';
+            }
+
+            $betaDatabase = env("DB_DATABASE_$betaDBName");
+
+            config([
+                $dbConfigName => $betaDatabase,
+            ]);
+        }
+  
         $this->config = config('mongez');
 
         // register the repositories as singletones, only one instance in the entire application
