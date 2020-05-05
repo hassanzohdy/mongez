@@ -56,6 +56,13 @@ class MongezServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+            die(json_encode([
+                'success' => true,
+                'mongez' => true,
+            ])); 
+        }
+
         if (!$this->app->runningInConsole()) return;
 
         // register commands
@@ -121,7 +128,7 @@ class MongezServiceProvider extends ServiceProvider
 
         if ($betaDBName = $request->server('HTTP_BETA')) {
             $defaultDatabaseDriver = config('database.default');
-            $dbConfigName = 'database.connections.'. $defaultDatabaseDriver . '.database';
+            $dbConfigName = 'database.connections.' . $defaultDatabaseDriver . '.database';
 
             if ($betaDBName === 'true') {
                 $betaDBName = 'BETA';
@@ -133,7 +140,7 @@ class MongezServiceProvider extends ServiceProvider
                 $dbConfigName => $betaDatabase,
             ]);
         }
-  
+
         $this->config = config('mongez');
 
         // register the repositories as singletones, only one instance in the entire application
