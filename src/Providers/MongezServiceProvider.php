@@ -56,14 +56,16 @@ class MongezServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-            die(json_encode([
-                'success' => true,
-                'mongez' => true,
-            ])); 
-        }
+        if (!$this->app->runningInConsole()) {
+            if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+                die(json_encode([
+                    'success' => true,
+                    'mongez' => true,
+                ]));
+            }
 
-        if (!$this->app->runningInConsole()) return;
+            return;
+        }
 
         // register commands
         $this->commands(static::COMMANDS_LIST);
