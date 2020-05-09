@@ -3,11 +3,22 @@ namespace HZ\Illuminate\Mongez\Managers\Database\MongoDB;
 
 use Illuminate\Support\Collection;
 use HZ\Illuminate\Mongez\Helpers\Database\MongoDB\Aggregation;
+use HZ\Illuminate\Mongez\Helpers\Filters\FilterManager;
+use HZ\Illuminate\Mongez\Helpers\Filters\MongoDB\Filter;
 use HZ\Illuminate\Mongez\Contracts\Repositories\RepositoryInterface;
 use HZ\Illuminate\Mongez\Managers\Database\MYSQL\RepositoryManager as BaseRepositoryManager;
+use Illuminate\Support\Facades\App;
 
 abstract class RepositoryManager extends BaseRepositoryManager implements RepositoryInterface
 {
+    
+    /**
+     * Filter class.
+     *  
+     * @const string
+     */
+    const FILTER_CLASS = Filter::class;
+    
     /**
      * Set if the current repository uses a soft delete method or not
      * This is mainly used in the where clause
@@ -31,6 +42,20 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
      * @const array
      */
     const MULTI_DOCUMENTS_DATA = [];
+
+    /**
+     * Set of the parents repositories of current repo
+     * 
+     * @const array
+     */
+    const CHILD_OF = [];
+
+    /**
+     * Set of the children repositories of current repo
+     * 
+     * @const array
+     */
+    const PARENT_OF = [];
 
     /**
      * Get the table name that will be used in the query 
@@ -102,6 +127,19 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
         }
 
         return $this->getByModel('id', $id);
+    }
+
+    /**
+     * Get shared info for the given id
+     * 
+     * @param int $id
+     * @return mixed
+     */
+    public function sharedInfo($id)
+    {
+        $model = $this->getModel($id);
+
+        return $model ? $model->sharedInfo() : null;
     }
 
     /**
@@ -250,5 +288,73 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
 
             $model->$column = $records;
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function disassociate($id, $model, $key)
+    {        
+        $model = $this->getModel($id);
+        if (!$lead) {
+            return;
+        }
+        $model->disassociate($model, $key)->save();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function reassociate($id, $model, $key)
+    {
+        $model = $this->getModel($id);
+        $model->reassociate($model, $key)->save();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function boot()
+    {    
+        if (! empty(static::PARENT_OF)) {
+            $this->events->subscribe($this->eventName . '.delete', function ($model, $id) {
+    
+                foreach (static::PARENT_OF as $childColumnName => $childRepository) {
+                    $childrenList = $model->$childColumnName ?? [];
+    
+                    $childRepository = App::make($childRepository);
+    
+                    foreach ($childrenList as $child) {
+                        $childRepository->delete($child['id']);
+                    }
+                }
+            });
+        }
+
+        if (! empty(static::CHILD_OF)) {
+            $this->events->subscribe($this->eventName . '.delete', function ($model, $id) {
+    
+                foreach (static::CHILD_OF as $parentColumnName => $parentRepositoryWithChildColumnName) {    
+                    $parentId = $model->$parentColumnName['id'] ?? null;
+                    if (! $parentId) continue;
+
+                    list($parentRepositoryClass, $childNameInParent) = $parentRepositoryWithChildColumnName;
+
+                    $parentRepository = App::make($parentRepositoryClass);
+
+                    $parentRepository->disassociate($parentId, $model, $childNameInParent);
+                }
+            }); 
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function filterBy($filter)
+    {
+        return $filter->merge(
+            self::FILTER_CLASS  
+        );
     }
 }

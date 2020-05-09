@@ -65,7 +65,6 @@ class Events implements EventsInterface
     protected function isLoaded(string $class): bool
     {
         list($class, $method) = explode('@', $class);
-
         return isset($this->classesList[$class]);
     }
 

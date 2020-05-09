@@ -79,12 +79,10 @@ class EngezController extends Command implements EngezInterface
         }
 
         $availableModules = Mongez::getStored('modules');
-        
         if (!$this->optionHasValue('module')) {
             return $this->missingRequiredOption('Module option is required');
         }
-
-        if (!in_array($this->info['moduleName'], $availableModules)) {
+        if (!in_array(strtolower($this->info['moduleName']), $availableModules)) {
             return $this->missingRequiredOption('This module is not available');
         }
         

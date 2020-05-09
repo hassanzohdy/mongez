@@ -63,7 +63,6 @@ abstract class AdminApiController extends ApiController
         if ($this->repository->getPaginateInfo()) {
             $json['paginationInfo'] = $this->repository->getPaginateInfo();            
         }
-
         return $this->success($json);
     }
 
@@ -77,14 +76,11 @@ abstract class AdminApiController extends ApiController
     {
         $listOptions = $this->controllerInfo('listOptions');
 
-        // if (! empty($listOptions['filterBy'])) {
-        //     $filterByValues = $request->only($listOptions['filterBy']);
-        //     $listOptions = array_merge($listOptions, $filterByValues);
-        //     unset($listOptions['filterBy']);
-        // }
-        
-        $filterByValues = $request->all();
-        $listOptions = array_merge($listOptions, $filterByValues);
+        if (! empty($listOptions['filterBy'])) {
+            $filterByValues = $request->only($listOptions['filterBy']);
+            $listOptions = array_merge($listOptions, $filterByValues);
+            unset($listOptions['filterBy']);
+        }
 
         return $listOptions;
     }

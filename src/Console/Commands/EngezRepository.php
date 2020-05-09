@@ -75,12 +75,12 @@ class EngezRepository extends Command implements EngezInterface
             return $this->missingRequiredOption('module option is required');
         }
 
-        if (! in_array($this->info['moduleName'], $availableModules)) {
+        if (!in_array(strtolower($this->info['moduleName']), $availableModules)) {
             return $this->missingRequiredOption('This module is not available');
         }
 
         if ($this->option('parent')) {
-            if (! in_array(Str::Studly($this->info['parent']), $availableModules)) {
+            if (! in_array(strtolower($this->info['parent']), $availableModules)) {
                 Command::error('This parent module is not available');
                 die();
             }    
@@ -143,8 +143,11 @@ class EngezRepository extends Command implements EngezInterface
         $content = File::get($this->path("Repositories/{$database}-repository.php"));
 
         // replace repository name
-        $content = str_ireplace("RepositoryName", Str::studly(Str::camel($repositoryName)), $content); 
+        $content = str_ireplace("RepositoryName", Str::camel($repositoryName), $content); 
         
+        // replace filter name 
+        $content = str_ireplace("FilterName", $this->info['modelName'], $content); 
+
         $targetModule = $this->info['moduleName'];    
         if (isset($this->info['parent'])) {
             $targetModule = str::studly($this->info['parent']);
@@ -158,7 +161,7 @@ class EngezRepository extends Command implements EngezInterface
 
         // replace resource path
         $content = str_ireplace("ResourceName", $this->info['resourceName'], $content);
-    
+
         $content = str_ireplace('repo-name', $this->adjustRepositoryName($this->info['repository']), $content);
 
         $dataList = '';

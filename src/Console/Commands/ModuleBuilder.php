@@ -136,7 +136,7 @@ class ModuleBuilder extends Command
         // if so, throw error        
         if (isset($this->info['parent'])) {
             $availableModules = Mongez::getStored('modules');
-            if (! in_array(Str::Studly($this->info['parent']), $availableModules)) {
+            if (! in_array(strtolower($this->info['parent']), $availableModules)) {
                 Command::error('This parent module is not available');
                 die();
             }
@@ -186,7 +186,7 @@ class ModuleBuilder extends Command
     protected function create()
     {
         $this->addModule();
-
+        
         $this->info('Creating controller file');
         $this->createController();
 
@@ -198,14 +198,17 @@ class ModuleBuilder extends Command
 
         $this->info('Creating repository file');
         $this->createRepository();
-
-        $this->info('Creating database files');
-        $this->createDatabase();
         
         $this->info('Generating routes files');
         $this->createRoutes();
 
         if (! isset($this->info['parent'])) $this->createServiceProvider();
+        
+        $this->info('Creating filter files');
+        $this->createFilters();
+
+        $this->info('Creating database files');
+        $this->createDatabase();
 
         $this->info('Generating Module Postman File');
         $this->generatePostmanModule();
@@ -391,6 +394,28 @@ class ModuleBuilder extends Command
         ]);
         
         $this->call('engez:repository', array_merge($repositoryOptions, $options));
+    }
+
+    /**
+     * Create Module Filters
+     *
+     * @return void
+     */
+    public function createFilters()
+    {
+        $moduleFiltersPath = $this->path("Filters/ModuleFilter.php");
+        $content = File::get($moduleFiltersPath);
+        
+        $filterName = ucfirst(str::singular($this->moduleName));
+
+        // replace Filter
+        $content = str_ireplace("FilterName", $filterName, $content);
+        
+        // replace module name
+        $content = str_ireplace("ModuleName", $this->moduleName, $content);
+        $filtersDirectory = $this->modulePath("Filters");
+        $this->checkDirectory($filtersDirectory);
+        $this->createFile("$filtersDirectory/{$filterName}.php", $content, 'Filters');
     }
 
     /**

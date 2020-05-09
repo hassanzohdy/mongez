@@ -3,7 +3,8 @@ namespace App\Modules\ModuleName\Repositories;
 
 use App\Modules\ModuleName\{
     Models\ModelName as Model,
-    Resources\ResourceName as Resource
+    Resources\ResourceName as Resource,
+    Filters\FilterName as Filter
 };
 
 use HZ\Illuminate\Mongez\{
@@ -89,6 +90,15 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
     const FILTER_BY = [];
 
     /**
+     * Set all filter class you will use in this module
+     * 
+     * @const array 
+     */
+    const FILTERS = [
+        Filter::class
+    ];
+    
+    /**
      * Determine wether to use pagination in the `list` method
      * if set null, it will depend on pagination configurations
      * 
@@ -103,11 +113,6 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
      * @const int|null
      */
     const ITEMS_PER_PAGE = null;
-
-    /**
-     * {@inheritDoc}
-     */
-    const USING_CACHE = null;
 
     /**
      * Set any extra data or columns that need more customizations
@@ -155,19 +160,4 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
         //
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function onSave($model, $request)
-    {
-        // 
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function onDelete($model, $request)
-    {
-        // 
-    }
 }

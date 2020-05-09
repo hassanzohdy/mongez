@@ -1,4 +1,5 @@
 <?php
+
 namespace HZ\Illuminate\Mongez\Managers\Database\MYSQL;
 
 use DB;
@@ -16,6 +17,8 @@ use Illuminate\Support\Traits\Macroable;
 use HZ\Illuminate\Mongez\Traits\RepositoryTrait;
 use Illuminate\Http\Resources\Json\JsonResource;
 use HZ\Illuminate\Mongez\Helpers\Repository\Select;
+use HZ\Illuminate\Mongez\Helpers\Filters\MYSQL\Filter;
+use HZ\Illuminate\Mongez\Helpers\Filters\FilterManager;
 use HZ\Illuminate\Mongez\Contracts\Repositories\RepositoryInterface;
 
 abstract class RepositoryManager implements RepositoryInterface
@@ -32,6 +35,13 @@ abstract class RepositoryManager implements RepositoryInterface
      * @const string
      */
     const NAME = '';
+
+    /**
+     * Filter class.
+     * 
+     * @const string
+     */
+    const FILTERS = [];
 
     /**
      * Allow repository to be extended
@@ -84,6 +94,7 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     const EVENTS_LIST = [
         'listing' => 'onListing',
+        'filtering' => 'filters',
         'list' => 'onList',
         'creating' => 'onCreating',
         'create' => 'onCreate',
@@ -235,11 +246,34 @@ abstract class RepositoryManager implements RepositoryInterface
     const WHEN_AVAILABLE_DATA = ['name', 'icon'];
 
     /**
+     * Map all your advanced filters.
+     * 
+     * @const array
+     */
+    const SQL_FILTER_MAP = [
+        'in' => 'filterIn',
+        'date' => 'filterDate',
+        'like' =>  'filterLike',
+        'notIn' => 'filterNotIn',
+        'regex' => 'filterRegex',
+        '='    =>  'filterOnIntValues',
+        'dateRange' => 'filterDate', 
+        '!='   =>  'filterOnIntValues', 
+        '>'    =>  'filterOnIntValues',
+        '<='   =>  'filterOnIntValues',
+        'dateTimestamp' => 'filterDateTimestamp',
+        'dateRangeT' => 'filterDateRangeTimestamp',
+    ];
+
+    /**
      * Filter by columns used with `list` method only
      * 
      * @const array
      */
     const FILTER_BY = [];
+
+    // unix timestamp 12045550123
+    // 12-04-2020 => 12045550123 strtotime()
 
     /**
      * Determine wether to use pagination in the `list` method
@@ -351,7 +385,9 @@ abstract class RepositoryManager implements RepositoryInterface
         $this->user = user();
 
         $this->eventName = static::EVENT ?: static::NAME;
-
+        
+        $this->boot();
+        
         // register events
         $this->registerEvents();
     }
@@ -427,21 +463,9 @@ abstract class RepositoryManager implements RepositoryInterface
             }
         }
 
-        foreach (static::FILTER_BY as $column => $option) {
-            if ($value = $this->option($option)) {
-                $column = is_numeric($column) ? $option : $column;
-                if (is_array($value)) {
-                    // make sure values are integers
-                    if ($column == 'id') {
-                        $value = array_map('intval', $value);
-                    }
-                    $this->query->whereIn($column, $value);
-                } else {
-                    $this->query->where($column, $value);
-                }
-            }
-        }
-
+        $filterManger = new FilterManager($this->query, $options, static::FILTER_BY);
+        $filterManger->merge(array_merge(static::FILTERS ,config('mongez.filters', [])));
+        
         $this->filter();
 
         $defaultOrderBy = [];
@@ -457,6 +481,10 @@ abstract class RepositoryManager implements RepositoryInterface
         $this->trigger("listing", $this->query, $this);
 
         $paginate = $this->option('paginate', static::PAGINATE);
+
+        if ($this->request->paginate === 'false') {
+            $paginate = false;
+        }
 
         if ($paginate === true || $paginate === null && config('mongez.pagination.paginate') === true) {
             $pageNumber = $this->option('page', 1);
@@ -505,7 +533,7 @@ abstract class RepositoryManager implements RepositoryInterface
         $events = array_map(function ($event) {
             return "{$this->eventName}.{$event}";
         }, explode(' ', $events));
-
+        
         return $this->events->trigger(implode(' ', $events), ...$values);
     }
 
@@ -545,6 +573,12 @@ abstract class RepositoryManager implements RepositoryInterface
     public function wrap($model): JsonResource
     {
         $resource = static::RESOURCE;
+
+        if (is_array($model)) {
+            $modelName = static::MODEL;
+            $model = new $modelName($model);
+        }
+
         return new $resource($model);
     }
 
@@ -554,10 +588,28 @@ abstract class RepositoryManager implements RepositoryInterface
      * @param \Illuminate\Support\Collection $collection
      * @return \JsonResource
      */
-    public function wrapMany(Collection $collection)
+    public function wrapMany($collection)
     {
         $resource = static::RESOURCE;
+        $collection = collect($collection)->map(function ($item) {
+            if (is_array($item)) {
+                $modelName = static::MODEL;
+                $item = new $modelName($item);
+            }
+
+            return $item;
+        });
         return $resource::collection($collection);
+    }
+
+    /**
+     * Get table name of the primary model of the repo
+     * 
+     * @return string
+     */
+    public function getTableName(): string
+    {
+        return static::TABLE ?: (static::MODEL)::getTableName();
     }
 
     /**
@@ -567,14 +619,7 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     protected function getQuery()
     {
-        if (static::MODEL) {
-            $model = static::MODEL;
-            $table = $model::getTableName();
-        } else {
-            $table = $this->tableName;
-        }
-        
-        return DB::table($table);
+        return DB::table($this->getTableName());
     }
 
     /**
@@ -699,7 +744,7 @@ abstract class RepositoryManager implements RepositoryInterface
     public function create($data)
     {
         $modelName = static::MODEL;
-        
+
         $model = new $modelName;
 
         $request = $this->getRequestWithData($data);
@@ -788,16 +833,16 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     protected function setDateData($model, $request, $columns = null)
     {
-        if (! $columns) {
+        if (!$columns) {
             $columns = static::DATE_DATA;
         }
-        
+
         foreach ((array) $columns as $column) {
             if (in_array($column, static::WHEN_AVAILABLE_DATA) && !isset($request->$column)) continue;
 
             $date = $request->input($column);
 
-            if (! $date) continue;
+            if (!$date) continue;
 
             $model->$column = is_numeric($date) ? $date : strtotime($date);
         }
@@ -815,7 +860,7 @@ abstract class RepositoryManager implements RepositoryInterface
         foreach (static::DATA as $column) {
             if (in_array($column, static::WHEN_AVAILABLE_DATA) && !isset($request->$column)) continue;
 
-            if (! isset($request->$column)) {
+            if (!isset($request->$column)) {
                 $model->$column = null;
             } else {
                 if ($column == 'password' && $request->password) {
@@ -880,10 +925,10 @@ abstract class RepositoryManager implements RepositoryInterface
             if (is_array($file)) {
                 $files = [];
 
-                foreach ($file as $fileObject) {
-                    if (!$file->isValid()) continue;
+                foreach ($file as $index => $fileObject) {
+                    if (!$fileObject->isValid()) continue;
 
-                    $files[] = $fileObject->storeAs($storageDirectory, $getFileName($fileObject));
+                    $files[$index] = $fileObject->storeAs($storageDirectory, $getFileName($fileObject));
                 }
 
                 $model->$column = $files;
@@ -1030,11 +1075,12 @@ abstract class RepositoryManager implements RepositoryInterface
     /**
      * {@inheritDoc}
      */
-    public function delete(int $id): bool
+    public function delete($model): bool
     {
-        $model = (static::MODEL)::find($id);
-
-        if (!$model) return false;
+        if (is_numeric($model)) {
+            $model = (static::MODEL)::find($model);
+            if (!$model) return false;
+        }
 
         // delete uploaded files
         foreach (static::UPLOADS as $file) {
@@ -1049,13 +1095,13 @@ abstract class RepositoryManager implements RepositoryInterface
             }
         }
 
-        if ($this->trigger("deleting", $model, $id) === false) return false;
+        if ($this->trigger("deleting", $model, $model->id) === false) return false;
 
         $model->delete();
 
         if (static::USING_CACHE) $this->forgetCache($model->id);
 
-        $this->trigger("delete", $model, $id);
+        $this->trigger("delete", $model, $model->id);
 
         return true;
     }
@@ -1185,4 +1231,10 @@ abstract class RepositoryManager implements RepositoryInterface
 
         if (static::USING_CACHE) $this->setCache($model->id, $model);
     }
+
+    /**
+     *
+     */
+    protected function boot()
+    { }
 }

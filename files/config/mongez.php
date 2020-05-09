@@ -128,4 +128,15 @@ return [
     |
     */
     'cache' => [],
+    
+    /*
+    |--------------------------------------------------------------------------
+    | Base filters 
+    |--------------------------------------------------------------------------
+    |
+    */
+    'filters' => [
+        HZ\Illuminate\Mongez\Helpers\Filters\MYSQL\Filter::class,
+        HZ\Illuminate\Mongez\Helpers\Filters\MongoDB\Filter::class,
+    ]
 ];
