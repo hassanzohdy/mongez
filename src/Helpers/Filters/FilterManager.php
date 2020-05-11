@@ -54,8 +54,7 @@ class FilterManager
             $filterObject = App::make($filterClass);
 
             $filterObject->query = $this->query;
-    
-            $sendedOptions = $this->getRequestedOptions($this->filterBy, $this->options);
+            $sendedOptions = $this->getRequestedOptions();
             foreach ($sendedOptions as $option) {
                 $filterFunction = $option['operator'];
                 if (array_key_exists($option['operator'], $filterObject->filterMap())) {
@@ -80,18 +79,16 @@ class FilterManager
             foreach((array)$columns as $key => $column) { 
                 $columns = [];
                 if (!is_string($key)) $key = $column;
-
-                if ($value = Arr::get($this->options, $key)) {
+                if (array_key_exists($key, $this->options)) {
                     $options['operator'] = $operator;
                     $columns = (array) $column;
-                    $options['value'] = $value; 
+                    $options['value'] = Arr::get($this->options, $key); 
                 }
             }
 
             if (!empty($columns)) $options['columns'] = $columns;
             if (!empty($options)) $requestedOptions[] = $options;
         }
-
         return $requestedOptions;
     }
 }
