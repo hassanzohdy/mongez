@@ -79,10 +79,10 @@ class FilterManager
             foreach((array)$columns as $key => $column) { 
                 $columns = [];
                 if (!is_string($key)) $key = $column;
-                if (array_key_exists($key, $this->options)) {
+                if (($value = Arr::get($this->options, $key, null)) !== null) {
                     $options['operator'] = $operator;
                     $columns = (array) $column;
-                    $options['value'] = Arr::get($this->options, $key); 
+                    $options['value'] = $value;
                 }
             }
 
