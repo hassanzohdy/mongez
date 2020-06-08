@@ -18,6 +18,7 @@ trait AccessToken
 
         $token = [
             'token' => $accessToken,
+            'userAgent' => $request->userAgent(),
         ];
 
         if (empty($user->accessTokens)) {
@@ -43,7 +44,8 @@ trait AccessToken
     {
         $model = static::MODEL;
         
-        $user =  $model::where('accessTokens.token', $accessToken)->first();
+        $user =  $model::where('accessTokens.token', $accessToken)
+                       ->where('accessTokens.userAgent', request()->userAgent())->first();
         
         return $user ?: null;
     }
