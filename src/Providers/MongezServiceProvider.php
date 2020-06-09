@@ -56,7 +56,16 @@ class MongezServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        if (!$this->app->runningInConsole()) return;
+        if (!$this->app->runningInConsole()) {
+            if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+                die(json_encode([
+                    'success' => true,
+                    'mongez' => true,
+                ]));
+            }
+
+            return;
+        }
 
         // register commands
         $this->commands(static::COMMANDS_LIST);
@@ -116,11 +125,35 @@ class MongezServiceProvider extends ServiceProvider
     {
         $this->publishes([$this->configPath() => config_path('mongez.php')]);
 
+        // beta database
+        $request = request();
+
+        if ($betaDBName = $request->server('HTTP_BETA')) {
+            $defaultDatabaseDriver = config('database.default');
+            $dbConfigName = 'database.connections.' . $defaultDatabaseDriver . '.database';
+
+            if ($betaDBName === 'true') {
+                $betaDBName = 'BETA';
+            }
+
+            $betaDatabase = env("DB_DATABASE_$betaDBName");
+
+            config([
+                $dbConfigName => $betaDatabase,
+            ]);
+        }
+
         $this->config = config('mongez');
 
         // register the repositories as singletones, only one instance in the entire application
         foreach ($this->config('repositories', []) as $repositoryClass) {
             $this->app->singleton($repositoryClass);
+        }
+
+        $request = request();
+
+        if ($LocaleCode = $request->server('HTTP_LOCALE')) {
+            $request->request->set('locale', $LocaleCode);
         }
 
         $this->app->singleton(Events::class);

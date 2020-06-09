@@ -1,4 +1,5 @@
 <?php
+
 namespace HZ\Illuminate\Mongez\Traits\MongoDB;
 
 use DB;
@@ -24,7 +25,7 @@ trait RecycleBin
             'record' => $recordInfo,
         ]);
 
-        DB::collection($tableName)->where('id', $primaryId)->delete();
+        parent::delete();
     }
 
     /**
@@ -49,7 +50,7 @@ trait RecycleBin
      */
     public static function findDeleted($id)
     {
-        $record = DB::collection(static::trashTable())->where('primaryId', (int)$id)->first();
+        $record = DB::collection(static::trashTable())->where('primaryId', (int) $id)->first();
 
         if (!$record) return null;
 

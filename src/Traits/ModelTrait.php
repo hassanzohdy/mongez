@@ -49,11 +49,17 @@ trait ModelTrait
      * @param  array $columns
      * @return array
      */
-    public function pluck(array $columns): array
+    public function pluck(...$columns): array
     {
         $data = [];
 
+        if (func_num_args() == 1 && is_array($columns[0])) {
+            $columns = $columns[0];
+        }
+
+
         foreach ($columns as $column) {
+            if (! isset($this->$column)) continue;
             $data[$column] = $this->$column;
         }
 

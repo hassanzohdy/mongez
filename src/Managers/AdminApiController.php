@@ -2,8 +2,10 @@
 namespace HZ\Illuminate\Mongez\Managers;
 
 use Validator;
+use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 abstract class AdminApiController extends ApiController
 {
@@ -126,6 +128,18 @@ abstract class AdminApiController extends ApiController
     {
         $rules = array_merge((array) $this->controllerInfo('rules.all'), $this->storeValidation($request));
 
+        $databaseRules = ['unique', 'exists'];
+
+        foreach ($rules as $name => & $rulesList) {
+            $rulesList = explode('|', $rulesList);
+
+            foreach ($rulesList as & $rule) {
+                if (in_array($rule, $databaseRules)) {
+                    $rule = "$rule:" . $this->repository->getTableName();
+                }
+            }
+        }
+
         $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
@@ -217,6 +231,18 @@ abstract class AdminApiController extends ApiController
         }
 
         $rules = array_merge((array) $this->controllerInfo('rules.all'), $this->updateValidation($id, $request));
+
+        foreach ($rules as $name => & $rulesList) {
+            $rulesList = explode('|', $rulesList);
+
+            foreach ($rulesList as & $rule) {
+                if ($rule == 'unique') {
+                    if (! Str::contains($rule, ':')) {
+                        $rule = Rule::unique($this->repository->getTableName())->ignore((int) $id, 'id');
+                    }
+                }
+            }
+        }
 
         $validator = Validator::make($request->all(), $rules);
 

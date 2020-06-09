@@ -87,6 +87,35 @@ abstract class ApiController extends Controller
     }
 
     /**
+     * Send not found request data
+     *
+     * @param  array $data
+     * @return string
+     */
+    protected function notFound($data)
+    {
+        if ($data instanceof MessageBag) {
+            $errors = [];
+            
+            foreach ($data->messages() as $input => $messagesList) {
+                $errors[$input] = $messagesList[0];
+            }
+            
+            $data = ['errors' => $errors];
+        } elseif (is_string($data)) {
+            $data = [
+                'error' => $data,
+            ];
+        }
+
+        if (($eventResponse = $this->events->trigger('response.notFound', $data)) && is_array($eventResponse)) {
+            $data = $eventResponse;
+        }
+        
+        return $this->send(Response::HTTP_NOT_FOUND, $data);
+    }
+
+    /**
      * Unauthorized data
      *
      * @param  string $message
@@ -112,7 +141,7 @@ abstract class ApiController extends Controller
      */
     protected function send(int $statusCode, array $message)
     {
-        if (($eventResponse = $this->events->trigger('response.send', $message)) && is_array($eventResponse)) {
+        if (($eventResponse = $this->events->trigger('response.send', $message, $statusCode)) && is_array($eventResponse)) {
             $message = $eventResponse;
         }
 
