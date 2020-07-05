@@ -165,7 +165,11 @@ abstract class JsonResourceManager extends JsonResource
                 }
             }
         }
-
+        if(array_key_exists('accessTokens', $this->data)){
+            $token = $this->data['accessTokens'][0]['token'];
+            unset($this->data['accessTokens']);
+            $this->data['accessToken'] = $token;
+        }
         return $this->data;
     }
 
@@ -318,6 +322,7 @@ abstract class JsonResourceManager extends JsonResource
         $timestamp = config('mongez.resources.dateTimestamp', true);
 
         foreach ($columns as $key => $column) {
+
             if (is_string($key)) {
                 $format = $column;
                 $column = $key;

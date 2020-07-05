@@ -52,14 +52,15 @@ class FilterManager
     {
         foreach($filterClasses as $filterClass) {
             $filterObject = App::make($filterClass);
-
             $filterObject->query = $this->query;
             $sendedOptions = $this->getRequestedOptions();
             foreach ($sendedOptions as $option) {
                 $filterFunction = $option['operator'];
                 if (array_key_exists($option['operator'], $filterObject->filterMap())) {
                     $filterFunction = $filterObject->filterMap()[$option['operator']];
-                    $filterObject->$filterFunction($option['columns'], $option['value'], $option['operator']);
+                    foreach($option['columns'] as $column) {
+                        $filterObject->$filterFunction($column['filteredColumns'], $column['value'], $option['operator']);
+                    }
                 }
             }
         }
@@ -76,17 +77,20 @@ class FilterManager
         $requestedOptions = [];
         foreach ($this->filterBy as $operator => $columns) {
             $options = [];
-            foreach((array)$columns as $key => $column) { 
-                $columns = [];
+            $requestedColumns = [];
+            foreach((array)$columns as $key => $column) {
                 if (!is_string($key)) $key = $column;
                 if (($value = Arr::get($this->options, $key, null)) !== null) {
                     $options['operator'] = $operator;
-                    $columns = (array) $column;
-                    $options['value'] = $value;
+                    $requestedColumns [] = [
+                        'filteredColumns' => (array) $column,
+                        'value' => $value
+                    ];
+
+                    if (!empty($columns)) $options['columns'] = $requestedColumns;
                 }
             }
-
-            if (!empty($columns)) $options['columns'] = $columns;
+            if (!empty($requestedColumns)) $options['columns'] = $requestedColumns;
             if (!empty($options)) $requestedOptions[] = $options;
         }
         return $requestedOptions;

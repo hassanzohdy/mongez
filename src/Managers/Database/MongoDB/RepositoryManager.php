@@ -125,7 +125,6 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
         } else {
             $id = (int) $id;
         }
-
         return $this->getByModel('id', $id);
     }
 
@@ -296,7 +295,7 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     public function disassociate($id, $model, $key)
     {        
         $model = $this->getModel($id);
-        if (!$lead) {
+        if (!$model) {
             return;
         }
         $model->disassociate($model, $key)->save();

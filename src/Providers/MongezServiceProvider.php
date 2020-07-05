@@ -6,6 +6,7 @@ use File;
 use Closure;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Artisan;
@@ -56,6 +57,18 @@ class MongezServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+
+        if (!$this->app->runningInConsole()) {
+            if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+                die(json_encode([
+                    'success' => true,
+                    'mongez' => true,
+                ]));
+            }
+
+            return;
+        }
+
         if (!$this->app->runningInConsole()) {
             if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
                 die(json_encode([
@@ -94,6 +107,16 @@ class MongezServiceProvider extends ServiceProvider
         if ($database != 'mongodb') return;
 
         $path = Mongez::packagePath('src/Database/migrations/mongodb');
+        
+        // Clone users module and settings module
+
+        $this->call('clone:module', [
+            'module' => 'users'
+        ]);
+
+        $this->call('clone:module', [
+            'module' => 'settings'
+        ]);
 
         Artisan::call('migrate', ['--path' => $path]);
     }

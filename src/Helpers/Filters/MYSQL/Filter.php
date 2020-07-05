@@ -20,7 +20,9 @@ class Filter
         '=' => 'filterOnIntValues',
         '>' => 'filterOnIntValues',
         '<' => 'filterOnIntValues',
-        'filterLike' => 'filterLike',
+        '>=' => 'filterOnIntValues',
+        '<=' => 'filterOnIntValues',
+        'like' => 'filterLike',
         'filterIn'   => 'filterIn',
         'filterNotInInt' => 'filterNotInInt',
         'filterNotIn' => 'filterNotIn'

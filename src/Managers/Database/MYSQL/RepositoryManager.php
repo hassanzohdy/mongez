@@ -467,7 +467,7 @@ abstract class RepositoryManager implements RepositoryInterface
         $filterManger->merge(array_merge(static::FILTERS ,config('mongez.filters', [])));
         
         $this->filter();
-
+        // dd($this->query->toSql());
         $defaultOrderBy = [];
 
         if ($orderBy = $this->option('orderBy')) {
@@ -1239,13 +1239,10 @@ abstract class RepositoryManager implements RepositoryInterface
 
         if (static::USING_CACHE) $this->setCache($model->id, $model);
     }
-<<<<<<< HEAD
 
     /**
      *
      */
     protected function boot()
     { }
-=======
->>>>>>> 2175a265944836b6af42d312cb71b880938d45f6
 }

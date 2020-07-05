@@ -49,11 +49,10 @@ abstract class ApiController extends Controller
         $data = $data ?: [
             'success' => true,
         ];
-
+  
         if (($eventResponse = $this->events->trigger('response.success', $data)) && is_array($eventResponse)) {
             $data = $eventResponse;
         }
-        
         return $this->send(Response::HTTP_OK, $data);
     }
 
@@ -144,7 +143,7 @@ abstract class ApiController extends Controller
         if (($eventResponse = $this->events->trigger('response.send', $message, $statusCode)) && is_array($eventResponse)) {
             $message = $eventResponse;
         }
-
+        
         return response()->json($message, $statusCode);
     }
 }

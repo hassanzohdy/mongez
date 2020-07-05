@@ -1,9 +1,9 @@
 <?php
 namespace App\Modules\ModuleName\Filters;
 
-use HZ\Illuminate\Mongez\Helpers\Filters\BaseFilter;
+use HZ\Illuminate\Mongez\Helpers\Filters\DatabaseName\Filter;
 
-class FilterName extends BaseFilter
+class FilterName extends Filter
 {
     /**
      * List with all filter. 

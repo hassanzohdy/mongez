@@ -112,6 +112,8 @@ class ModuleBuilder extends Command
         if ($this->optionHasValue('parent')) $this->info['parent'] = $this->option('parent');
 
         $this->moduleName = Str::studly($this->module);
+        
+        $this->databaseName = config('database.default');
 
         $this->info['moduleName'] = $this->moduleName;
         
@@ -405,12 +407,17 @@ class ModuleBuilder extends Command
     {
         $moduleFiltersPath = $this->path("Filters/ModuleFilter.php");
         $content = File::get($moduleFiltersPath);
-        
+
         $filterName = ucfirst(str::singular($this->moduleName));
 
         // replace Filter
         $content = str_ireplace("FilterName", $filterName, $content);
+
+        if ($this->databaseName == 'mongodb') $this->databaseName = 'MongoDB';
         
+        // replace the filter type depend on database driver
+        $content = str_replace('DatabaseName', $this->databaseName, $content);
+
         // replace module name
         $content = str_ireplace("ModuleName", $this->moduleName, $content);
         $filtersDirectory = $this->modulePath("Filters");

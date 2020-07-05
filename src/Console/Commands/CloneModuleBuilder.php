@@ -37,7 +37,69 @@ class CloneModuleBuilder extends Command
             'subRepositories' => [
                 'usersGroups',
                 'permissions'
+            ],
+            'conditionalDirectories' => [
+                'Models',
+                'Repositories',
+                'Traits\Auth'    
             ]
+        ],
+        'Settings'=> [
+            'repositoryName' => 'settings',
+            'routeType'   => 'admin',
+            'modelName'   => 'setting',
+            'controller'  => 'setting',
+            'moduleName'  => 'settings',
+            'type'        => 'admin',
+            'commands'    => [
+                [
+                'signature' => 'engez:migrate',
+                'options' =>['settings']
+                ]
+            ],
+            'neededPermissions' => [
+                'Settings',
+            ],
+            'subRepositories' => [],
+            'conditionalDirectories' => [
+                'Models',
+                'Repositories',
+                'database/migrations',
+                'Filters'    
+            ],
+        ],
+        'Localization'=> [
+            'repositoryName' => 'countries',
+            'routeType'   => 'admin',
+            'modelName'   => 'countries',
+            'controller'  => 'countries',
+            'moduleName'  => 'localization',
+            'type'        => 'admin',
+            'commands'    => [
+                [
+                'signature' => 'engez:migrate',
+                'options' =>['localization']
+                ]
+            ],
+            'neededPermissions' => [
+                'Countries',
+                'Cities',
+                'Currencies',
+                'Regions'
+            ],
+            'subRepositories' => [
+                'cities',
+                'regions',
+                'currencies'
+
+            ],
+            'conditionalDirectories' => [
+                'Models',
+                'Repositories',
+                'database/migrations',
+                'Filters',
+                'Resources'    
+            ],
         ]
     ];
 
@@ -49,17 +111,6 @@ class CloneModuleBuilder extends Command
     const DATABASE_OPTIONS = [
         'mysql' =>  'MYSQL',
         'mongodb' => 'MongoDB'
-    ];
-    
-    /**
-     * Get files of these directories based on current database driver.
-     *  
-     * @const array
-     */
-    const CONDITIONAL_DIRECTORIES = [
-        'Models',
-        'Repositories',
-        'Traits\Auth'
     ];
 
     /**
@@ -114,7 +165,7 @@ class CloneModuleBuilder extends Command
         $this->commandMustBeFollowed();
         $this->updateConfig();
         $this->updateRepositoriesConfig();
-        $this->addModulePermissions();
+        if($this->checkDirectory('users')) $this->addModulePermissions;
         $this->updateServiceProviderConfig();
         $this->info('Module cloned successfully');
     }
@@ -180,15 +231,15 @@ class CloneModuleBuilder extends Command
         $modulePath = $this->modulePath($this->moduleName);
         
         $databaseDriver = config('database.default');
-        
         $targetDatabaseFileName = static::DATABASE_OPTIONS[$databaseDriver];
 
         $deletedDatabaseFileName = 'MongoDB';
         if ($targetDatabaseFileName == 'MongoDB') {
             $deletedDatabaseFileName = 'MYSQL';
         }
+        $conditionalDirectories = static::AVAILABLE_MODULES[$this->moduleName]['conditionalDirectories'];
 
-        foreach (static::CONDITIONAL_DIRECTORIES as $folder) {
+        foreach ($conditionalDirectories as $folder) {
             $targetFolder = $modulePath ."/{$folder}";
             
             foreach(File::allFiles($targetFolder) as $directoryFile){
@@ -234,7 +285,6 @@ class CloneModuleBuilder extends Command
     protected function commandMustBeFollowed()
     {
         $commands = static::AVAILABLE_MODULES[$this->moduleName]['commands'];
-        
         foreach($commands as $command){
             $this->call($command['signature'], $command['options']);
         }
@@ -247,15 +297,13 @@ class CloneModuleBuilder extends Command
      */
     public function updateRepositoriesConfig() 
     {
+        $parent = strtolower($this->moduleName);
         foreach (static::AVAILABLE_MODULES[$this->moduleName]['subRepositories'] as $repositoryName) {
-
-            $this->parent = strtolower($this->moduleName);
             $this->moduleName = $repositoryName;
             $this->info['repository'] = Str::studly($repositoryName);
             $this->updateConfig();
         }
-
-        $this->moduleName = Str::studly($this->parent);
+        $this->moduleName = Str::studly($parent);
     }
 
     /**
