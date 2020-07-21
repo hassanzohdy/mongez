@@ -1,4 +1,5 @@
 <?php
+
 namespace HZ\Illuminate\Mongez\Managers;
 
 use Validator;
@@ -15,7 +16,7 @@ abstract class AdminApiController extends ApiController
      * @var mixed
      */
     protected $repository;
-    
+
     /**
      * Controller repository
      *
@@ -46,8 +47,8 @@ abstract class AdminApiController extends ApiController
     public function __construct()
     {
         parent::__construct();
-     
-        if (! empty($this->controllerInfo['repository'])) {
+
+        if (!empty($this->controllerInfo['repository'])) {
             $this->repository = repo($this->controllerInfo['repository']);
         }
     }
@@ -61,9 +62,9 @@ abstract class AdminApiController extends ApiController
     public function index(Request $request)
     {
         $json['records'] = $this->repository->list($this->listOptions($request));
-        
+
         if ($this->repository->getPaginateInfo()) {
-            $json['paginationInfo'] = $this->repository->getPaginateInfo();            
+            $json['paginationInfo'] = $this->repository->getPaginateInfo();
         }
         return $this->success($json);
     }
@@ -78,7 +79,7 @@ abstract class AdminApiController extends ApiController
     {
         $listOptions = $this->controllerInfo('listOptions');
 
-        if (! empty($listOptions['filterBy'])) {
+        if (!empty($listOptions['filterBy'])) {
             $filterByValues = $request->only($listOptions['filterBy']);
             $listOptions = array_merge($listOptions, $filterByValues);
             unset($listOptions['filterBy']);
@@ -130,10 +131,12 @@ abstract class AdminApiController extends ApiController
 
         $databaseRules = ['unique', 'exists'];
 
-        foreach ($rules as $name => & $rulesList) {
-            $rulesList = explode('|', $rulesList);
+        foreach ($rules as &$rulesList) {
+            if (is_string($rulesList)) {
+                $rulesList = explode('|', $rulesList);
+            }
 
-            foreach ($rulesList as & $rule) {
+            foreach ($rulesList as &$rule) {
                 if (in_array($rule, $databaseRules)) {
                     $rule = "$rule:" . $this->repository->getTableName();
                 }
@@ -147,7 +150,7 @@ abstract class AdminApiController extends ApiController
         }
 
         $model = $this->repository->create($request);
-        
+
         $returnOnStore = $this->controllerInfo['returnOn']['store'] ?? config('mongez.admin.returnOn.store', 'single-record');
 
         if ($returnOnStore == 'single-record') {
@@ -192,24 +195,22 @@ abstract class AdminApiController extends ApiController
         $isUsingSoftDelete = $this->repository->isUsingSoftDelete();
 
         foreach ($deleteDependenceTables as $table) {
-            
-            $rules = Rule::unique($table['tableName'],$table['key']);
 
-            if ($isUsingSoftDelete){
+            $rules = Rule::unique($table['tableName'], $table['key']);
 
-                $validationRules = $rules->where(function ($query){
-
+            if ($isUsingSoftDelete) {
+                $validationRules = $rules->where(function ($query) {
                     $query->whereNull('deleted_at');
-
                 });
             }
-            $validationRules['data'][$table['tableName'].'_id']= (int)$modelId;
 
-            $validationRules['rules'][$table['tableName'].'_id']= $rules;
-            
-            $validationRules['messages']['unique.'.$table['tableName'].'_id']= $table['message'];
+            $validationRules['data'][$table['tableName'] . '_id'] = (int)$modelId;
+
+            $validationRules['rules'][$table['tableName'] . '_id'] = $rules;
+
+            $validationRules['messages']['unique.' . $table['tableName'] . '_id'] = $table['message'];
         }
-        $validator = Validator::make($validationRules['data'],$validationRules['rules'],$validationRules['messages']);
+        $validator = Validator::make($validationRules['data'], $validationRules['rules'], $validationRules['messages']);
 
         if ($validator->fails()) {
             $errors[] = $validator->errors();
@@ -232,12 +233,14 @@ abstract class AdminApiController extends ApiController
 
         $rules = array_merge((array) $this->controllerInfo('rules.all'), $this->updateValidation($id, $request));
 
-        foreach ($rules as $name => & $rulesList) {
-            $rulesList = explode('|', $rulesList);
+        foreach ($rules as &$rulesList) {
+            if (is_string($rulesList)) {
+                $rulesList = explode('|', $rulesList);
+            }
 
-            foreach ($rulesList as & $rule) {
+            foreach ($rulesList as &$rule) {
                 if ($rule == 'unique') {
-                    if (! Str::contains($rule, ':')) {
+                    if (!Str::contains($rule, ':')) {
                         $rule = Rule::unique($this->repository->getTableName())->ignore((int) $id, 'id');
                     }
                 }
