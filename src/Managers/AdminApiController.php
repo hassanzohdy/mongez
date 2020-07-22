@@ -79,11 +79,14 @@ abstract class AdminApiController extends ApiController
     {
         $listOptions = $this->controllerInfo('listOptions');
 
-        if (!empty($listOptions['filterBy'])) {
-            $filterByValues = $request->only($listOptions['filterBy']);
-            $listOptions = array_merge($listOptions, $filterByValues);
-            unset($listOptions['filterBy']);
-        }
+        // if (! empty($listOptions['filterBy'])) {
+        //     $filterByValues = $request->only($listOptions['filterBy']);
+        //     $listOptions = array_merge($listOptions, $filterByValues);
+        //     unset($listOptions['filterBy']);
+        // }
+
+        $filterByValues = $request->all();
+        $listOptions = array_merge($listOptions, $filterByValues);
 
         return $listOptions;
     }

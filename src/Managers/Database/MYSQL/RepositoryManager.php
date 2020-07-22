@@ -467,7 +467,7 @@ abstract class RepositoryManager implements RepositoryInterface
 
             $selectedColumns = !empty($this->select->list()) ? $this->select->list() : ['*'];
 
-            $data = $this->query->paginate($itemPerPage, $selectedColumns, 'page', $pageNumber);
+            $data = $this->query->paginate((int) $itemPerPage, $selectedColumns, 'page', $pageNumber);
 
             $this->setPaginateInfo($data);
 
