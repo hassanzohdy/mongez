@@ -2,6 +2,7 @@
 namespace HZ\Illuminate\Mongez\Traits;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Arr;
 
 trait ModelTrait
 {
@@ -44,6 +45,16 @@ trait ModelTrait
     }
 
     /**
+     * Get model info
+     * 
+     * @return mixed
+     */
+    public function info(): array
+    {
+        return $this->getAttributes();
+    }
+
+    /**
      * Pluck the given keys from the model info
      * 
      * @param  array $columns
@@ -57,13 +68,24 @@ trait ModelTrait
             $columns = $columns[0];
         }
 
-
         foreach ($columns as $column) {
             if (! isset($this->$column)) continue;
+
             $data[$column] = $this->$column;
         }
 
         return $data;
+    }
+
+    /**
+     * Get all info except the given columns
+     * 
+     * @param  array $columns
+     * @return array
+     */
+    public function except(...$columns): array
+    {
+        return Arr::except($this->info(), $columns);
     }
 
     /**

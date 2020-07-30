@@ -1,4 +1,5 @@
 <?php
+
 namespace HZ\Illuminate\Mongez\Managers\Database\MongoDB;
 
 use Illuminate\Support\Collection;
@@ -11,14 +12,13 @@ use Illuminate\Support\Facades\App;
 
 abstract class RepositoryManager extends BaseRepositoryManager implements RepositoryInterface
 {
-    
     /**
      * Filter class.
      *  
      * @const string
      */
     const FILTER_CLASS = Filter::class;
-    
+
     /**
      * Set if the current repository uses a soft delete method or not
      * This is mainly used in the where clause
@@ -113,22 +113,6 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     }
 
     /**
-     * Get model for the given id
-     * 
-     * @param  int|array $id
-     * @return mixed
-     */
-    public function getModel($id)
-    {
-        if (is_array($id)) {
-            $id = array_map('intval', $id);
-        } else {
-            $id = (int) $id;
-        }
-        return $this->getByModel('id', $id);
-    }
-
-    /**
      * Get shared info for the given id
      * 
      * @param int $id
@@ -142,62 +126,24 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     }
 
     /**
-     * Get by the given column name
-     * 
-     * @param  string $column
-     * @param  mixed value
-     * @return mixed
-     */
-    public function getBy($column, $value)
-    {
-        $resource = static::RESOURCE;
-
-        $object = $this->getByModel($column, $value);
-
-        return $object ? new $resource($object) : null;
-    }
-
-    /**
-     * Get the current model by the given column name and value
-     * 
-     * @param  string $column
-     * @param  mixed value
-     * @return mixed
-     */
-    public function getByModel($column, $value)
-    {
-        $model = static::MODEL;
-
-        return is_array($value) ? $model::whereIn($column, $value)->get() : $model::where($column, $value)->first();
-    }
-
-    /**
      * {@inheritDoc}
      */
     protected function setData($model, $request)
-    { }
+    {
+    }
 
     /**
      * {@inheritDoc}
      */
     protected function select()
-    { }
+    {
+    }
 
     /**
      * {@inheritDoc}
      */
     protected function filter()
-    { }
-
-    /**
-     * Get the query handler
-     * 
-     * @return mixed
-     */
-    protected function getQuery()
     {
-        $model = static::MODEL;
-        return $model::where('id', '!=', -1);
     }
 
     /**
@@ -243,9 +189,9 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
                 list($class, $method) = $documentModelClass;
                 $documentModelClass = $class;
             } else {
-              $method = 'sharedInfo';  
+                $method = 'sharedInfo';
             }
-            
+
             $documentModel = $documentModelClass::find((int) $request->$column);
 
             $model->$column = $documentModel ? $documentModel->{$method}() : [];
@@ -262,12 +208,13 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     protected function setMultiDocumentData($model, $request)
     {
         foreach (static::MULTI_DOCUMENTS_DATA as $column => $documentModelClass) {
-            if (! $request->$column) {
+            if (!$request->$column) {
                 $model->$column = [];
                 continue;
             }
-            
-            $ids = array_map('intVal', $request->$column);
+
+            $ids = $this->mapInt(array_filter((array) $request->$column));
+
             $records = $documentModelClass::whereIn('id', $ids)->get();
 
             $records = $records->map(function ($record) {
@@ -279,6 +226,7 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
                 $recordsValues = array_flip($ids);
                 usort($records, function ($recordA, $recordB) use ($recordsValues) {
                     if ($recordsValues[$recordA['id']] === $recordsValues[$recordB['id']]) return 0;
+
                     if ($recordsValues[$recordA['id']] < $recordsValues[$recordB['id']]) return -1;
 
                     return 1;
@@ -293,11 +241,11 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
      * {@inheritDoc}
      */
     public function disassociate($id, $model, $key)
-    {        
+    {
         $model = $this->getModel($id);
-        if (!$model) {
-            return;
-        }
+
+        if (!$model) return;
+
         $model->disassociate($model, $key)->save();
     }
 
@@ -307,6 +255,9 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     public function reassociate($id, $model, $key)
     {
         $model = $this->getModel($id);
+
+        if (!$model) return;
+
         $model->reassociate($model, $key)->save();
     }
 
@@ -318,12 +269,11 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
         if (! empty(static::PARENT_OF)) {
 
             $this->events->subscribe($this->eventName . '.delete', function ($model, $id) {
-    
                 foreach (static::PARENT_OF as $childColumnName => $childRepository) {
                     $childrenList = $model->$childColumnName ?? [];
-    
+
                     $childRepository = App::make($childRepository);
-    
+
                     foreach ($childrenList as $child) {
                         $childRepository->delete($child['id']);
                     }
@@ -331,12 +281,12 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
             });
         }
 
-        if (! empty(static::CHILD_OF)) {
+        if (!empty(static::CHILD_OF)) {
             $this->events->subscribe($this->eventName . '.delete', function ($model, $id) {
-    
-                foreach (static::CHILD_OF as $parentColumnName => $parentRepositoryWithChildColumnName) {    
+                foreach (static::CHILD_OF as $parentColumnName => $parentRepositoryWithChildColumnName) {
                     $parentId = $model->$parentColumnName['id'] ?? null;
-                    if (! $parentId) continue;
+
+                    if (!$parentId) continue;
 
                     list($parentRepositoryClass, $childNameInParent) = $parentRepositoryWithChildColumnName;
 
@@ -344,7 +294,7 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
 
                     $parentRepository->disassociate($parentId, $model, $childNameInParent);
                 }
-            }); 
+            });
         }
     }
 
@@ -354,7 +304,7 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     protected function filterBy($filter)
     {
         return $filter->merge(
-            self::FILTER_CLASS  
+            self::FILTER_CLASS
         );
     }
 }

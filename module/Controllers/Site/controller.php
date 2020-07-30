@@ -9,9 +9,9 @@ class ControllerName extends ApiController
     /**
      * Repository name
      * 
-     * @var string
+     * @const string
      */
-    protected $repository = 'repo-name';
+    const REPOSITORY_NAME = 'repo-name';
 
     /**
      * {@inheritDoc}

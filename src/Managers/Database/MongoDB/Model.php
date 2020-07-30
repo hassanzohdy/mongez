@@ -146,16 +146,6 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * Get model info
-     * 
-     * @return mixed
-     */
-    public function info(): array
-    {
-        return $this->getAttributes();
-    }
-
-    /**
      * This method should return the info of the document that will be stored in another document, default to full info
      * 
      * @return array
@@ -174,6 +164,17 @@ abstract class Model extends BaseModel
         }
 
         return $info;
+    }
+
+    /**
+     * Get shared info except the given columns
+     * 
+     * @param  array $columns
+     * @return array
+     */
+    public function sharedInfoExcept(...$columns): array
+    {
+        return Arr::except($this->sharedInfo(), $columns);
     }
 
     /**
