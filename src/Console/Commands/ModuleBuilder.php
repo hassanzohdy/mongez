@@ -86,7 +86,7 @@ class ModuleBuilder extends Command
                                        {--index=}
                                        {--unique=}
                                        {--int=}
-                                       {--double=}
+                                       {--float=}
                                        {--bool=}
                                        {--resource=}
                                        {--repository=}
@@ -144,6 +144,7 @@ class ModuleBuilder extends Command
             }
         } 
     }
+    
     /**
      * Adjust sent options and update its value if its default
      * 
@@ -354,7 +355,7 @@ class ModuleBuilder extends Command
 
         $intData = $this->optionHasValue('int') ? explode(",",$this->option('int')) : [];
         
-        $doubleData = $this->optionHasValue('double') ? explode(",",$this->option('double')) : [];
+        $floatData = $this->optionHasValue('float') ? explode(",",$this->option('float')) : [];
 
         $boolData = $this->optionHasValue('bool') ? explode(",",$this->option('bool')) : [];
 
@@ -366,11 +367,11 @@ class ModuleBuilder extends Command
         
         $intData = array_fill_keys($intData, 'int');
 
-        $doubleData = array_fill_keys($doubleData, 'double');
+        $floatData = array_fill_keys($floatData, 'float');
 
         $boolData = array_fill_keys($boolData, 'boolean');
 
-        $content = array_merge($defaultContent, $customData, $uploadsData, $intData, $doubleData, $boolData);
+        $content = array_merge($defaultContent, $customData, $uploadsData, $intData, $floatData, $boolData);
 
         $this->createFile("$path/{$databaseFileName}.json", json_encode($content, JSON_PRETTY_PRINT), 'Schema');
     }
@@ -391,7 +392,7 @@ class ModuleBuilder extends Command
             'uploads',
             'data',
             'int',
-            'double',
+            'float',
             'bool',
         ]);
         
@@ -450,7 +451,7 @@ class ModuleBuilder extends Command
             'unique',
             'data',
             'uploads',
-            'double',
+            'float',
             'bool',
             'int',
             'data',
@@ -570,7 +571,7 @@ class ModuleBuilder extends Command
         }
 
         $dataOptions = [
-            'double' =>  'Double',
+            'float' =>  'Float',
             'bool'   =>  'Bool', 
             'int'    =>  'Int'
         ];
@@ -614,7 +615,7 @@ class ModuleBuilder extends Command
 
         $dataOptions = [
             'uploads' => 'File',
-            'double' =>  'Double',
+            'float' =>  'Float',
             'bool'   =>  'Bool', 
             'int'    =>  'Int'
         ];

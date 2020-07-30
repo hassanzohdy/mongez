@@ -14,7 +14,7 @@ class UsersController extends AdminApiController
     protected $controllerInfo = [
         'repository' => 'users',
         'listOptions' => [
-            'select' => ['id','name','user_group_id','email'],
+            'select' => [],
             'filterBy' => [],
             'paginate' => null, // if set null, it will be automated based on repository configuration option
         ],
@@ -61,7 +61,7 @@ class UsersController extends AdminApiController
                 'required',
                     Rule::unique('users', 'email')->where(function ($query) use ($id) {
                     $query->whereNull('deleted_at');
-                    $query->where('id', '!=', $id);
+                    $query->where('id', '!=', (int) $id);
                 }),
             ],
         ];

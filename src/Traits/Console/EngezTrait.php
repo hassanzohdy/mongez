@@ -119,6 +119,16 @@ trait EngezTrait
     }
 
     /**
+     * Remove module name from config file.
+     * 
+     * @return void
+     */
+    protected function unsetModuleNameFromMongez()
+    {
+        Mongez::remove('modules', strtolower($this->moduleName));
+    }
+
+    /**
      * Update module name to config file.
      * 
      * @return void
@@ -165,8 +175,8 @@ trait EngezTrait
             $migrationsOptions['--bool'] = $this->option('bool');
         }
         
-        if ($this->optionHasValue('double')) {
-            $migrationsOptions['--double'] = $this->option('double');
+        if ($this->optionHasValue('float')) {
+            $migrationsOptions['--float'] = $this->option('float');
         }
         if ($this->optionHasValue('table')) {
             $migrationsOptions['--table'] = $this->option('table');
@@ -249,7 +259,7 @@ trait EngezTrait
             
             $middleware = "";
             if (in_array('users', Mongez::getStored('modules'))){
-                $middleware = "'logged-in','check-permission'"; 
+                $middleware = "'authenticated','authorized'"; 
             } 
 
             // Set middleware list
@@ -366,7 +376,7 @@ trait EngezTrait
 
         if (!Str::contains($config, $replacementLine)) return;
 
-        $repositoryClassName = basename(str_replace('\\', '/', $this->info['repository']));
+        $repositoryClassName = Str::studly(basename(str_replace('\\', '/', $this->info['repository'])));
 
         $repositoryShortcut = $this->repositoryShortcutName($this->info['repository']);
         
@@ -400,6 +410,27 @@ trait EngezTrait
         $serviceProviderClassName = Str::singular($module) .'ServiceProvider';
 
         $replacedString = "App\\Modules\\$module\\Providers\\{$serviceProviderClassName}::class,\n \t\t$replacementLine";
+        $updatedConfig = str_replace($replacementLine, $replacedString, $config);
+
+        File::put($mongezPath, $updatedConfig);
+    }
+
+    /**
+     * Remove module service provider path
+     * 
+     * @param $moduleName
+     * @return void
+     */
+    protected function unsetModuleServiceProvider()
+    {
+        $config = File::get($mongezPath =  base_path('config/app.php'));
+
+        $serviceProviderClassName = Str::singular($this->moduleName) .'ServiceProvider';
+
+        $replacementLine = "App\\Modules\\$this->moduleName\\Providers\\{$serviceProviderClassName}::class,";
+
+        if (!Str::contains($config, $replacementLine)) return;
+        $replacedString = "";
         $updatedConfig = str_replace($replacementLine, $replacedString, $config);
 
         File::put($mongezPath, $updatedConfig);

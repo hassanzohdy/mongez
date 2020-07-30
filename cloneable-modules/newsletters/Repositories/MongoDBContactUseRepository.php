@@ -1,10 +1,10 @@
 <?php
-namespace App\Modules\ModuleName\Repositories;
+namespace App\Modules\Newsletters\Repositories;
 
-use App\Modules\ModuleName\{
-    Models\ModelName as Model,
-    Resources\ResourceName as Resource,
-    Filters\FilterName as Filter
+use App\Modules\Newsletters\{
+    Models\ContactUs as Model,
+    Resources\ContactUs as Resource,
+    Filters\ContactUs as Filter
 };
 
 use HZ\Illuminate\Mongez\{
@@ -12,12 +12,12 @@ use HZ\Illuminate\Mongez\{
     Managers\Database\MongoDB\RepositoryManager
 };
 
-class RepositoryNameRepository extends RepositoryManager implements RepositoryInterface
+class contactUseRepository extends RepositoryManager implements RepositoryInterface
 {
     /**
      * {@inheritDoc}
      */
-    const NAME = 'repo-name';
+    const NAME = 'contactUse';
     
     /**
      * {@inheritDoc}
@@ -34,7 +34,13 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
      * 
      * @const array
      */
-    const DATA = [DATA_LIST];       
+    const DATA = [
+        'name', 
+        'email', 
+        'phoneNumber', 
+        'subject', 
+        'message'
+    ];       
     
     /**
      * Auto save uploads in this list
@@ -43,7 +49,7 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
      * 
      * @const array
      */
-    const UPLOADS = [UPLOADS_LIST];       
+    const UPLOADS = [];       
     
     /**
      * Auto fill the following columns as arrays directly from the request
@@ -59,29 +65,22 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
      * 
      * @cont array  
      */
-    const INTEGER_DATA = [INTEGER_LIST];
+    const INTEGER_DATA = [];
 
     /**
      * Set columns list of float values.
      * 
      * @cont array  
      */
-    const FLOAT_DATA = [FLOAT_LIST];
+    const FLOAT_DATA = [];
 
     /**
      * Set columns of booleans data type.
      * 
      * @cont array  
      */
-    const BOOLEAN_DATA = [BOOL_LIST];
+    const BOOLEAN_DATA = [];
     
-    /**
-     * Set columns list of date values.
-     * 
-     * @cont array  
-     */
-    const DATE_DATA = [];
-
     /**
      * Set the columns will be filled with single record of collection data
      * i.e [country => CountryModel::class]

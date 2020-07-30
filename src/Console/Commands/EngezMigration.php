@@ -22,7 +22,7 @@ class EngezMigration extends Command implements EngezInterface
                                             {--data=}
                                             {--uploads=}
                                             {--int=}
-                                            {--double=}
+                                            {--float=}
                                             {--bool=}
                                             {--index=} 
                                             {--parent=}
@@ -72,7 +72,7 @@ class EngezMigration extends Command implements EngezInterface
         $this->info['index'] =  [];
         $this->info['unique'] =  [];
         $this->info['int'] =  [];
-        $this->info['double'] =  [];
+        $this->info['float'] =  [];
         $this->info['bool'] =  [];
         
         if ($this->optionHasValue('index')) {
@@ -94,8 +94,8 @@ class EngezMigration extends Command implements EngezInterface
         if ($this->optionHasValue('bool')) {
             $this->info['bool'] = explode(',', $this->option('bool'));
         }
-        if ($this->optionHasValue('double')) {
-            $this->info['double'] = explode(',', $this->option('double'));
+        if ($this->optionHasValue('float')) {
+            $this->info['float'] = explode(',', $this->option('float'));
         }
         
         if ($this->optionHasValue('parent')) {
@@ -183,7 +183,7 @@ class EngezMigration extends Command implements EngezInterface
                 unset($this->info['index'][array_search($singleIndexData, $this->info['index'])]);
             }
         }
-        $allData = array_filter(array_unique(array_merge($this->info['data'], $this->info['int'], $this->info['bool'], $this->info['index'], $this->info['unique'], $this->info['double'])));
+        $allData = array_filter(array_unique(array_merge($this->info['data'], $this->info['int'], $this->info['bool'], $this->info['index'], $this->info['unique'], $this->info['float'])));
         if (! empty($allData)) {
             $schema = '';
             $tabs = "\n" . str_repeat("\t", 3);
@@ -204,13 +204,13 @@ class EngezMigration extends Command implements EngezInterface
                         $dataSchema = "{$tabs}\$table->integer('$data')->unique();";
                     }
                 }
-                if (in_array($data, $this->info['double'])) {
-                    $dataSchema = "{$tabs}\$table->double('$data');";
+                if (in_array($data, $this->info['float'])) {
+                    $dataSchema = "{$tabs}\$table->float('$data');";
                     if (in_array($data, $this->info['index'])){
-                        $dataSchema = "{$tabs}\$table->double('$data')->index();";
+                        $dataSchema = "{$tabs}\$table->float('$data')->index();";
                     }
                     if (in_array($data, $this->info['unique'])){
-                        $dataSchema = "{$tabs}\$table->double('$data')->unique();";
+                        $dataSchema = "{$tabs}\$table->float('$data')->unique();";
                     }
                 }
                 

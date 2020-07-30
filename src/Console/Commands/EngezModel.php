@@ -23,7 +23,7 @@ class EngezModel extends Command implements EngezInterface
                                         {--index=}
                                         {--int=}
                                         {--bool}
-                                        {--double=}
+                                        {--float=}
                                         {--table=}                                        
                                         {--unique=}
                                         {--parent=}
@@ -151,7 +151,7 @@ class EngezModel extends Command implements EngezInterface
         }
         
         $content = str_ireplace("ModuleName", $targetModule, $content);
-        
+
         // Add shared info constant in mongodb driver
         if ($this->databaseName == 'mongodb') {
             $tabs = "\n" . str_repeat("\t", 1);
@@ -159,7 +159,7 @@ class EngezModel extends Command implements EngezInterface
             $sharedInfo = "{$singleTab}{";
             $sharedInfo .= $tabs;
             $sharedInfo .= "/** {$tabs}* Shared info of the model  {$tabs}* This is used for getting simple info {$tabs}* {$tabs}* @const array {$tabs}*/";
-            $sharedInfo .= "{$tabs}const SHARED_INFO = [];";
+            $sharedInfo .= "{$tabs}const SHARED_INFO = ['id'];";
             $sharedInfo .= "{$singleTab}}";
             $content = str_replace("{}", $sharedInfo, $content);   
         }
