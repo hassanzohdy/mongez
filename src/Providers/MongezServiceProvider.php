@@ -14,6 +14,7 @@ use HZ\Illuminate\Mongez\Events\Events;
 use HZ\Illuminate\Mongez\Helpers\Mongez;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use HZ\Illuminate\Mongez\Console\Commands\EngezModel;
+use HZ\Illuminate\Mongez\Console\Commands\EngezRemove;
 use HZ\Illuminate\Mongez\Console\Commands\EngezMigrate;
 use HZ\Illuminate\Mongez\Console\Commands\DatabaseMaker;
 use HZ\Illuminate\Mongez\Console\Commands\ModuleBuilder;
@@ -33,6 +34,7 @@ class MongezServiceProvider extends ServiceProvider
      */
     const COMMANDS_LIST = [
         EngezModel::class,
+        EngezRemove::class,
         EngezMigrate::class,
         ModuleBuilder::class,
         EngezResource::class,
@@ -108,16 +110,6 @@ class MongezServiceProvider extends ServiceProvider
 
         $path = Mongez::packagePath('src/Database/migrations/mongodb');
         
-        // Clone users module and settings module
-
-        $this->call('clone:module', [
-            'module' => 'users'
-        ]);
-
-        $this->call('clone:module', [
-            'module' => 'settings'
-        ]);
-
         Artisan::call('migrate', ['--path' => $path]);
     }
 
@@ -252,6 +244,16 @@ class MongezServiceProvider extends ServiceProvider
                 }
             }
         }
+    }
+
+    /**
+     * Register Routes
+     * 
+     * @return void 
+     */
+    protected function registerRoutes()
+    {
+        // $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
     }
 
     /**

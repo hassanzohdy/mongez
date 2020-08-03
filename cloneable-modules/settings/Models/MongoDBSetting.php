@@ -1,7 +1,7 @@
 <?php
 namespace App\Modules\Settings\Models;
 
-use HZ\Illuminate\Mongez\Managers\Database\DatabaseName\Model;
+use HZ\Illuminate\Mongez\Managers\Database\MongoDB\Model;
 
 class Setting extends Model 
 {

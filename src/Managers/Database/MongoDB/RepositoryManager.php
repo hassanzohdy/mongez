@@ -265,8 +265,9 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
      * {@inheritDoc}
      */
     protected function boot()
-    {
-        if (!empty(static::PARENT_OF)) {
+    {    
+        if (! empty(static::PARENT_OF)) {
+
             $this->events->subscribe($this->eventName . '.delete', function ($model, $id) {
                 foreach (static::PARENT_OF as $childColumnName => $childRepository) {
                     $childrenList = $model->$childColumnName ?? [];

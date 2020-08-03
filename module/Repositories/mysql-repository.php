@@ -76,6 +76,13 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
     const BOOLEAN_DATA = [BOOL_LIST];
     
     /**
+     * Set columns list of date values.
+     * 
+     * @cont array  
+     */
+    const DATE_DATA = [];
+    
+    /**
      * Add the column if and only if the value is passed in the request.
      * 
      * @cont array  

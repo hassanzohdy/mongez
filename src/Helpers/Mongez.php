@@ -185,4 +185,19 @@ class Mongez
     {
         return dirname(__DIR__, 2) . '/' . ltrim($path, '/');
     }
+
+    /**
+     * Remove value from an arrayable key
+     * 
+     * @param string $moduleName
+     * @return void
+     */
+    public static function remove(string $key, string $value)
+    {
+        $list = static::getStored($key);
+        $valueIndex = array_search($value, $list);
+        unset($list[$valueIndex]);
+        static::setStored($key, $list);
+        static::updateStorageFile();
+    }
 }

@@ -13,8 +13,14 @@ Route::group([
     'namespace' => 'Modules\Localization\Controllers\Site',
 ], function () {
     // list records
-    Route::get('/localization', 'LocalizationController@index');
+    Route::get('/regions', 'RegionsController@index');
+    Route::get('/cities', 'CitiesController@index');
+    Route::get('/countries', 'CountriesController@index');
+    Route::get('/currencies', 'CurrenciesController@index');
     // one record 
-    Route::get('/localization/{id}', 'LocalizationController@show');
+    Route::get('/regions/{id}', 'RegionsController@show');
+    Route::get('/cities/{id}', 'CitiesController@show');
+    Route::get('/countries/{id}', 'CountriesController@show');
+    Route::get('/currencies/{id}', 'CurrenciesController@show');
     // Child routes
 });

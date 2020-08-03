@@ -25,7 +25,7 @@ class EngezRepository extends Command implements EngezInterface
                                                 {--uploads=}
                                                 {--int=}
                                                 {--bool=}
-                                                {--double=}
+                                                {--float=}
                                                 {--resource=}
                                                 {--parent=}
                                                 ';
@@ -118,8 +118,8 @@ class EngezRepository extends Command implements EngezInterface
             $this->info['bool'] = explode(",",$this->option('bool'));
         }
 
-        if ($this->optionHasValue('double')) {
-            $this->info['double'] = explode(",",$this->option('double'));
+        if ($this->optionHasValue('float')) {
+            $this->info['float'] = explode(",",$this->option('float'));
         }
 
         if ($this->optionHasValue('int')) {
@@ -189,10 +189,10 @@ class EngezRepository extends Command implements EngezInterface
             $intList = "'" . implode("', '", $this->info['int']) . "'";
         }
         
-        // double data
-        $doubleList = '';
-        if (!empty($this->info['double'])) {
-            $doubleList = "'" . implode("', '", $this->info['double']) . "'";
+        // float data
+        $floatList = '';
+        if (!empty($this->info['float'])) {
+            $floatList = "'" . implode("', '", $this->info['float']) . "'";
         }
 
         // bool data
@@ -202,8 +202,8 @@ class EngezRepository extends Command implements EngezInterface
         }
         // replace repository bool
         $content = str_ireplace("BOOL_LIST", $boolList, $content);
-        // replace repository double
-        $content = str_ireplace("FLOAT_LIST", $doubleList, $content);
+        // replace repository float
+        $content = str_ireplace("FLOAT_LIST", $floatList, $content);
         // replace repository integer
         $content = str_ireplace("INTEGER_LIST", $intList, $content);
 

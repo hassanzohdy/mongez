@@ -134,20 +134,18 @@ class EngezResource extends Command implements EngezInterface
 
             $dataList = "'" . implode("', '", $this->info['data']) . "'";
         }
-
+        
         // replace resource data
         $content = str_ireplace("DATA_LIST", $dataList, $content);
 
         // check for assets 
-
-        $assetsList = '';
-
+        
         if (!empty($this->info['assets'])) {
             $assetsList = "'" . implode("', '", $this->info['assets']) . "'";
         }
-
+        
         // replace resource data
-        $content = str_ireplace("ASSETS_LIST", $assetsList, $content);
+        $content = str_ireplace("ASSETS_LIST", ($assetsList) ? "" : $assetsList, $content);
 
         $resourceDirectory = $this->modulePath("Resources");
 

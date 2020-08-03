@@ -1,16 +1,23 @@
 <?php
-namespace App\Modules\Users\Resources;
+namespace App\Modules\NewsLetters\Resources;
 
 use HZ\Illuminate\Mongez\Managers\Resources\JsonResourceManager;
 
-class UsersGroup extends JsonResourceManager 
+class ContactUs extends JsonResourceManager 
 {
     /**
      * Data that must be returned
      * 
      * @const array
      */
-    const DATA = ['id', 'name', 'permissions'];
+    const DATA = [
+        'id', 
+        'name', 
+        'email', 
+        'phoneNumber', 
+        'subject', 
+        'message'
+    ];
     
     /**
      * Data that should be returned if exists
@@ -55,4 +62,18 @@ class UsersGroup extends JsonResourceManager
      * @const array
      */
     const COLLECTABLE = [];
+    
+    /**
+     * List of keys that will be unset before sending
+     * 
+     * @var array
+     */
+    protected static $disabledKeys = [];
+    
+    /**
+     * List of keys that will be taken only
+     * 
+     * @var array
+     */
+    protected static $allowedKeys = [];
 }

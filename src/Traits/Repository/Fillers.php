@@ -15,7 +15,7 @@ trait Fillers
     public function delete($model): bool
     {
         if (is_numeric($model)) {
-            $model$this->getModel($model);
+            $model = $this->getModel($model);
 
             if (!$model) return false;
         }

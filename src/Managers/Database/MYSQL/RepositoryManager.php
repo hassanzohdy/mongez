@@ -441,7 +441,7 @@ abstract class RepositoryManager implements RepositoryInterface
         $filterManger->merge(array_merge(static::FILTERS, config('mongez.filters', [])));
 
         $this->filter();
-        // dd($this->query->toSql());
+
         $defaultOrderBy = [];
 
         if ($orderBy = $this->option('orderBy')) {
@@ -931,4 +931,11 @@ abstract class RepositoryManager implements RepositoryInterface
 
         return $this->marcoableMethods($method, $args);
     }
+
+    /**
+     * Make basic operations on any entered request
+     * 
+     * @return void
+     */
+    protected function boot() {}
 }

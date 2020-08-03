@@ -1,23 +1,23 @@
 <?php
-namespace App\Modules\ModuleName\Repositories;
+namespace App\Modules\NewsLetters\Repositories;
 
-use App\Modules\ModuleName\{
-    Models\ModelName as Model,
-    Resources\ResourceName as Resource,
-    Filters\FilterName as Filter
+use App\Modules\NewsLetters\{
+    Models\ContactUs as Model,
+    Resources\ContactUs as Resource,
+    Filters\ContactUs as Filter
 };
 
 use HZ\Illuminate\Mongez\{
     Contracts\Repositories\RepositoryInterface,
-    Managers\Database\MongoDB\RepositoryManager
+    Managers\Database\MYSQL\RepositoryManager
 };
 
-class RepositoryNameRepository extends RepositoryManager implements RepositoryInterface
+class contactUseRepository extends RepositoryManager implements RepositoryInterface
 {
     /**
      * {@inheritDoc}
      */
-    const NAME = 'repo-name';
+    const NAME = 'contactUse';
     
     /**
      * {@inheritDoc}
@@ -34,7 +34,13 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
      * 
      * @const array
      */
-    const DATA = [DATA_LIST];       
+    const DATA = [
+        'name', 
+        'email', 
+        'phone_number', 
+        'subject', 
+        'message'
+    ];       
     
     /**
      * Auto save uploads in this list
@@ -43,7 +49,7 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
      * 
      * @const array
      */
-    const UPLOADS = [UPLOADS_LIST];       
+    const UPLOADS = [];       
     
     /**
      * Auto fill the following columns as arrays directly from the request
@@ -59,45 +65,22 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
      * 
      * @cont array  
      */
-    const INTEGER_DATA = [INTEGER_LIST];
+    const INTEGER_DATA = [];
 
     /**
      * Set columns list of float values.
      * 
      * @cont array  
      */
-    const FLOAT_DATA = [FLOAT_LIST];
+    const FLOAT_DATA = [];
 
     /**
      * Set columns of booleans data type.
      * 
      * @cont array  
      */
-    const BOOLEAN_DATA = [BOOL_LIST];
+    const BOOLEAN_DATA = [];
     
-    /**
-     * Set columns list of date values.
-     * 
-     * @cont array  
-     */
-    const DATE_DATA = [];
-
-    /**
-     * Set the columns will be filled with single record of collection data
-     * i.e [country => CountryModel::class]
-     * 
-     * @const array
-     */
-    const DOCUMENT_DATA = [];
-
-    /**
-     * Set the columns will be filled with array of records.
-     * i.e [tags => TagModel::class]
-     * 
-     * @const array
-     */
-    const MULTI_DOCUMENTS_DATA = [];
-
     /**
      * Add the column if and only if the value is passed in the request.
      * 
@@ -120,7 +103,7 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
     const FILTERS = [
         Filter::class
     ];
-
+    
     /**
      * Determine wether to use pagination in the `list` method
      * if set null, it will depend on pagination configurations
@@ -149,6 +132,18 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
     {
         // 
     }
+
+    
+    /**
+     * Manage Selected Columns
+     *
+     * @return void
+     */
+    protected function select()
+    {
+        //
+    }
+
     
     /**
      * Do any extra filtration here
@@ -159,4 +154,16 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
     {
         // 
     }
+
+    /**
+     * Get a specific record with full details
+     * 
+     * @param  int id
+     * @return mixed
+     */
+    public function get(int $id) 
+    {
+        //
+    }
+
 }

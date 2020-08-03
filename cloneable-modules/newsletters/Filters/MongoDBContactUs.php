@@ -1,14 +1,14 @@
 <?php
-namespace App\Modules\Settings\Filters;
+namespace App\Modules\NewsLetters\Filters;
 
 use HZ\Illuminate\Mongez\Helpers\Filters\MongoDB\Filter;
 
-class Setting extends Filter
+class ContactUs extends Filter
 {
     /**
      * List with all filter. 
      *
-     * Setting => functionName
+     * ContactU => functionName
      * @const array 
      */
     const FILTER_MAP = [];    
