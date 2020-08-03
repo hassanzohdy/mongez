@@ -1,7 +1,7 @@
 <?php
 namespace App\Modules\Users\Traits\Auth;
 
-use Hash;
+use Illuminate\Support\Facades\Hash;
 
 trait updatePassword 
 {
@@ -24,7 +24,7 @@ trait updatePassword
      */
     public function updatePassword($password)
     {
-        $this->password = bcrypt($password);
+        $this->password = Hash::make($password);
 
         $this->save();
     }
