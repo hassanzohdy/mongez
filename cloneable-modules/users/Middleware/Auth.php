@@ -52,7 +52,7 @@ class Auth
     public function handle(Request $request, Closure $next)
     {
         // pred($_SERVER);
-        $this->apiKey = config('app.api-key');
+        $this->apiKey = env('API_KEY');
 
         // set default auth
         if (Str::contains($request->uri(), '/admin')) {
