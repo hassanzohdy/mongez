@@ -591,7 +591,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * 
      * @return mixed
      */
-    protected function getQuery()
+    public function getQuery()
     {
         if ($model = static::MODEL) {
             return new $model;

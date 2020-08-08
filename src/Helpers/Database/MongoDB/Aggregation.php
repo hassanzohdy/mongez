@@ -59,6 +59,73 @@ class Aggregation
     }
 
     /**
+     * Group By day 
+     * 
+     * @param string $column
+     * @return Pipeline
+     */
+    public function groupByDay($column): Pipeline
+    {
+        return $this->pipeline('group')->data('_id', [
+            'day' => ['$dayOfMonth' => '$' . $column],
+        ]);
+    }
+
+    /**
+     * Group By full date 
+     * 
+     * @param string $column
+     * @return Pipeline
+     */
+    public function groupByDate($column): Pipeline
+    {
+        return $this->pipeline('group')->data('_id', [
+            'day' => ['$dayOfMonth' => '$' . $column],
+            'month' => ['$month' => '$' . $column],
+            'year' => ['$year' => '$' . $column],
+        ]);
+    }
+
+    /**
+     * Group By month
+     * 
+     * @param string $column
+     * @return Pipeline
+     */
+    public function groupByMonth($column): Pipeline
+    {
+        return $this->pipeline('group')->data('_id', [
+            'month' => ['$month' => '$' . $column],
+        ]);
+    }
+
+    /**
+     * Group By week
+     * 
+     * @param string $column
+     * @return Pipeline
+     */
+    public function groupByWeek($column): Pipeline
+    {
+        return $this->pipeline('group')->data('_id', [
+            'week' => ['$week' => '$' . $column],
+        ]);
+    }
+
+    /**
+     * Group By year
+     * 
+     * @param string $column
+     * @return Pipeline
+     */
+    public function groupByYear($column): Pipeline
+    {
+        return $this->pipeline('group')->data('_id', [
+            'year' => ['$year' => '$' . $column],
+        ]);
+    }
+
+    /**
      * Where clause 
      * 
      * @param string $column 
@@ -77,9 +144,17 @@ class Aggregation
      * @param array $columns
      * @return Pipeline
      */
-    public function orderBy(array $columns)
+    public function orderBy($column, $order = 'asc')
     {
-        return $this->pipeline('sort')->orderBy($columns);
+        $pipeline = $this->currentPipeline->name == 'sort' ? $this->currentPipeline : $this->pipeline('sort');
+
+        $columnsList = [];
+        
+        $columnsList[$column] = strtolower($order) == 'asc' ? 1 : -1;
+
+        $pipeline->data($columnsList);
+
+        return $this;
     }
 
     /**
@@ -136,6 +211,7 @@ class Aggregation
         if ($offset) {
             $this->offset($offset);
         }
+
         return $this->pipeline('limit')->limit($number) ;
     }
 
@@ -169,7 +245,7 @@ class Aggregation
      */
     public function select(...$columns): Pipeline
     {
-        return $this->project()->data('_id', 0)->select(...$columns);
+        return $this->project()->select(...$columns);
     }
 
     /**
@@ -201,7 +277,7 @@ class Aggregation
     /**
      * Get the results
      * 
-     * @return array 
+     * @return mixed 
      */
     public function get()
     {
@@ -212,13 +288,15 @@ class Aggregation
                 $pipeline->getName() => $pipeline->getData(),
             ];
         }
+        
+        // pre($pipelines);
 
-        // \File::putJson(base_path('pp.json'), $pipelines);
-        // pred($pipelines);
-
-        return $this->query->raw(function ($query) use ($pipelines) {
-            return $query->aggregate($pipelines);
-        });
+        return iterator_to_array($this->query->raw(function ($query) use ($pipelines) {
+            $options = [
+                'typeMap' => ['root' => 'array', 'document' => 'array'],
+            ];  
+            return $query->aggregate($pipelines, $options);
+        }));
     }
 
     /**

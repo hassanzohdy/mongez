@@ -2,10 +2,18 @@
 
 namespace HZ\Illuminate\Mongez\Helpers\Database\MongoDB;
 
-use PhpParser\Node\Stmt\TraitUseAdaptation\Alias;
+use DateTime;
+use Exception;
+use MongoDB\BSON\UTCDateTime;
 
 class Pipeline
 {
+    /**
+     * Pipeline name without the `$` sign
+     * 
+     * @var string
+     */
+    public $name;
     /**
      * Aggregation Framework Handler
      * 
@@ -13,10 +21,6 @@ class Pipeline
      */
     protected $aggregationFramework;
 
-    /**
-     * Pipeline name
-     */
-    protected $name;
 
     /**
      * Pipeline Data
@@ -47,6 +51,34 @@ class Pipeline
         $this->aggregationFramework = $aggregationFramework;
     }
 
+    
+    /**
+     * Sum the given column name 
+     * Please note this method MUST BE CALLED directly after the group by method 
+     * 
+     * @param string|array $columns
+     * @return float   
+     */
+    public function sum($columns) 
+    {
+        if ($this->name !== 'group') {
+            // throw new Exception('Sum Method Must be called directly after the groupBy Method');
+            return $this->groupBy()->sum($columns);
+        }
+
+        if (is_string($columns)) {        
+            $columns = [
+                $columns => $columns,
+            ];
+        }
+
+        foreach ($columns as $column => $alias) {
+            $this->data($alias, ['$sum' => '$' . $column]);
+        }
+
+        return $this;
+    }
+
     /**
      * Add data to it
      * 
@@ -59,7 +91,15 @@ class Pipeline
         if (is_array($key)) {
             $this->data = array_merge($this->data, $key);
         } else {
-            $this->data[$key] = $value;
+            if (isset($this->data[$key])) {
+                if (! is_array($value)) {
+                    $value = [$value => '$' . $value];
+                }
+
+                $this->data[$key] = array_merge((array) $this->data[$key], $value);
+            } else {
+                $this->data[$key] =  $value;
+            }            
         }
 
         return $this;
@@ -73,6 +113,10 @@ class Pipeline
      */
     public function select(...$columns)
     {
+        if (! in_array($this->name, ['group', 'project'])) {
+            return $this->aggregationFramework->select(...$columns);
+        }
+
         foreach ($columns as $column) {
             if (is_array($column)) {
                 list($column, $alias) = $column;
@@ -83,7 +127,7 @@ class Pipeline
 
             if ($this->name == 'group') {
                 $this->data($alias, [
-                    '$first' => "$$column"
+                    '$last' => "$$column"
                 ]);
             } elseif ($this->name == 'project') {
                 $this->data($alias, [
@@ -128,6 +172,10 @@ class Pipeline
             $operator = '=';
         } elseif ($totalArguments == 3) {
             list($column, $operator, $value) = $arguments;
+        }
+
+        if ($value instanceof DateTime) {
+            $value = new UTCDateTime($value->format('Uv'));
         }
 
         $this->data($column, [
@@ -238,29 +286,6 @@ class Pipeline
     }
 
     /**
-     * Select columns
-     * 
-     * @param ...mixed $columns
-     * @return $this
-     */
-    public function sum(...$columns): Pipeline
-    {
-        foreach ($columns as $column) {
-            if (is_array($column)) {
-                list($column, $alias) = $column;
-            } else {
-                $alias = $column;
-            }
-
-            $this->data($alias, [
-                '$sum' => "$$column"
-            ]);
-        }
-
-        return $this;
-    }
-    
-    /**
      * Return the final name of the pipeline
      * 
      * @return string
@@ -278,21 +303,6 @@ class Pipeline
     public function getData(): array 
     {
         return $this->data;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function orderBy($columns)
-    {        
-        foreach ($columns as $key => $value ) {
-            $value = strtolower($value) == 'asc' ? 1 : -1;            
-            $columns['$'.$key] = $value;
-        }
-
-        $this->data($columns);
-
-        return $this;
     }
 
     /**
@@ -339,6 +349,7 @@ class Pipeline
             'includeArrayIndex' => $includeArrayIndex,
             'preserveNullAndEmptyArrays' => $preserveNullAndEmptyArrays
         ];
+        
         if (!$includeArrayIndex) unset($data['includeArrayIndex']);
         $this->data($data);
         return $this;
