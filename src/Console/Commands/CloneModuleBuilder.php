@@ -269,6 +269,7 @@ class CloneModuleBuilder extends Command
             $targetModule = str_replace("/" .$subModules, "", $targetModule);
         }
         $this->moduleName = Str::studly($targetModule);
+
         if (! array_key_exists($this->moduleName, static::AVAILABLE_MODULES)) {
             Command::error('This module does not exits');
             die();

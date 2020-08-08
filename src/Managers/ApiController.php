@@ -14,13 +14,6 @@ abstract class ApiController extends Controller
 
     /**
      * Repository name
-     * 
-     * @const string
-     */
-    const REPOSITORY_NAME = '';
-
-    /**
-     * Repository name
      * If provided, then the repository property will be the object of the repository
      * @var mixed
      */
@@ -40,10 +33,8 @@ abstract class ApiController extends Controller
     public function __construct()
     {
         $this->events = App::make(Events::class);
-        $repositoryName = static::REPOSITORY_NAME ?: ($this->repository ?: '');
-
-        if ($repositoryName) {
-            $this->repository = repo($repositoryName);
+        if ($this->repository) {
+            $this->repository = repo($this->repository);
         }
     }
 
@@ -53,12 +44,15 @@ abstract class ApiController extends Controller
      * @param array $data
      * @return string
      */
-    protected function success($data = ['success' => true])
+    protected function success($data = [])
     {
+        $data = $data ?: [
+            'success' => true,
+        ];
+  
         if (($eventResponse = $this->events->trigger('response.success', $data)) && is_array($eventResponse)) {
             $data = $eventResponse;
         }
-
         return $this->send(Response::HTTP_OK, $data);
     }
 

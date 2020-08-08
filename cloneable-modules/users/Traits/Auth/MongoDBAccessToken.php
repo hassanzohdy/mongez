@@ -2,7 +2,6 @@
 namespace App\Modules\Users\Traits\Auth;
 
 use Illuminate\Support\Str;
-use Illuminate\Http\Request;
 
 trait AccessToken 
 {
@@ -13,22 +12,21 @@ trait AccessToken
      * @param  |Illuminate\Http\Request $request
      * @return string
      */
-    public function generateAccessToken($user, Request $request)
+    public function generateAccessToken($user, $request)
     {        
         $accessToken = Str::random(96);
 
         $token = [
             'token' => $accessToken,
-            'ip' => $request->getClientIp(),
-            'userAgent' => $request->userAgent(),
-            'referer' => $request->referer(),
         ];
 
-        $accessTokens = $user->accessTokens ?: [];
-
-        array_push($accessTokens, $token);
-        
-        $user->accessTokens = $accessTokens;
+        if (empty($user->accessTokens)) {
+            $user->accessTokens = [$token];
+        } else {
+            $accessTokens = $user->accessTokens;
+            array_push($accessTokens, $token);
+            $user->accessTokens = $accessTokens;
+        }
 
         $user->save();
 

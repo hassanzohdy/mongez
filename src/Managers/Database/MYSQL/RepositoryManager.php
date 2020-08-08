@@ -2,24 +2,24 @@
 
 namespace HZ\Illuminate\Mongez\Managers\Database\MYSQL;
 
+use DB;
+use File;
+use Storage;
+use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Model;
 use HZ\Illuminate\Mongez\Events\Events;
 use Illuminate\Support\Traits\Macroable;
-use Illuminate\Support\Facades\Storage;
 use HZ\Illuminate\Mongez\Traits\RepositoryTrait;
 use Illuminate\Http\Resources\Json\JsonResource;
 use HZ\Illuminate\Mongez\Helpers\Repository\Select;
+use HZ\Illuminate\Mongez\Helpers\Filters\MYSQL\Filter;
 use HZ\Illuminate\Mongez\Helpers\Filters\FilterManager;
 use HZ\Illuminate\Mongez\Contracts\Repositories\RepositoryInterface;
-use HZ\Illuminate\Mongez\Traits\Repository\{
-    Cacheable,
-    Deletable,
-    Fillers
-};
 
 abstract class RepositoryManager implements RepositoryInterface
 {
@@ -28,28 +28,6 @@ abstract class RepositoryManager implements RepositoryInterface
      * for quick access to other repositories
      */
     use RepositoryTrait;
-
-    /**
-     * Caching Data
-     */
-    use Cacheable;
-
-    /**
-     * Data Insertions And Updates
-     */
-    use Fillers;
-
-    /**
-     * Deleting Records 
-     */
-    use Deletable;
-
-    /**
-     * Allow repository to be extended
-     */
-    use Macroable {
-        __call as marcoableMethods;
-    }
 
     /**
      * Repository name
@@ -64,6 +42,13 @@ abstract class RepositoryManager implements RepositoryInterface
      * @const string
      */
     const FILTERS = [];
+
+    /**
+     * Allow repository to be extended
+     */
+    use Macroable {
+        __call as marcoableMethods;
+    }
 
     /**
      * Model name
@@ -258,7 +243,27 @@ abstract class RepositoryManager implements RepositoryInterface
      * 
      * @cont array  
      */
-    const WHEN_AVAILABLE_DATA = [];
+    const WHEN_AVAILABLE_DATA = ['name', 'icon'];
+
+    /**
+     * Map all your advanced filters.
+     * 
+     * @const array
+     */
+    const SQL_FILTER_MAP = [
+        'in' => 'filterIn',
+        'date' => 'filterDate',
+        'like' =>  'filterLike',
+        'notIn' => 'filterNotIn',
+        'regex' => 'filterRegex',
+        '='    =>  'filterOnIntValues',
+        'dateRange' => 'filterDate', 
+        '!='   =>  'filterOnIntValues', 
+        '>'    =>  'filterOnIntValues',
+        '<='   =>  'filterOnIntValues',
+        'dateTimestamp' => 'filterDateTimestamp',
+        'dateRangeT' => 'filterDateRangeTimestamp',
+    ];
 
     /**
      * Filter by columns used with `list` method only
@@ -266,6 +271,9 @@ abstract class RepositoryManager implements RepositoryInterface
      * @const array
      */
     const FILTER_BY = [];
+
+    // unix timestamp 12045550123
+    // 12-04-2020 => 12045550123 strtotime()
 
     /**
      * Determine wether to use pagination in the `list` method
@@ -298,6 +306,13 @@ abstract class RepositoryManager implements RepositoryInterface
      * @const string
      */
     protected $eventName;
+
+    /**
+     * User data
+     *
+     * @cont mixed
+     */
+    protected $user;
 
     /**
      * Query Builder Object
@@ -343,6 +358,13 @@ abstract class RepositoryManager implements RepositoryInterface
     protected $options = [];
 
     /**
+     * Dependency tables of deleting
+     *
+     * @param array
+     */
+    protected $deleteDependenceTables = [];
+
+    /**
      * Pagination info
      * 
      * @var array 
@@ -360,12 +382,14 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $this->events = $events;
 
-        $this->eventName = static::EVENT ?: static::NAME;
+        $this->user = user();
 
+        $this->eventName = static::EVENT ?: static::NAME;
+        
+        $this->boot();
+        
         // register events
         $this->registerEvents();
-
-        $this->boot();
     }
 
     /**
@@ -379,7 +403,7 @@ abstract class RepositoryManager implements RepositoryInterface
 
         foreach (static::EVENTS_LIST as $eventName => $methodCallback) {
             if (method_exists($this, $methodCallback)) {
-                $this->events->subscribe("{$this->eventName}.$eventName", [static::class, $methodCallback]);
+                $this->events->subscribe("{$this->eventName}.$eventName", static::class . '@' . $methodCallback);
             }
         }
     }
@@ -393,7 +417,9 @@ abstract class RepositoryManager implements RepositoryInterface
             $value = (float) $value;
         }
 
-        return $this->getQuery()->where($column, $value)->exists();
+        $model = static::MODEL;
+
+        return $model::where($column, $value)->exists();
     }
 
     /**
@@ -438,8 +464,8 @@ abstract class RepositoryManager implements RepositoryInterface
         }
 
         $filterManger = new FilterManager($this->query, $options, static::FILTER_BY);
-        $filterManger->merge(array_merge(static::FILTERS, config('mongez.filters', [])));
-
+        $filterManger->merge(array_merge(static::FILTERS ,config('mongez.filters', [])));
+        
         $this->filter();
 
         $defaultOrderBy = [];
@@ -467,7 +493,7 @@ abstract class RepositoryManager implements RepositoryInterface
 
             $selectedColumns = !empty($this->select->list()) ? $this->select->list() : ['*'];
 
-            $data = $this->query->paginate((int) $itemPerPage, $selectedColumns, 'page', $pageNumber);
+            $data = $this->query->paginate($itemPerPage, $selectedColumns, 'page', $pageNumber);
 
             $this->setPaginateInfo($data);
 
@@ -507,7 +533,7 @@ abstract class RepositoryManager implements RepositoryInterface
         $events = array_map(function ($event) {
             return "{$this->eventName}.{$event}";
         }, explode(' ', $events));
-
+        
         return $this->events->trigger(implode(' ', $events), ...$values);
     }
 
@@ -593,11 +619,19 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     public function getQuery()
     {
-        if ($model = static::MODEL) {
-            return new $model;
-        }
-
         return DB::table($this->getTableName());
+    }
+
+    /**
+     * Get new model object
+     * 
+     * @return Model 
+     */
+    public function newModel()
+    {
+        $modelName = static::MODEL;
+
+        return new $modelName;
     }
 
     /**
@@ -646,7 +680,7 @@ abstract class RepositoryManager implements RepositoryInterface
 
         // If there is no zero index in the array
         // it means the order will be for multiple columns
-        if (!isset($orderBy[0])) {
+        if (! isset($orderBy[0])) {
             foreach ($orderBy as $column => $columnOrder) {
                 $this->query->orderBy($column, $columnOrder);
             }
@@ -717,14 +751,16 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     public function create($data)
     {
-        $model = $this->getQuery();
+        $modelName = static::MODEL;
+
+        $model = new $modelName;
 
         $request = $this->getRequestWithData($data);
 
         $this->setAutoData($model, $request);
 
         $this->setData($model, $request);
-
+        
         $this->save($model);
 
         return $model;
@@ -735,9 +771,7 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     public function update(int $id, $data)
     {
-        $model = $this->getModel($id);
-
-        if (!$model) return null;
+        $model = (static::MODEL)::find($id);
 
         $oldModel = clone $model;
 
@@ -755,50 +789,242 @@ abstract class RepositoryManager implements RepositoryInterface
     }
 
     /**
-     * Get model for the given id
+     * Get request object with data
      * 
-     * @param  int|array $id
-     * @return mixed
+     * @param  Request|array $data
+     * @return Request
      */
-    public function getModel($id)
+    protected function getRequestWithData($data): Request
     {
-        if (is_array($id)) {
-            $id = $this->mapInt($id);
+        if (is_array($data)) {
+            $request = $this->request;
+            foreach ($data as $key => $value) {
+                Arr::set($request, $key, $value);
+            }
         } else {
-            $id = (int) $id;
+            $request = $data;
         }
 
-        return $this->getByModel('id', $id);
+        return $request;
     }
 
     /**
-     * Get by the given column name
+     * Set data automatically from the DATA array
      * 
-     * @param  string $column
-     * @param  mixed value
-     * @return mixed
+     * @param  \Model $model
+     * @param  \Request $request
+     * @return void
      */
-    public function getBy($column, $value)
+    protected function setAutoData($model, $request)
     {
-        $resource = static::RESOURCE;
+        $this->setMainData($model, $request);
 
-        $object = $this->getByModel($column, $value);
+        $this->setArraybleData($model, $request);
 
-        return $object ? new $resource($object) : null;
+        $this->upload($model, $request);
+
+        $this->setIntData($model, $request);
+
+        $this->setFloatData($model, $request);
+
+        $this->setDateData($model, $request);
+
+        $this->setBoolData($model, $request);
     }
 
     /**
-     * Get the current model by the given column name and value
+     * Set date data
      * 
-     * @param  string $column
-     * @param  mixed value
+     * @param  Model $model
+     * @param  Request $request
+     * @return void
+     */
+    protected function setDateData($model, $request, $columns = null)
+    {
+        if (!$columns) {
+            $columns = static::DATE_DATA;
+        }
+
+        foreach ((array) $columns as $column) {
+            if (in_array($column, static::WHEN_AVAILABLE_DATA) && !isset($request->$column)) continue;
+
+            $date = $request->input($column);
+
+            if (!$date) continue;
+
+            $model->$column = is_numeric($date) ? $date : strtotime($date);
+        }
+    }
+
+    /**
+     * Set main data automatically from the DATA array
+     * 
+     * @param  \Model $model
+     * @param  \Request $request
+     * @return void  
+     */
+    protected function setMainData($model, $request)
+    {
+        foreach (static::DATA as $column) {
+            if (in_array($column, static::WHEN_AVAILABLE_DATA) && !isset($request->$column)) continue;
+
+            if (!isset($request->$column)) {
+                $model->$column = null;
+            } else {
+                if ($column == 'password' && $request->password) {
+                    $model->password = bcrypt($request->password);
+                } else {
+                    $model->$column = $request->$column;
+                }
+            }
+        }
+    }
+    /**
+     * Set Arrayble data automatically from the DATA array
+     * 
+     * @param  \Model $model
+     * @param  \Request $request
+     * @return void  
+     */
+    protected function setArraybleData($model, $request)
+    {
+        foreach (static::ARRAYBLE_DATA as $column) {
+            if (in_array($column, static::WHEN_AVAILABLE_DATA) && !isset($request->$column)) continue;
+            $value = array_filter((array) $request->$column);
+            $value = $this->handleArrayableValue($value);
+            $model->$column = $value;
+        }
+    }
+    /**
+     * Set uploads data automatically from the DATA array
+     * 
+     * @param  \Model $model
+     * @param  \Request $request
+     * @return void  
+     */
+    protected function upload($model, $request, $columns = null)
+    {
+        if (!$columns) {
+            $columns = static::UPLOADS;
+        }
+
+        $storageDirectory = $this->getUploadsStorageDirectoryName();
+
+        if (true === static::UPLOADS_KEEP_FILE_NAME) {
+            $storageDirectory .= '/' . $model->getId();
+        }
+
+        $getFileName = function (UploadedFile $fileObject): string {
+            $originalName = $fileObject->getClientOriginalName();
+            $extension = File::extension($originalName) ?: $fileObject->guessExtension();
+            $fileName = false === static::UPLOADS_KEEP_FILE_NAME ? Str::random(40) . '.' . $extension : $originalName;
+            return $fileName;
+        };
+
+        foreach ((array) $columns as $column => $name) {
+            if (is_numeric($column)) {
+                $column = $name;
+            }
+
+            $file = $request->file($name);
+
+            if (!$file) continue;
+
+            if (is_array($file)) {
+                $files = [];
+
+                foreach ($file as $index => $fileObject) {
+                    if (!$fileObject->isValid()) continue;
+
+                    $files[$index] = $fileObject->storeAs($storageDirectory, $getFileName($fileObject));
+                }
+
+                $model->$column = $files;
+            } else {
+                if ($file instanceof UploadedFile && $file->isValid()) {
+                    $model->$column = $file->storeAs($storageDirectory, $getFileName($file));
+                }
+            }
+        }
+    }
+
+    /**
+     * Get the uploads storage directory name
+     * 
+     * @return string
+     */
+    protected function getUploadsStorageDirectoryName(): string
+    {
+        return static::UPLOADS_DIRECTORY ?: static::NAME;
+    }
+
+    /**
+     * Cast specific data automatically to int from the DATA array
+     * 
+     * @param  \Model $model
+     * @param  \Request $request
+     * @return void  
+     */
+    protected function setIntData($model, Request $request)
+    {
+        foreach (static::INTEGER_DATA as $column) {
+            if (in_array($column, static::WHEN_AVAILABLE_DATA) && !isset($request->$column)) continue;
+            $model->$column = (int) $request->input($column);
+        }
+    }
+
+    /**
+     * Cast specific data automatically to float from the DATA array
+     * 
+     * @param  \Model $model
+     * @param  \Request $request
+     * @return void  
+     */
+    protected function setFloatData($model, Request $request)
+    {
+        foreach (static::FLOAT_DATA as $column) {
+            if (in_array($column, static::WHEN_AVAILABLE_DATA) && !isset($request->$column)) continue;
+            $model->$column = (float) $request->input($column);
+        }
+    }
+
+    /**
+     * Cast specific data automatically to bool from the DATA array
+     * 
+     * @param  \Model $model
+     * @param  \Request $request
+     * @return void  
+     */
+    protected function setBoolData($model, Request $request)
+    {
+        foreach (static::BOOLEAN_DATA as $column) {
+            if (in_array($column, static::WHEN_AVAILABLE_DATA) && !isset($request->$column)) continue;
+            $model->$column = (bool) $request->input($column);
+        }
+    }
+
+    /**
+     * Pare the given arrayed value
+     *
+     * @param array $value
      * @return mixed
      */
-    public function getByModel($column, $value)
+    protected function handleArrayableValue(array $value)
     {
-        $model = static::MODEL;
+        return json_encode($value);
+    }
 
-        return is_array($value) ? $model::whereIn($column, $value)->get() : $model::where($column, $value)->first();
+    /**
+     * If the given id exists then we will retrieve an existing record
+     * otherwise, create new model
+     * 
+     * @param  string $model
+     * @param  int $id
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    protected function findOrCreate(string $model, int $id): Model
+    {
+        return $model::find($id) ?: new $model;
     }
 
     /**
@@ -855,65 +1081,37 @@ abstract class RepositoryManager implements RepositoryInterface
     }
 
     /**
-     * Saving triggers 
-     * 
-     * @param object $model
-     * @return void 
+     * {@inheritDoc}
      */
-    protected function save($model, $oldModel = null)
+    public function delete($model): bool
     {
-        if ($model->id) {
-            $this->trigger("saving updating", $model, $this->request, $oldModel);
-            $model->save();
-            $this->trigger("save update", $model, $this->request, $oldModel);
-        } else {
-            $this->trigger("saving creating", $model, $this->request);
-            $model->save();
-            $this->trigger("save create", $model, $this->request);
+        if (is_numeric($model)) {
+            $model = (static::MODEL)::find($model);
+            if (!$model) return false;
         }
 
-        if ($this->isCacheable()) $this->setCache($model->id, $model);
-    }
+        // delete uploaded files
+        foreach (static::UPLOADS as $file) {
+            if (!$model->$file) continue;
 
-    /**
-     * Check if the cache is enabled 
-     * 
-     * @return bool
-     */
-    public function isCacheable(): bool
-    {
-        return static::USING_CACHE;
-    }
+            if (is_array($model->$file)) {
+                foreach ($model->$file as $singleFile) {
+                    $this->unlink($singleFile);
+                }
+            } else {
+                $this->unlink($model->$file);
+            }
+        }
 
-    /**
-     * Boot the repository
-     * 
-     * @return void
-     */
-    protected function boot()
-    {
-    }
+        if ($this->trigger("deleting", $model, $model->id) === false) return false;
+        
+        $model->delete();
 
-    /**
-     * Map the given array into an array of integers
-     * 
-     * @param  array $values
-     * @return array
-     */
-    public function mapInt(array $values): array
-    {
-        return array_map('intval', $values);
-    }
+        if (static::USING_CACHE) $this->forgetCache($model->id);
 
-    /**
-     * Remove the given file path from storage 
-     * 
-     * @param  string $path
-     * @return mixed
-     */
-    public function unlink(string $path)
-    {
-        return Storage::delete($path);
+        $this->trigger("delete", $model, $model->id);
+
+        return true;
     }
 
     /**
@@ -930,6 +1128,114 @@ abstract class RepositoryManager implements RepositoryInterface
         }
 
         return $this->marcoableMethods($method, $args);
+    }
+
+    /**
+     * Check if model has deleting depended tables.
+     *
+     * @return bool
+     */
+    public function deleteHasDependence(): bool
+    {
+        return !empty($this->deleteDependenceTables);
+    }
+
+    /**
+     * Get model deleting depended tables
+     *
+     * @return array
+     */
+    public function getDeleteDependencies(): array
+    {
+        return $this->deleteDependenceTables;
+    }
+
+    /**
+     * Check if soft delete used or not
+     *
+     * @return bool
+     */
+    public function isUsingSoftDelete(): bool
+    {
+        return static::USING_SOFT_DELETE;
+    }
+
+    /**
+     * Remove the given file path from storage 
+     * 
+     * @param  string $path
+     * @return mixed
+     */
+    public function unlink(string $path)
+    {
+        return Storage::delete($path);
+    }
+
+    /**
+     * Get record from redis cache
+     * 
+     * @param string $key
+     * @return mixed  
+     */
+    public function getCache($key)
+    {
+        $key = static::NAME .$key;
+        return $this->getCacheDriver()->get($key);
+    }
+
+    /**
+     * Set record to redis cache
+     * 
+     * @param string $key
+     * @param mixed $value
+     * @return void  
+     */
+    public function setCache($key, $value)
+    {
+        $key = static::NAME .$key;
+        return $this->getCacheDriver()->put($key, $value);
+    }
+
+    /**
+     * Forget from cache by key  
+     * 
+     * @param string $key
+     * @param mixed $value
+     * @return void  
+     */
+    public function forgetCache($key)
+    {
+        $key = static::NAME .$key;
+        return $this->getCacheDriver()->forget($key);     
+    }
+
+    /**
+     * Get cache driver
+     * 
+     * @return string cache drive 
+     */
+    protected function getCacheDriver()
+    {
+        return Cache::store(config('mongez.cache.driver'));
+    } 
+
+    /**
+     * Saving triggers 
+     * 
+     * @param object $model
+     * @return void 
+     */
+    protected function save($model, $oldModel = null)
+    {
+        if ($model->id) {
+            $model->save();    
+            $this->trigger("save update", $model, $this->request, $oldModel);
+        } else {
+            $model->save();
+            $this->trigger("saving creating", $model, $this->request);    
+        }
+
+        if (static::USING_CACHE) $this->setCache($model->id, $model);
     }
 
     /**
