@@ -23,10 +23,52 @@ class Filter extends MYSQLFilter
         // 'notInBool' => [],
         // 'inFloat' => [],
         // 'notInFloat' => [],
-        // 'int' => [],
-        // 'bool' => [],
-        // 'float' => [],
+        'int' => 'filterInt',
+        'float' => 'filterFloat',
+        'bool' => 'filterBoolean',
     ];
+
+    /**
+     * Filter integer values.
+     *
+     * @param array $columns
+     * @param string $value     
+     * @return void
+     */
+    public function filterInt($columns, $value)
+    {
+        foreach ($columns as $column) {
+            $this->query->where($column, (int) $value);
+        }
+    }
+
+    /**
+     * Filter float values.
+     *
+     * @param array $columns
+     * @param string $value     
+     * @return void
+     */
+    public function filterFloat($columns, $value)
+    {
+        foreach ($columns as $column) {
+            $this->query->where($column, (float) $value);
+        }
+    }
+
+    /**
+     * Filter boolean values.
+     *
+     * @param array $columns
+     * @param string $value     
+     * @return void
+     */
+    public function filterBoolean($columns, $value)
+    {
+        foreach ($columns as $column) {
+            $this->query->where($column, (bool) $value);
+        }
+    }
 
     /**
      * Get all available filters map 

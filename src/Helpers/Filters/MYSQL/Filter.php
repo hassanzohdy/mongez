@@ -1,8 +1,9 @@
 <?php
+
 namespace HZ\Illuminate\Mongez\Helpers\Filters\MYSQL;
 
 class Filter
-{    
+{
     /**
      * Query Builder Object
      * This property is set from the FilterManager 
@@ -17,11 +18,11 @@ class Filter
      * @const array  
      */
     const SQL_FILTER_MAP = [
-        '=' => 'filterOnIntValues',
-        '>' => 'filterOnIntValues',
-        '<' => 'filterOnIntValues',
-        '>=' => 'filterOnIntValues',
-        '<=' => 'filterOnIntValues',
+        '=' => 'basicFilter',
+        '>' => 'basicFilter',
+        '<' => 'basicFilter',
+        '>=' => 'basicFilter',
+        '<=' => 'basicFilter',
         'like' => 'filterLike',
         'filterIn'   => 'filterIn',
         'filterNotInInt' => 'filterNotInInt',
@@ -36,10 +37,10 @@ class Filter
      * @param string $operator
      * @return void 
      */
-    public function filterOnIntValues($columns, $value, $operator = '=')
+    public function basicFilter($columns, $value, $operator = '=')
     {
-        foreach($columns as $column) {
-            $this->query->where($column, $operator, (int)$value);          
+        foreach ($columns as $column) {
+            $this->query->where($column, $operator, $value);
         }
     }
 
@@ -52,9 +53,9 @@ class Filter
      */
     public function filterLike($columns, $value)
     {
-        $this->query->where(function() use($columns, $value) {
+        $this->query->where(function () use ($columns, $value) {
             $iterate = 0;
-            foreach($columns as $key => $column) {
+            foreach ($columns as $key => $column) {
                 if ($iterate > 0) {
                     $this->query->orWhereLike($column, $value);
                 }
@@ -72,9 +73,9 @@ class Filter
      * @return void
      */
     public function filterIn($columns, $value)
-    {      
-        foreach($columns as $column) {
-            $this->query->whereIn($column, (array)$value);          
+    {
+        foreach ($columns as $column) {
+            $this->query->whereIn($column, (array) $value);
         }
     }
 
@@ -87,8 +88,8 @@ class Filter
      */
     public function filterInInt($columns, $value)
     {
-        foreach($columns as $column) {
-            $this->query->whereIn($column, (int)$value);          
+        foreach ($columns as $column) {
+            $this->query->whereIn($column, (int) $value);
         }
     }
 
@@ -101,8 +102,8 @@ class Filter
      */
     public function filterNotInInt($columns, $value)
     {
-        foreach($columns as $column) {
-            $this->query->whereNotIn($column, array_map('intval',$value));          
+        foreach ($columns as $column) {
+            $this->query->whereNotIn($column, array_map('intval', (array) $value));
         }
     }
 
@@ -115,11 +116,11 @@ class Filter
      */
     public function filterNotIn($columns, $value)
     {
-        foreach($columns as $column) {
-            $this->query->whereNotIn($column, array_map('intval', $value));          
-        }        
+        foreach ($columns as $column) {
+            $this->query->whereNotIn($column, array_map('intval', (array) $value));
+        }
     }
-    
+
     /**
      * Get all available filters map 
      * 
