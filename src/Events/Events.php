@@ -35,8 +35,10 @@ class Events implements EventsInterface
      */
     public function trigger(string $events, ...$callbackArguments)
     {
+        $return = '';
         foreach (explode(' ', $events) as $event) {
             if (!isset($this->eventsList[$event])) continue;
+
 
             foreach ($this->eventsList[$event] as $callbackString) {
                 if (!$this->isLoaded($callbackString)) {
@@ -49,11 +51,14 @@ class Events implements EventsInterface
 
                 if ($return === false) return false;
 
-                if (!is_null($return)) return $return;
+                // change the first argument if the return data is altered
+                if (!is_null($return)) {
+                    $callbackArguments[0] = $return;
+                }
             }
         }
 
-        return true;
+        return $return;
     }
 
     /**

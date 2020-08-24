@@ -613,11 +613,11 @@ abstract class RepositoryManager implements RepositoryInterface
      * 
      * @return Model 
      */
-    public function newModel()
+    public function newModel($data = [])
     {
         $modelName = static::MODEL;
 
-        return new $modelName;
+        return new $modelName($data);
     }
 
     /**

@@ -245,7 +245,7 @@ abstract class JsonResourceManager extends JsonResource
         foreach ($columns as $column) {
             $asset = Arr::get($resource, $column, null);
 
-            if (null === $asset) {
+            if (! $asset) {
                 $this->set($column, null);
                 continue;
             }
