@@ -194,7 +194,7 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
      * 
      * @return mixed
      */
-    protected function getQuery()
+    public function getQuery()
     {
         $model = static::MODEL;
         return $model::where('id', '!=', -1);

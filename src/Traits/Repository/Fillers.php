@@ -64,7 +64,7 @@ trait Fillers
     protected function setMainData($model, $request)
     {
         foreach (static::DATA as $column) {
-            if (!$this->isFillable($request, $column)) continue;
+            if ($this->isIgnorable($request, $column)) continue;
 
             if (!isset($request->$column)) {
                 $model->$column = null;
@@ -88,7 +88,7 @@ trait Fillers
     protected function setArraybleData($model, $request)
     {
         foreach (static::ARRAYBLE_DATA as $column) {
-            if (!$this->isFillable($request, $column)) continue;
+            if ($this->isIgnorable($request, $column)) continue;
             $value = array_filter((array) $request->$column);
             $value = $this->handleArrayableValue($value);
             $model->$column = $value;
@@ -186,7 +186,7 @@ trait Fillers
         }
 
         foreach ((array) $columns as $column) {
-            if (!$this->isFillable($request, $column)) continue;
+            if ($this->isIgnorable($request, $column)) continue;
 
             $date = $request->input($column);
 
@@ -206,7 +206,7 @@ trait Fillers
     protected function setIntData($model, Request $request)
     {
         foreach (static::INTEGER_DATA as $column) {
-            if (!$this->isFillable($request, $column)) continue;
+            if ($this->isIgnorable($request, $column)) continue;
 
             $model->$column = (int) $request->input($column);
         }
@@ -222,7 +222,7 @@ trait Fillers
     protected function setFloatData($model, Request $request)
     {
         foreach (static::FLOAT_DATA as $column) {
-            if (!$this->isFillable($request, $column)) continue;
+            if ($this->isIgnorable($request, $column)) continue;
 
             $model->$column = (float) $request->input($column);
         }
@@ -238,21 +238,21 @@ trait Fillers
     protected function setBoolData($model, Request $request)
     {
         foreach (static::BOOLEAN_DATA as $column) {
-            if (!$this->isFillable($request, $column)) continue;
+            if ($this->isIgnorable($request, $column)) continue;
 
             $model->$column = (bool) $request->input($column);
         }
     }
 
     /**
-     * Check if the given column is available to be stored in database
+     * Check if the given column is ignorable
      * 
      * @param  Request $request
      * @param  string $column
      * @return bool 
      */
-    protected function isFillable(Request $request, string $column): bool
+    protected function isIgnorable(Request $request, string $column): bool
     {
-        return in_array($column, static::WHEN_AVAILABLE_DATA) && isset($request->$column);
+        return in_array($column, static::WHEN_AVAILABLE_DATA) && !isset($request->$column);
     }
 }
