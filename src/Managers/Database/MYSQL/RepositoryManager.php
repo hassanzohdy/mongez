@@ -507,6 +507,34 @@ abstract class RepositoryManager implements RepositoryInterface
         return $records;
     }
 
+
+    /**
+     * Get publish item 
+     * 
+     * @param int $id
+     * @return Resource|null
+     */
+    public function getPublished($id)
+    {
+        $item = $this->get($id);
+
+        if (! $item->published) return null;
+
+        return $item;
+    }
+
+    /**
+     * Get published items
+     * 
+     * @param array $options
+     * @return Collection
+     */
+    public function published(array $options = [])
+    {
+        $options['published'] = true;
+        return $this->list($options);
+    }
+
     /**
      * Trigger the given event related to current repository
      * 
