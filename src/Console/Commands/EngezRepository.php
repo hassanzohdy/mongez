@@ -150,7 +150,7 @@ class EngezRepository extends Command implements EngezInterface
 
         $targetModule = $this->info['moduleName'];    
         if (isset($this->info['parent'])) {
-            $targetModule = str::studly($this->info['parent']);
+            $targetModule = Str::studly($this->info['parent']);
         }
 
         // replace module name

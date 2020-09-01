@@ -3,6 +3,7 @@
 namespace HZ\Illuminate\Mongez\Traits\Repository;
 
 use Carbon\Carbon;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
