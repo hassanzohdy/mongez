@@ -100,7 +100,7 @@ class EngezModel extends Command implements EngezInterface
      */
     public function init()
     {
-        $this->databaseName = config('database.default');
+        $this->databaseName = strtolower(config('database.default'));
 
         $this->info['modelName'] = Str::studly($this->argument('model'));
         $this->info['moduleName'] = Str::studly($this->option('module'));    

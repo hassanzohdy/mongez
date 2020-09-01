@@ -1,4 +1,5 @@
 <?php
+
 namespace HZ\Illuminate\Mongez\Traits\Console;
 
 use File;
@@ -20,7 +21,7 @@ trait EngezTrait
     protected function createFile($filePath, $content, $fileType)
     {
         $filePath = str_replace('\\', '/', $filePath);
-        
+
         $createFile = true;
         if (File::exists($filePath)) {
             $createFile = false;
@@ -31,7 +32,7 @@ trait EngezTrait
             File::put($filePath, $content);
         }
     }
-    
+
     /**
      * Get relative path to base path
      * 
@@ -95,7 +96,7 @@ trait EngezTrait
     {
         Command::error($message);
         die();
-    } 
+    }
 
     /**
      * Get a repository shortcut name based on the given module name
@@ -137,7 +138,7 @@ trait EngezTrait
     {
         Mongez::updateStorageFile();
     }
-    
+
     /**
      * Create migration file of table in mysql 
      *
@@ -147,7 +148,7 @@ trait EngezTrait
     protected function createMigration()
     {
         $migrationsOptions = [
-            'migrationName' => 'create_' .Str::plural(strtolower($this->info['modelName'])).'_table',
+            'migrationName' => 'create_' . Str::plural(strtolower($this->info['modelName'])) . '_table',
             'module' => $this->info['moduleName'],
         ];
 
@@ -158,7 +159,7 @@ trait EngezTrait
         if ($this->optionHasValue('unique')) {
             $migrationsOptions['--unique'] = $this->option('unique');
         }
-        
+
         if ($this->optionHasValue('data')) {
             $migrationsOptions['--data'] = $this->option('data');
         }
@@ -174,7 +175,7 @@ trait EngezTrait
         if ($this->optionHasValue('bool')) {
             $migrationsOptions['--bool'] = $this->option('bool');
         }
-        
+
         if ($this->optionHasValue('float')) {
             $migrationsOptions['--float'] = $this->option('float');
         }
@@ -205,7 +206,7 @@ trait EngezTrait
         if (isset($this->info['parent'])) {
             return $this->updateRoutes();
         }
-        
+
         // create routes directory
         $content = File::get($this->path("Controllers/Site/controller.php"));
 
@@ -244,7 +245,6 @@ trait EngezTrait
             $filePath = $routesDirectory . '/site.php';
 
             $this->createFile($filePath, $content, 'Site routes');
-          
         }
 
         if (in_array($type, ['all', 'admin'])) {
@@ -253,18 +253,18 @@ trait EngezTrait
 
             // replace controller name
             $content = str_ireplace("ControllerName", "{$controllerName}Controller", $content);
-            
+
             // replace module name
             $content = str_ireplace("ModuleName", "{$targetModule}", $content);
-            
+
             $middleware = "";
-            if (in_array('users', Mongez::getStored('modules'))){
-                $middleware = "'authenticated','authorized'"; 
-            } 
+            if (in_array('users', Mongez::getStored('modules'))) {
+                $middleware = "'authenticated','authorized'";
+            }
 
             // Set middleware list
             $content = str_ireplace("middlewareList", $middleware, $content);
-            
+
             // replace route prefix
             $routePrefix = strtolower($this->info['moduleName']);
             $content = str_ireplace("route-prefix", "{$routePrefix}", $content);
@@ -273,9 +273,9 @@ trait EngezTrait
             $filePath = $routesDirectory . '/admin.php';
 
             $this->createFile($filePath, $content, 'Admin routes');
-        }        
+        }
     }
-    
+
     /**
      * update parent routes
      * 
@@ -284,7 +284,7 @@ trait EngezTrait
     protected function updateRoutes()
     {
         $type = $this->option('type');
-        
+
         $controller = $this->info['controller'];
 
         $controllerName = basename(str_replace('\\', '/', $controller));
@@ -292,9 +292,9 @@ trait EngezTrait
         // replace module name
         $routeModule  =  strtolower($this->info['moduleName']);
         if (in_array($type, ['all', 'site'])) {
-            
+
             // generate the site routes file
-            
+
             $content = File::get($this->modulePath("routes/site.php"));
             $content = str_replace(
                 '// Sub API CRUD routes',
@@ -303,7 +303,7 @@ trait EngezTrait
     Route::get('/{$this->info['parent']}/$routeModule}/{id}','{$controllerName}Controller@show');",
                 $content
             );
-            File::put($this->modulePath("routes/site.php"),$content);
+            File::put($this->modulePath("routes/site.php"), $content);
         }
 
         if (in_array($type, ['all', 'admin'])) {
@@ -316,7 +316,7 @@ trait EngezTrait
                 $content
             );
 
-            File::put($this->modulePath("routes/site.php"),$content);
+            File::put($this->modulePath("routes/site.php"), $content);
             $content = File::get($this->modulePath("routes/admin.php"));
             $content = str_replace(
                 '// Sub API CRUD routes',
@@ -324,9 +324,9 @@ trait EngezTrait
     Route::apiResource('/{$this->info['parent']}/{$routeModule}', '{$controllerName}Controller');",
                 $content
             );
-            File::put($this->modulePath("routes/admin.php"),$content);
+            File::put($this->modulePath("routes/admin.php"), $content);
         }
-        return;     
+        return;
     }
 
     /**
@@ -335,14 +335,13 @@ trait EngezTrait
     protected function setOptions(array $keys)
     {
         $neededOptions = [];
-        foreach ($keys as $index => $key ) 
-        {
+        foreach ($keys as $index => $key) {
             if (is_numeric($index)) {
                 $index = $key;
             }
 
-            if (!str::startsWith('--' ,$index)) {
-                $index = '--' .$index;
+            if (!str::startsWith('--', $index)) {
+                $index = '--' . $index;
             }
 
             if ($this->optionHasValue($key)) {
@@ -359,8 +358,12 @@ trait EngezTrait
      */
     public function addRoutesToPermissionTable()
     {
-        $permissionsRepo = repo('permissions');
-        $permissionsRepo->insertModulePermissions($this->moduleName);
+        try {
+            $permissionsRepo = repo('permissions');
+            $permissionsRepo->insertModulePermissions($this->moduleName);
+        } catch (\Throwable $th) {
+            // this wil silent the not found repository if there is no permissions repository 
+        }
     }
 
     /**
@@ -379,7 +382,7 @@ trait EngezTrait
         $repositoryClassName = Str::studly(basename(str_replace('\\', '/', $this->info['repository'])));
 
         $repositoryShortcut = $this->repositoryShortcutName($this->info['repository']);
-        
+
         $module = $this->info['moduleName'];
         if (isset($this->info['parent'])) {
             $module = Str::studly($this->info['parent']);
@@ -388,11 +391,11 @@ trait EngezTrait
         $replacedString = "'{$repositoryShortcut}' => App\\Modules\\$module\\Repositories\\{$repositoryClassName}Repository::class,\n \t\t $replacementLine";
         $updatedConfig = str_replace($replacementLine, $replacedString, $config);
 
-        config(['mongez.repositories.' .$repositoryShortcut => "App\\Modules\\$module\\Repositories\\{$repositoryClassName}Repository"]);
+        config(['mongez.repositories.' . $repositoryShortcut => "App\\Modules\\$module\\Repositories\\{$repositoryClassName}Repository"]);
 
         File::put($mongezPath, $updatedConfig);
     }
-    
+
     /**
      * Update configurations
      *
@@ -405,9 +408,9 @@ trait EngezTrait
         $replacementLine = '// Auto generated providers here: DO NOT remove this line.';
 
         if (!Str::contains($config, $replacementLine)) return;
-        
+
         $module = $this->info['moduleName'];
-        $serviceProviderClassName = Str::singular($module) .'ServiceProvider';
+        $serviceProviderClassName = Str::singular($module) . 'ServiceProvider';
 
         $replacedString = "App\\Modules\\$module\\Providers\\{$serviceProviderClassName}::class,\n \t\t$replacementLine";
         $updatedConfig = str_replace($replacementLine, $replacedString, $config);
@@ -425,7 +428,7 @@ trait EngezTrait
     {
         $config = File::get($mongezPath =  base_path('config/app.php'));
 
-        $serviceProviderClassName = Str::singular($this->moduleName) .'ServiceProvider';
+        $serviceProviderClassName = Str::singular($this->moduleName) . 'ServiceProvider';
 
         $replacementLine = "App\\Modules\\$this->moduleName\\Providers\\{$serviceProviderClassName}::class,";
 
