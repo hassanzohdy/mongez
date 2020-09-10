@@ -239,7 +239,7 @@ trait EngezTrait
 
             // replace route prefix
             $routePrefix = strtolower($this->module);
-            $content = str_ireplace("route-prefix", "{$this->module}", $content);
+            $content = str_ireplace("route-prefix", "{$routePrefix}", $content);
 
             // create the route file
             $filePath = $routesDirectory . '/site.php';
