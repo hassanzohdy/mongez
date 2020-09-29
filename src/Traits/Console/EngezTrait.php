@@ -238,8 +238,8 @@ trait EngezTrait
             $content = str_ireplace("ModuleName", "{$targetModule}", $content);
 
             // replace route prefix
-            $routePrefix = Str::kebab($this->module);
-            $content = str_ireplace("route-prefix", "{$routePrefix}", $content);
+            $routePrefix = strtolower($this->module);
+            $content = str_ireplace("route-prefix", "{$this->module}", $content);
 
             // create the route file
             $filePath = $routesDirectory . '/site.php';
@@ -266,7 +266,7 @@ trait EngezTrait
             $content = str_ireplace("middlewareList", $middleware, $content);
 
             // replace route prefix
-            $routePrefix = Str::kebab($this->info['moduleName']);
+            $routePrefix = strtolower($this->info['moduleName']);
             $content = str_ireplace("route-prefix", "{$routePrefix}", $content);
 
             // create the route file

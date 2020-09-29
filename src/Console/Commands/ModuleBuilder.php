@@ -16,35 +16,35 @@ class ModuleBuilder extends Command
     use EngezTrait;
     /**
      * Controller types
-     * 
+     *
      * @const array
      */
     const CONTROLLER_TYPES = ['site', 'admin', 'all'];
 
     /**
      * Module directory path
-     * 
+     *
      * @var string
      */
     protected $root;
 
     /**
      * The module name
-     * 
+     *
      * @var string
      */
     protected $module;
 
     /**
      * The module name in studly case
-     * 
+     *
      * @var string
      */
     protected $moduleName;
 
     /**
      * Current database name
-     * 
+     *
      * @var string
      */
     protected $databaseName;
@@ -58,11 +58,11 @@ class ModuleBuilder extends Command
 
     /**
      * Module info
-     * 
+     *
      * @var array
      */
     protected $info = [];
-    
+
     /**
      * Available Options
      *
@@ -73,7 +73,7 @@ class ModuleBuilder extends Command
      *
      * @var string
      */
-    protected $signature = 'engez:module 
+    protected $signature = 'engez:module
                                        {moduleName}
                                        {--parent=}
                                        {--singleName=}
@@ -112,42 +112,42 @@ class ModuleBuilder extends Command
         if ($this->optionHasValue('parent')) $this->info['parent'] = $this->option('parent');
 
         $this->moduleName = Str::studly($this->module);
-        
+
         $this->databaseName = config('database.default');
 
         $this->info['moduleName'] = $this->moduleName;
-        
+
         $this->validateArguments();
         $this->adjustOptionsValues();
     }
     /**
-     * Validate command arguments 
-     * 
+     * Validate command arguments
+     *
      * @return void
      */
     protected function validateArguments()
     {
         $modulePath = $this->modulePath("");
-        
+
         if (File::isDirectory($modulePath) && !isset($this->info['parent'])) {
             Command::error('This module is already exist');
             die();
         }
-        
+
         // check if the module directory exists
-        // if so, throw error        
+        // if so, throw error
         if (isset($this->info['parent'])) {
             $availableModules = Mongez::getStored('modules');
             if (! in_array(strtolower($this->info['parent']), $availableModules)) {
                 Command::error('This parent module is not available');
                 die();
             }
-        } 
+        }
     }
-    
+
     /**
      * Adjust sent options and update its value if its default
-     * 
+     *
      * @return void
      */
     protected function adjustOptionsValues()
@@ -158,13 +158,13 @@ class ModuleBuilder extends Command
 
     /**
      * Get option from available options
-     * 
+     *
      * @param string $key
-     * @return 
+     * @return
      */
     /**
      * Init data
-     * 
+     *
      * @return void
      */
     protected function init()
@@ -176,20 +176,20 @@ class ModuleBuilder extends Command
         $this->info('Preparing data...');
         $this->initController();
         $this->initModel();
-        $this->initResource();  
+        $this->initResource();
         $this->initRepository();
         $this->initData();
     }
 
     /**
      * Create files
-     * 
+     *
      * @return void
      */
     protected function create()
     {
         $this->addModule();
-        
+
         $this->info('Creating controller file');
         $this->createController();
 
@@ -201,12 +201,12 @@ class ModuleBuilder extends Command
 
         $this->info('Creating repository file');
         $this->createRepository();
-        
+
         $this->info('Generating routes files');
         $this->createRoutes();
 
         if (! isset($this->info['parent'])) $this->createServiceProvider();
-        
+
         $this->info('Creating filter files');
         $this->createFilters();
 
@@ -220,14 +220,14 @@ class ModuleBuilder extends Command
         $this->generateModuleDocs();
 
         if ($this->isUserModuleExits) $this->addRoutesToPermissionTable();
-   
+
         $this->markModuleAsInstalled();
     }
 
     /**
      * Some sections like repository and resource has the DATA constant
      * If the developer passed a list of data separated by comma it will be set there
-     * 
+     *
      * @return void
      */
     protected function initData()
@@ -242,7 +242,7 @@ class ModuleBuilder extends Command
 
     /**
      * Handle controller file.
-     * 
+     *
      * @return void
      */
     protected function initController()
@@ -250,7 +250,7 @@ class ModuleBuilder extends Command
         $this->setData('controller');
 
         $controller = $this->info['controller'];
-        
+
         $controllerPath = $this->option('path'); // the parent directory inside the Api directory
 
         if ($controllerPath) {
@@ -267,7 +267,7 @@ class ModuleBuilder extends Command
 
     /**
      * Create controller file
-     * 
+     *
      * @return void
      */
     protected function createController()
@@ -275,7 +275,7 @@ class ModuleBuilder extends Command
         $controllerName = basename(str_replace('\\', '/', $this->info['controller']));
         if (File::exists($this->modulePath("Controllers/Admin/{$controllerName}Controller.php"))) {
             Command::error('You already have this module');
-            die();    
+            die();
         }
         $controllerOptions = [
             'controller' => $controllerName,
@@ -285,13 +285,13 @@ class ModuleBuilder extends Command
             'parent',
             'type',
         ]);
-        
+
         $this->call('engez:controller', array_merge($controllerOptions, $options));
     }
 
     /**
      * Create the resource file
-     * 
+     *
      * @return void
      */
     protected function createResource()
@@ -306,18 +306,18 @@ class ModuleBuilder extends Command
             'assets'=>'uploads',
             'data'
         ]);
-        
+
         $this->call('engez:resource', array_merge($resourceOptions, $options));
     }
 
-    /** 
+    /**
      * Create the database file
-     * 
+     *
      * @return void
      */
     protected function createDatabase()
     {
-        
+
         $databaseFileName = strtolower(str::plural($this->moduleName));
 
         // Create Schema only in monogo database
@@ -328,10 +328,10 @@ class ModuleBuilder extends Command
     }
 
     /**
-     * Create schema of table in mongo 
+     * Create schema of table in mongo
      *
      * @param string $dataFileName
-     * @return void 
+     * @return void
      */
     protected function createSchema($databaseFileName)
     {
@@ -354,7 +354,7 @@ class ModuleBuilder extends Command
         $uploadsData = $this->info['uploads'] ?? [];
 
         $intData = $this->optionHasValue('int') ? explode(",",$this->option('int')) : [];
-        
+
         $floatData = $this->optionHasValue('float') ? explode(",",$this->option('float')) : [];
 
         $boolData = $this->optionHasValue('bool') ? explode(",",$this->option('bool')) : [];
@@ -364,7 +364,7 @@ class ModuleBuilder extends Command
         $customData = array_fill_keys($customData, 'string');
 
         $uploadsData = array_fill_keys($uploadsData, 'string');
-        
+
         $intData = array_fill_keys($intData, 'int');
 
         $floatData = array_fill_keys($floatData, 'float');
@@ -378,7 +378,7 @@ class ModuleBuilder extends Command
 
     /**
      * Create the repository file
-     * 
+     *
      * @return void
      */
     protected function createRepository()
@@ -395,7 +395,7 @@ class ModuleBuilder extends Command
             'float',
             'bool',
         ]);
-        
+
         $this->call('engez:repository', array_merge($repositoryOptions, $options));
     }
 
@@ -415,12 +415,16 @@ class ModuleBuilder extends Command
         $content = str_ireplace("FilterName", $filterName, $content);
 
         if ($this->databaseName == 'mongodb') $this->databaseName = 'MongoDB';
-        
-        // replace the filter type depend on database driver
+
+        $moduleName = $this->moduleName;
+        if (isset($this->info['parent'])) $moduleName = ucfirst($this->info['parent']);
+
+        // Replace the filter type depend on database driver
         $content = str_replace('DatabaseName', $this->databaseName, $content);
 
-        // replace module name
-        $content = str_ireplace("ModuleName", $this->moduleName, $content);
+        // Replace module name
+        $content = str_ireplace("ModuleName", $moduleName, $content);
+
         $filtersDirectory = $this->modulePath("Filters");
         $this->checkDirectory($filtersDirectory);
         $this->createFile("$filtersDirectory/{$filterName}.php", $content, 'Filters');
@@ -428,7 +432,7 @@ class ModuleBuilder extends Command
 
     /**
      * Create the model file
-     * 
+     *
      * @return void
      */
     protected function createModel()
@@ -437,14 +441,14 @@ class ModuleBuilder extends Command
 
         $modelName = basename(str_replace('\\', '/', $model));
 
-        // make it singular 
+        // make it singular
         $modelName = Str::singular($modelName);
 
         $this->info['modelName'] = $modelName;
-        
+
         $modelOptions = [
             'model' => $this->info['model'],
-            '--module' => $this->moduleName, 
+            '--module' => $this->moduleName,
         ];
         $options = $this->setOptions([
             'index',
@@ -457,13 +461,13 @@ class ModuleBuilder extends Command
             'data',
             'parent'
         ]);
-        
+
         $this->call('engez:model', array_merge($modelOptions, $options));
     }
 
     /**
      * Create module model
-     * 
+     *
      * @return void
      */
     protected function initModel()
@@ -477,8 +481,8 @@ class ModuleBuilder extends Command
 
     /**
      * Create module service provider
-     * 
-     * @return void 
+     *
+     * @return void
      */
     protected function createServiceProvider()
     {
@@ -491,46 +495,46 @@ class ModuleBuilder extends Command
             $types = 'admin,site';
         }
         $types = explode(',', $types);
-        
+
         $stringTypes = json_encode($types);
 
         // replace Route list
         $content = str_ireplace("ROUTES_LIST", $stringTypes, $content);
-        
+
         // replace module name
         $content = str_ireplace("ModuleName", $this->moduleName, $content);
-        $content = str_ireplace("ClassName", Str::singular($this->moduleName), $content);        
+        $content = str_ireplace("ClassName", Str::singular($this->moduleName), $content);
         $serviceProviderName = Str::singular($this->moduleName) .'ServiceProvider';
         $serviceProviderDirectory = $this->modulePath("Providers");
-        
+
         $this->checkDirectory($serviceProviderDirectory);
         $this->createFile("$serviceProviderDirectory/{$serviceProviderName}.php", $content, 'ServiceProvider');
         $this->updateServiceProviderConfig();
     }
-    
+
     /**
      * Create module resource
-     * 
+     *
      * @return void
      */
     protected function initResource()
     {
         if ($this->optionHasValue('singleName')) {
             return $this->info['resource'] = $this->option('singleName');
-        } 
+        }
         $this->setData('resource');
     }
 
     /**
      * Create module repository
-     * 
+     *
      * @return void
      */
     protected function initRepository()
     {
         $this->setData('repository');
 
-        $this->info['repositoryName'] = $this->adjustRepositoryName($this->info['repository']); 
+        $this->info['repositoryName'] = $this->adjustRepositoryName($this->info['repository']);
     }
 
     /**
@@ -556,7 +560,7 @@ class ModuleBuilder extends Command
 
     /**
      * Generate module postman.
-     *   
+     *
      * @return void
      */
     protected function generatePostmanModule()
@@ -565,14 +569,14 @@ class ModuleBuilder extends Command
         if (isset($this->info['data'])) $data = array_fill_keys($this->info['data'], 'String');
 
         $uploads = '';
-        
+
         if ($this->optionHasValue('uploads')) {
             $uploads = $this->option('uploads');
         }
 
         $dataOptions = [
             'float' =>  'Float',
-            'bool'   =>  'Bool', 
+            'bool'   =>  'Bool',
             'int'    =>  'Int'
         ];
         $options = [];
@@ -583,10 +587,10 @@ class ModuleBuilder extends Command
                 }
             }
         }
-    
+
         $parent = '';
         if (isset($this->info['parent'])) $parent = $this->info['parent'];
-     
+
         $postman =  new Postman([
             'modelName'  => $this->info['modelName'],
             'data'       => array_merge($data, $options),
@@ -605,7 +609,7 @@ class ModuleBuilder extends Command
 
     /**
      * Generate module documentation.
-     *   
+     *
      * @return void
      */
     protected function generateModuleDocs()
@@ -616,7 +620,7 @@ class ModuleBuilder extends Command
         $dataOptions = [
             'uploads' => 'File',
             'float' =>  'Float',
-            'bool'   =>  'Bool', 
+            'bool'   =>  'Bool',
             'int'    =>  'Int'
         ];
         $options = [];
@@ -627,7 +631,7 @@ class ModuleBuilder extends Command
                 }
             }
         }
-        
+
         $markDownOption = [
             'moduleName' => $this->info['modelName'],
             'data'       => array_merge($data, $options),
@@ -635,9 +639,9 @@ class ModuleBuilder extends Command
         if (isset($this->info['parent'])) {
             $markDownOption['parent'] = $this->info['parent'];
         }
-        
+
         $markDown =  new Markdown($markDownOption);
-        
+
         $moduleFileName = 'README.md';
         if(isset($this->info['parent'])) {
             $moduleFileName = strtolower($this->info['moduleName']) .'.md';
