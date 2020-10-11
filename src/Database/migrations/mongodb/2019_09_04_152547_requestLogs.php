@@ -3,7 +3,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class Ids extends Migration
+class RequestLogsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -12,7 +12,7 @@ class Ids extends Migration
      */
     public function up()
     {
-        Schema::create('requestLogs', function (Blueprint $table) {
+        Schema::table('requestLogs', function (Blueprint $table) {
             $table->string('collection')->unique();
             $table->int('id');
             $table->string('route');

@@ -475,7 +475,7 @@ abstract class RepositoryManager implements RepositoryInterface
         if ($paginate === true || $paginate === null && config('mongez.pagination.paginate') === true) {
             $pageNumber = $this->option('page', 1);
 
-            $itemPerPage = $this->option('itemsPerPage', static::ITEMS_PER_PAGE !== null ? static::ITEMS_PER_PAGE : config('mongez.pagination.itemsPerPage'));
+            $itemPerPage = (int) $this->option('itemsPerPage', static::ITEMS_PER_PAGE !== null ? static::ITEMS_PER_PAGE : config('mongez.pagination.itemsPerPage'));
 
             $selectedColumns = !empty($this->select->list()) ? $this->select->list() : ['*'];
 
@@ -507,6 +507,20 @@ abstract class RepositoryManager implements RepositoryInterface
         return $records;
     }
 
+    /**
+     * Get publish Model 
+     * 
+     * @param int $id
+     * @return Model|null
+     */
+    public function getPublishedModel($id)
+    {
+        $model = $this->getModel($id);
+
+        if (! $model->published) return null;
+
+        return $model;
+    }
 
     /**
      * Get publish item 

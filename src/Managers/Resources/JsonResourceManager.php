@@ -303,7 +303,7 @@ abstract class JsonResourceManager extends JsonResource
                 $resourceData = $this->$column;
                 $this->set($column, new $resource((object) $resourceData));
             } else {
-                $this->set($column, []);
+                $this->set($column, null);
             }
         }
 

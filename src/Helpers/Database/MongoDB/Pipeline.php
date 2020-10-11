@@ -286,6 +286,23 @@ class Pipeline
     }
 
     /**
+     * Unwind the given column
+     * 
+     * @param string $column
+     * @return $this
+     */
+    public function unwind($column)
+    {
+        if ($this->name !== 'unwind') {
+            return $this->aggregationFramework->unwind($column);
+        }
+
+        $this->data = $column;
+
+        return $this;
+    }
+
+    /**
      * Return the final name of the pipeline
      * 
      * @return string
@@ -298,9 +315,9 @@ class Pipeline
     /**
      * Return the final data of the pipeline
      * 
-     * @return array
+     * @return array|string
      */
-    public function getData(): array 
+    public function getData() 
     {
         return $this->data;
     }

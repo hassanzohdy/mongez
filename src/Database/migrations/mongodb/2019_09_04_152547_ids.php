@@ -12,7 +12,7 @@ class Ids extends Migration
      */
     public function up()
     {
-        Schema::create('ids', function (Blueprint $table) {
+        Schema::table('ids', function (Blueprint $table) {
             $table->string('collection')->unique();
             $table->int('id');
         });

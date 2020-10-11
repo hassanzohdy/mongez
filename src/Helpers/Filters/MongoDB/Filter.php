@@ -18,14 +18,15 @@ class Filter extends MYSQLFilter
      */
     const NO_SQL_FILTER_MAP = [
         'inInt' => 'filterInInt',
-        'notInInt' => 'filterNotInInt',
         'inBool' => 'filterInBool',
-        // 'notInBool' => [],
-        // 'inFloat' => [],
-        // 'notInFloat' => [],
+        'inBoolean' => 'filterInBool',
+        'notInBool' => 'filterNotInBool',
+        'inFloat' => 'filterInFloat',
+        'notInFloat' => 'filterNotInFloat',
         'int' => 'filterInt',
         'float' => 'filterFloat',
         'bool' => 'filterBoolean',
+        'boolean' => 'filterBoolean',
     ];
 
     /**

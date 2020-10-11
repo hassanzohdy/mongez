@@ -49,13 +49,28 @@ class Aggregation
     {
         $columnsList = [];
 
-        foreach ($columns as $column) {
-            list($name) = explode('.', $column);
-
-            $columnsList[$name] = "$$column";
+        if (count($columns) == 1 && $columns[0] === null) {
+            $columnsList = null;
+        } else {
+            foreach ($columns as $column) {
+                list($name) = explode('.', $column);
+    
+                $columnsList[$name] = "$$column";
+            }    
         }
 
         return $this->pipeline('group')->data('_id', $columnsList);
+    }
+
+    /**
+     * unwind clause 
+     * 
+     * @param string $column 
+     * @return Pipeline 
+     */
+    public function unwind($column)
+    {
+        return $this->pipeline('unwind')->unwind($column);
     }
 
     /**

@@ -66,7 +66,7 @@ abstract class Model extends BaseModel
      * @const array
      */
     const SHARED_INFO = [];
-    
+
     /**
      * Disable guarded fields
      *
@@ -263,9 +263,10 @@ abstract class Model extends BaseModel
      * 
      * @param mixed $modelInfo
      * @param string $column
+     * @param string $searchBy
      * @return this
      */
-    public function disassociate($modelInfo, $column)
+    public function disassociate($modelInfo, $column, $searchBy = 'id')
     {
         $array = $this->$column ?? [];
 
@@ -274,7 +275,7 @@ abstract class Model extends BaseModel
         foreach ($array as $value) {
             if (
                 is_scalar($modelInfo) && $modelInfo === $value ||
-                is_array($value) && isset($value['id']) && $value['id'] == $modelInfo['id']
+                is_array($value) && isset($value[$searchBy]) && $value[$searchBy] == $modelInfo[$searchBy]
             ) {
                 continue;
             }

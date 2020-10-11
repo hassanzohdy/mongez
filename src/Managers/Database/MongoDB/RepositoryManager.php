@@ -125,6 +125,7 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
         } else {
             $id = (int) $id;
         }
+        
         return $this->getByModel('id', $id);
     }
 
