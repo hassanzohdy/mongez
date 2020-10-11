@@ -6,10 +6,10 @@ use HZ\Illuminate\Mongez\Helpers\Filters\DatabaseName\Filter;
 class FilterName extends Filter
 {
     /**
-     * List with all filter. 
+     * List with all filter.
      *
      * filterName => functionName
-     * @const array 
+     * @const array
      */
-    const FILTER_MAP = [];    
+    const FILTER_MAP = [];
 }
