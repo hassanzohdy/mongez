@@ -66,19 +66,7 @@ trait ModelTrait
 
         return $data;
     }
-
-    /**
-     * Get the given keys from the model info
-     * Alias to pluck method
-     * 
-     * @param  array $columns
-     * @return array
-     */
-    public function only(...$columns)
-    {
-        return $this->pluck($columns);
-    }
-
+    
     /**
      * Get all attributes except the given columns
      * 
