@@ -59,6 +59,7 @@ class Builder
     public function whereLocationNear()
     {
         return function (string $column, array $coordinates, float $distance, string $distanceType = 'km') {
+            $distance = (float) $distance;
             $distanceInRadian = $distance;
             if ($distanceType === 'km') {
                 $distanceInRadian = $distance / 6371;
@@ -72,9 +73,7 @@ class Builder
             $lngLatCoordinates = [$coordinates[1], $coordinates[0]];
 
             return $this->where($column, 'geoWithin', [
-                '$geoWithin' => [
-                    '$centerSphere' => [$lngLatCoordinates, $distanceInRadian],
-                ],
+                '$centerSphere' => [$lngLatCoordinates, $distanceInRadian],
             ]);
         };
     }

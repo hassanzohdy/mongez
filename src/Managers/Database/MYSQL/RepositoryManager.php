@@ -371,9 +371,9 @@ abstract class RepositoryManager implements RepositoryInterface
         $this->user = user();
 
         $this->eventName = static::EVENT ?: static::NAME;
-        
+
         $this->boot();
-        
+
         // register events
         $this->registerEvents();
     }
@@ -450,8 +450,8 @@ abstract class RepositoryManager implements RepositoryInterface
         }
 
         $filterManger = new FilterManager($this->query, $options, static::FILTER_BY);
-        $filterManger->merge(array_merge(static::FILTERS ,config('mongez.filters', [])));
-        
+        $filterManger->merge(array_merge(static::FILTERS, config('mongez.filters', [])));
+
         $this->filter();
 
         $defaultOrderBy = [];
@@ -517,7 +517,7 @@ abstract class RepositoryManager implements RepositoryInterface
     {
         $model = $this->getModel($id);
 
-        if (! $model->published) return null;
+        if (!$model->published) return null;
 
         return $model;
     }
@@ -532,7 +532,7 @@ abstract class RepositoryManager implements RepositoryInterface
     {
         $item = $this->get($id);
 
-        if (! $item->published) return null;
+        if (!$item->published) return null;
 
         return $item;
     }
@@ -550,6 +550,20 @@ abstract class RepositoryManager implements RepositoryInterface
     }
 
     /**
+     * Publish/Unpublish the model id
+     *
+     * @param int $id
+     * @param bool $publishState
+     * @return void
+     */
+    public function publish($id, $publishState)
+    {
+        $this->getQuery()->where('id', (int )$id)->update([
+            'published' => (bool) $publishState
+        ]);
+    }
+
+    /**
      * Trigger the given event related to current repository
      * 
      * @param  string $events
@@ -561,7 +575,7 @@ abstract class RepositoryManager implements RepositoryInterface
         $events = array_map(function ($event) {
             return "{$this->eventName}.{$event}";
         }, explode(' ', $events));
-        
+
         return $this->events->trigger(implode(' ', $events), ...$values);
     }
 
@@ -708,7 +722,7 @@ abstract class RepositoryManager implements RepositoryInterface
 
         // If there is no zero index in the array
         // it means the order will be for multiple columns
-        if (! isset($orderBy[0])) {
+        if (!isset($orderBy[0])) {
             foreach ($orderBy as $column => $columnOrder) {
                 $this->query->orderBy($column, $columnOrder);
             }
@@ -788,7 +802,7 @@ abstract class RepositoryManager implements RepositoryInterface
         $this->setAutoData($model, $request);
 
         $this->setData($model, $request);
-        
+
         $this->save($model);
 
         return $model;
@@ -903,10 +917,10 @@ abstract class RepositoryManager implements RepositoryInterface
     {
         if ($model->id) {
             $this->trigger("saving updating", $model, $this->request, $oldModel);
-            $model->save();    
+            $model->save();
             $this->trigger("save update", $model, $this->request, $oldModel);
         } else {
-            $this->trigger("saving creating", $model, $this->request);    
+            $this->trigger("saving creating", $model, $this->request);
             $model->save();
             $this->trigger("save create", $model, $this->request);
         }
@@ -919,7 +933,9 @@ abstract class RepositoryManager implements RepositoryInterface
      * 
      * @return void
      */
-    protected function boot() {}
+    protected function boot()
+    {
+    }
 
     /**
      * Call query builder methods dynamically
