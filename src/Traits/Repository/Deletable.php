@@ -75,4 +75,14 @@ trait Deletable
     {
         return static::USING_SOFT_DELETE;
     }
+
+    /**
+     * Check if cache is used or not
+     * 
+     * @return bool
+     */
+    public function isCacheable() :bool
+    {
+        return static::USING_CACHE;
+    }
 }
