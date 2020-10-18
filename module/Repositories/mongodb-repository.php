@@ -111,6 +111,20 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
      * @const array
      */
     const FILTER_BY = [];
+    
+    /**
+     * Set of the parents repositories of current repo
+     *
+     * @const array
+     */
+    const CHILD_OF = [];
+
+    /**
+     * Set of the children repositories of current repo
+     *
+     * @const array
+     */
+    const PARENT_OF = [];
 
     /**
      * Set all filter class you will use in this module
