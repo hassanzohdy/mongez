@@ -1,9 +1,9 @@
 <?php
+
 namespace HZ\Illuminate\Mongez\Managers\Database\MongoDB;
 
 use Illuminate\Support\Collection;
 use HZ\Illuminate\Mongez\Helpers\Database\MongoDB\Aggregation;
-use HZ\Illuminate\Mongez\Helpers\Filters\FilterManager;
 use HZ\Illuminate\Mongez\Helpers\Filters\MongoDB\Filter;
 use HZ\Illuminate\Mongez\Contracts\Repositories\RepositoryInterface;
 use HZ\Illuminate\Mongez\Managers\Database\MYSQL\RepositoryManager as BaseRepositoryManager;
@@ -11,14 +11,13 @@ use Illuminate\Support\Facades\App;
 
 abstract class RepositoryManager extends BaseRepositoryManager implements RepositoryInterface
 {
-    
     /**
      * Filter class.
      *  
      * @const string
      */
     const FILTER_CLASS = Filter::class;
-    
+
     /**
      * Set if the current repository uses a soft delete method or not
      * This is mainly used in the where clause
@@ -64,7 +63,7 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
      */
     protected function tableName(): string
     {
-        return static::TABLE;
+        return $this->getTableName();
     }
 
     /**
@@ -77,6 +76,7 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     {
         return $records->map(function ($record) {
             if ($this->option('as-model', false) === true) return $record;
+
             $resource = static::RESOURCE;
             return new $resource((object) $record);
         });
@@ -88,6 +88,7 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     public function get(int $id)
     {
         if (static::USING_CACHE) return $this->wrap($this->getCache((int) $id));
+        
         return $this->getBy('id', (int) $id);
     }
 
@@ -125,7 +126,7 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
         } else {
             $id = (int) $id;
         }
-        
+
         return $this->getByModel('id', $id);
     }
 
@@ -176,19 +177,22 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
      * {@inheritDoc}
      */
     protected function setData($model, $request)
-    { }
+    {
+    }
 
     /**
      * {@inheritDoc}
      */
     protected function select()
-    { }
+    {
+    }
 
     /**
      * {@inheritDoc}
      */
     protected function filter()
-    { }
+    {
+    }
 
     /**
      * Get the query handler
@@ -244,9 +248,9 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
                 list($class, $method) = $documentModelClass;
                 $documentModelClass = $class;
             } else {
-              $method = 'sharedInfo';  
+                $method = 'sharedInfo';
             }
-            
+
             $documentModel = $documentModelClass::find((int) $request->$column);
 
             $model->$column = $documentModel ? $documentModel->{$method}() : [];
@@ -263,11 +267,11 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     protected function setMultiDocumentData($model, $request)
     {
         foreach (static::MULTI_DOCUMENTS_DATA as $column => $documentModelClass) {
-            if (! $request->$column) {
+            if (!$request->$column) {
                 $model->$column = [];
                 continue;
             }
-            
+
             $ids = array_map('intVal', $request->$column);
             $records = $documentModelClass::whereIn('id', $ids)->get();
 
@@ -294,11 +298,11 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
      * {@inheritDoc}
      */
     public function disassociate($id, $model, $key)
-    {        
+    {
         $model = $this->getModel($id);
-        if (!$model) {
-            return;
-        }
+
+        if (!$model) return;
+
         $model->disassociate($model, $key)->save();
     }
 
@@ -308,6 +312,9 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     public function reassociate($id, $model, $key)
     {
         $model = $this->getModel($id);
+
+        if (!$model) return;
+
         $model->reassociate($model, $key)->save();
     }
 
@@ -315,16 +322,14 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
      * {@inheritDoc}
      */
     protected function boot()
-    {    
-        if (! empty(static::PARENT_OF)) {
-
+    {
+        if (!empty(static::PARENT_OF)) {
             $this->events->subscribe($this->eventName . '.delete', function ($model, $id) {
-    
                 foreach (static::PARENT_OF as $childColumnName => $childRepository) {
                     $childrenList = $model->$childColumnName ?? [];
-    
+
                     $childRepository = App::make($childRepository);
-    
+
                     foreach ($childrenList as $child) {
                         $childRepository->delete($child['id']);
                     }
@@ -332,12 +337,11 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
             });
         }
 
-        if (! empty(static::CHILD_OF)) {
+        if (!empty(static::CHILD_OF)) {
             $this->events->subscribe($this->eventName . '.delete', function ($model, $id) {
-    
-                foreach (static::CHILD_OF as $parentColumnName => $parentRepositoryWithChildColumnName) {    
+                foreach (static::CHILD_OF as $parentColumnName => $parentRepositoryWithChildColumnName) {
                     $parentId = $model->$parentColumnName['id'] ?? null;
-                    if (! $parentId) continue;
+                    if (!$parentId) continue;
 
                     list($parentRepositoryClass, $childNameInParent) = $parentRepositoryWithChildColumnName;
 
@@ -345,7 +349,7 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
 
                     $parentRepository->disassociate($parentId, $model, $childNameInParent);
                 }
-            }); 
+            });
         }
     }
 
@@ -355,7 +359,7 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     protected function filterBy($filter)
     {
         return $filter->merge(
-            self::FILTER_CLASS  
+            self::FILTER_CLASS
         );
     }
 }

@@ -6,7 +6,7 @@ use File;
 use Closure;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use Illuminate\Console\Command;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Artisan;
@@ -59,7 +59,6 @@ class MongezServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-
         if (!$this->app->runningInConsole()) {
             if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
                 die(json_encode([
@@ -160,6 +159,11 @@ class MongezServiceProvider extends ServiceProvider
 
         $this->config = config('mongez');
 
+        // 
+        if (isset($this->config['serialize_precision'])) {
+            ini_set('serialize_precision', $this->config['serialize_precision']);
+        }
+
         // register the repositories as singletones, only one instance in the entire application
         foreach ($this->config('repositories', []) as $repositoryClass) {
             $this->app->singleton($repositoryClass);
@@ -169,6 +173,10 @@ class MongezServiceProvider extends ServiceProvider
 
         if ($LocaleCode = $request->server('HTTP_LOCALE')) {
             $request->request->set('locale', $LocaleCode);
+        }
+
+        if ($request->locale || $request->lang) {
+            App::setLocale($request->locale || $request->lang);
         }
 
         $this->app->singleton(Events::class);
