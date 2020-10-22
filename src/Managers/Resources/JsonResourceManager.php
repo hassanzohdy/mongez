@@ -165,7 +165,7 @@ abstract class JsonResourceManager extends JsonResource
                 }
             }
         }
-        if(array_key_exists('accessTokens', $this->data)){
+        if (array_key_exists('accessTokens', $this->data)) {
             $token = $this->data['accessTokens'][0]['token'];
             unset($this->data['accessTokens']);
             $this->data['accessToken'] = $token;
@@ -203,7 +203,13 @@ abstract class JsonResourceManager extends JsonResource
     public function collectData(array $columns): JsonResourceManager
     {
         foreach ($columns as $column) {
-            $this->set($column, $this->resource->$column ?? null);
+            $value = $this->resource->$column ?? null;
+
+            if (is_float($value)) {
+                $value = round($value, 2);
+            }
+
+            $this->set($column, $value);
         }
 
         return $this;
@@ -245,7 +251,7 @@ abstract class JsonResourceManager extends JsonResource
         foreach ($columns as $column) {
             $asset = Arr::get($resource, $column, null);
 
-            if (! $asset) {
+            if (!$asset) {
                 $this->set($column, null);
                 continue;
             }
