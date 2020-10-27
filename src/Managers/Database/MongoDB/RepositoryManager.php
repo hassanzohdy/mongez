@@ -3,11 +3,11 @@
 namespace HZ\Illuminate\Mongez\Managers\Database\MongoDB;
 
 use Illuminate\Support\Collection;
-use HZ\Illuminate\Mongez\Helpers\Database\MongoDB\Aggregation;
+use Illuminate\Support\Facades\App;
 use HZ\Illuminate\Mongez\Helpers\Filters\MongoDB\Filter;
+use HZ\Illuminate\Mongez\Helpers\Database\MongoDB\Aggregation;
 use HZ\Illuminate\Mongez\Contracts\Repositories\RepositoryInterface;
 use HZ\Illuminate\Mongez\Managers\Database\MYSQL\RepositoryManager as BaseRepositoryManager;
-use Illuminate\Support\Facades\App;
 
 abstract class RepositoryManager extends BaseRepositoryManager implements RepositoryInterface
 {
@@ -87,9 +87,9 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
      */
     public function get(int $id)
     {
-        if (static::USING_CACHE) return $this->wrap($this->getCache((int) $id));
-        
-        return $this->getBy('id', (int) $id);
+        if (static::USING_CACHE) return $this->wrap($this->getCache($id));
+
+        return $this->getModel($id);
     }
 
     /**
@@ -192,17 +192,6 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
      */
     protected function filter()
     {
-    }
-
-    /**
-     * Get the query handler
-     * 
-     * @return mixed
-     */
-    public function getQuery()
-    {
-        $model = static::MODEL;
-        return $model::where('id', '!=', -1);
     }
 
     /**
@@ -347,7 +336,7 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
 
                     $parentRepository = App::make($parentRepositoryClass);
 
-                    $parentRepository->disassociate($parentId, $model, $childNameInParent);
+                    $parentRepository->disassociate($parentId, $model, $childNameInParent)->save();
                 }
             });
         }
@@ -358,8 +347,6 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
      */
     protected function filterBy($filter)
     {
-        return $filter->merge(
-            self::FILTER_CLASS
-        );
+        return $filter->merge(self::FILTER_CLASS);
     }
 }

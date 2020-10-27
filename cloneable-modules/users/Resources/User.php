@@ -1,6 +1,7 @@
 <?php
+
 namespace App\Modules\Users\Resources;
-use App\Modules\Users\Resources\UsersGroup;
+
 use HZ\Illuminate\Mongez\Managers\Resources\JsonResourceManager;
 
 class User extends JsonResourceManager
@@ -18,13 +19,13 @@ class User extends JsonResourceManager
     /**
      * {@inheritDoc}
      */
-    const WHEN_AVAILABLE = ['userType','mobile'];
+    const WHEN_AVAILABLE = [];
 
     /**
      * {@inheritDoc}
      */
     const RESOURCES = [
-       'group' => UsersGroup::class
+        'group' => UsersGroup::class,
     ];
 
     /**

@@ -1,4 +1,5 @@
 <?php
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,5 +16,6 @@ Route::group([
 ], function () {
     // Sub API CRUD routes
     // Main API CRUD routes 
-    Route::apiResource('/settings', 'SettingsController');
+    Route::get('/settings', 'SettingsController@index');
+    Route::post('/settings', 'SettingsController@update');
 });

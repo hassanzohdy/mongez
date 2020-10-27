@@ -1,4 +1,5 @@
 <?php
+
 namespace HZ\Illuminate\Mongez\Console\Commands;
 
 use File;
@@ -25,13 +26,10 @@ class CloneModuleBuilder extends Command
             'moduleName'  => 'newsletters',
             'type'        => 'all',
             'commands'    => [
-                [
-                ]
+                []
             ],
-            'neededPermissions' => [
-            ],
-            'subModules' => [
-            ],
+            'neededPermissions' => [],
+            'subModules' => [],
             'conditionalDirectories' => [
                 'Repositories',
                 'Models',
@@ -40,14 +38,13 @@ class CloneModuleBuilder extends Command
                 'Resources'
             ],
             'migrationFiles' => [
-                'MongoDB' => [
-                ],
+                'MongoDB' => [],
                 'MYSQL'   => [
                     '2020_07_13_102302_create_contactus_table',
                 ]
             ]
         ],
-        'Users'=> [
+        'Users' => [
             'repositoryName' => 'users',
             'routeType'   => 'admin',
             'modelName'   => 'user',
@@ -56,8 +53,8 @@ class CloneModuleBuilder extends Command
             'type'        => 'admin',
             'commands'    => [
                 [
-                'signature' => 'engez:migrate',
-                'options' =>['users']
+                    'signature' => 'engez:migrate',
+                    'options' => ['users']
                 ]
             ],
             'neededPermissions' => [
@@ -71,13 +68,11 @@ class CloneModuleBuilder extends Command
             'conditionalDirectories' => [
                 'Models',
                 'Repositories',
-                'Traits\Auth'    
+                'Traits\Auth'
             ],
-            'migrationFiles' => [
-
-            ]
+            'migrationFiles' => []
         ],
-        'Settings'=> [
+        'Settings' => [
             'repositoryName' => 'settings',
             'routeType'   => 'admin',
             'modelName'   => 'setting',
@@ -86,8 +81,8 @@ class CloneModuleBuilder extends Command
             'type'        => 'admin',
             'commands'    => [
                 [
-                'signature' => 'engez:migrate',
-                'options' =>['settings']
+                    'signature' => 'engez:migrate',
+                    'options' => ['settings']
                 ]
             ],
             'neededPermissions' => [
@@ -98,13 +93,11 @@ class CloneModuleBuilder extends Command
                 'Models',
                 'Repositories',
                 'database/migrations',
-                'Filters'    
+                'Filters'
             ],
-            'migrationFiles' => [
-                
-            ]
+            'migrationFiles' => []
         ],
-        'Localization'=> [
+        'Localization' => [
             'repositoryName' => 'countries',
             'routeType'   => 'admin',
             'modelName'   => 'countries',
@@ -113,8 +106,8 @@ class CloneModuleBuilder extends Command
             'type'        => 'admin',
             'commands'    => [
                 [
-                'signature' => 'engez:migrate',
-                'options' =>['localization']
+                    'signature' => 'engez:migrate',
+                    'options' => ['localization']
                 ]
             ],
             'neededPermissions' => [
@@ -124,7 +117,7 @@ class CloneModuleBuilder extends Command
                 'Regions'
             ],
             'subModules' => [
-                'countries',    
+                'countries',
                 'regions',
                 'cities',
                 'currencies'
@@ -198,7 +191,7 @@ class CloneModuleBuilder extends Command
      */
     protected $subModule = [];
 
-     /**
+    /**
      * Module path
      * 
      * @var string
@@ -211,7 +204,7 @@ class CloneModuleBuilder extends Command
      * @var array
      */
     protected $info = [];
-    
+
     /**
      * 
      */
@@ -233,12 +226,12 @@ class CloneModuleBuilder extends Command
         // $this->commandMustBeFollowed();
         $this->updateConfig();
         $this->updateRepositoriesConfig();
-        if(! empty($this->subModule)) $this->removeUnNeededModules();
-        if($this->checkDirectory('users')) $this->addModulePermissions;
+        if (!empty($this->subModule)) $this->removeUnNeededModules();
+        if ($this->checkDirectory('users')) $this->addModulePermissions;
         $this->updateServiceProviderConfig();
         $this->info('Module cloned successfully');
     }
-    
+
     /**
      * Validate The module name
      *
@@ -251,7 +244,6 @@ class CloneModuleBuilder extends Command
 
             if (!$message) return;
         }
-
     }
 
     /**
@@ -264,30 +256,30 @@ class CloneModuleBuilder extends Command
         $targetModule = $this->argument('module');
 
         if (($pos = strpos($targetModule, "/")) !== FALSE) {
-            $subModules = substr($targetModule, $pos+1); 
-            $this->subModule = explode(',' ,substr($targetModule, $pos+1));
-            $targetModule = str_replace("/" .$subModules, "", $targetModule);
+            $subModules = substr($targetModule, $pos + 1);
+            $this->subModule = explode(',', substr($targetModule, $pos + 1));
+            $targetModule = str_replace("/" . $subModules, "", $targetModule);
         }
         $this->moduleName = Str::studly($targetModule);
 
-        if (! array_key_exists($this->moduleName, static::AVAILABLE_MODULES)) {
+        if (!array_key_exists($this->moduleName, static::AVAILABLE_MODULES)) {
             Command::error('This module does not exits');
             die();
         }
 
-        if (! empty($this->subModule)) {
-            foreach($this->subModule as $checkModule) {
-                if (! in_array($checkModule, static::AVAILABLE_MODULES[$this->moduleName]['subModules'])) {
-                    Command::error($checkModule.' module does not exits');
+        if (!empty($this->subModule)) {
+            foreach ($this->subModule as $checkModule) {
+                if (!in_array($checkModule, static::AVAILABLE_MODULES[$this->moduleName]['subModules'])) {
+                    Command::error($checkModule . ' module does not exits');
                     die();
                 }
             }
         }
 
         $this->info['moduleName'] = Str::studly(static::AVAILABLE_MODULES[$this->moduleName]['moduleName']);
-        
-        $this->info['modelName'] = static::AVAILABLE_MODULES[$this->moduleName]['modelName']; 
-        
+
+        $this->info['modelName'] = static::AVAILABLE_MODULES[$this->moduleName]['modelName'];
+
         $this->info['type']  = static::AVAILABLE_MODULES[$this->moduleName]['routeType'];
         $this->info['controller']  = static::AVAILABLE_MODULES[$this->moduleName]['controller'];
 
@@ -297,16 +289,16 @@ class CloneModuleBuilder extends Command
 
         $unNeededSubModules = static::AVAILABLE_MODULES[Str::studly($this->moduleName)]['subModules'];
         $indexOfTargetModules = [];
-        foreach($this->subModule as $subModule) {
-            $indexOfTargetModules [] = array_search($subModule, $unNeededSubModules);
+        foreach ($this->subModule as $subModule) {
+            $indexOfTargetModules[] = array_search($subModule, $unNeededSubModules);
         }
-        foreach($indexOfTargetModules as $indexOfTargetModule) {
+        foreach ($indexOfTargetModules as $indexOfTargetModule) {
             unset($unNeededSubModules[$indexOfTargetModule]);
         }
         $this->unNeededSubModules = $unNeededSubModules;
         $this->databaseDriver = config('database.default');
     }
-    
+
     /**
      * Copy files of module
      * 
@@ -315,7 +307,7 @@ class CloneModuleBuilder extends Command
     protected function cloneModule()
     {
         $modulePath = Mongez::packagePath('/' . 'cloneable-modules/' . $this->moduleName);
-        
+
         File::copyDirectory($modulePath, $this->modulePath($this->moduleName));
     }
 
@@ -327,7 +319,7 @@ class CloneModuleBuilder extends Command
     protected function removeUnNeededFiles()
     {
         $modulePath = $this->modulePath($this->moduleName);
-        
+
         $targetDatabaseFileName = static::DATABASE_OPTIONS[$this->databaseDriver];
 
         $deletedDatabaseFileName = 'MongoDB';
@@ -337,15 +329,15 @@ class CloneModuleBuilder extends Command
         $conditionalDirectories = static::AVAILABLE_MODULES[$this->moduleName]['conditionalDirectories'];
 
         foreach ($conditionalDirectories as $folder) {
-            $targetFolder = $modulePath ."/{$folder}";
-            
-            foreach(File::allFiles($targetFolder) as $directoryFile){
+            $targetFolder = $modulePath . "/{$folder}";
+
+            foreach (File::allFiles($targetFolder) as $directoryFile) {
                 $pathInfo = pathinfo($directoryFile)['basename'];
-            
+
                 if (Str::startsWith(pathinfo($directoryFile)['filename'], $deletedDatabaseFileName)) {
-                    File::delete($targetFolder . '/' . $pathInfo);                    
+                    File::delete($targetFolder . '/' . $pathInfo);
                 } else {
-                    $file = str_replace($targetDatabaseFileName, "",$pathInfo);
+                    $file = str_replace($targetDatabaseFileName, "", $pathInfo);
                     rename($targetFolder . '/' . $pathInfo, $targetFolder . "/{$file}");
                 }
             }
@@ -371,7 +363,7 @@ class CloneModuleBuilder extends Command
      */
     protected function modulePath()
     {
-        return base_path("app" .DIRECTORY_SEPARATOR ."Modules" .DIRECTORY_SEPARATOR ."{$this->moduleName}");
+        return base_path("app" . DIRECTORY_SEPARATOR . "Modules" . DIRECTORY_SEPARATOR . "{$this->moduleName}");
     }
 
     /**
@@ -382,7 +374,7 @@ class CloneModuleBuilder extends Command
     protected function commandMustBeFollowed()
     {
         $commands = static::AVAILABLE_MODULES[$this->moduleName]['commands'];
-        foreach($commands as $command){
+        foreach ($commands as $command) {
             $this->call($command['signature'], $command['options']);
         }
     }
@@ -392,11 +384,11 @@ class CloneModuleBuilder extends Command
      * 
      * @return void
      */
-    public function updateRepositoriesConfig() 
+    public function updateRepositoriesConfig()
     {
         $parent = strtolower($this->moduleName);
         $subModules = static::AVAILABLE_MODULES[$this->moduleName]['subModules'];
-        
+
         foreach ($subModules as $repositoryName) {
             $this->moduleName = $repositoryName;
             $this->info['repository'] = Str::studly($repositoryName);
@@ -414,7 +406,7 @@ class CloneModuleBuilder extends Command
     public function addModulePermissions()
     {
         $neededModules = static::AVAILABLE_MODULES[Str::studly($this->argument('module'))]['neededPermissions'];
-        foreach($neededModules as $module) {
+        foreach ($neededModules as $module) {
             $this->moduleName = $module;
             $this->addRoutesToPermissionTable();
         }
@@ -428,17 +420,17 @@ class CloneModuleBuilder extends Command
     protected function removeUnNeededModules()
     {
         $modulePath = $this->modulePath($this->moduleName);
-        
+
         $conditionalDirectories    = static::AVAILABLE_MODULES[$this->moduleName]['conditionalDirectories'];
-        $conditionalDirectories [] = 'Controllers\Admin';
-        $conditionalDirectories [] = 'Controllers\Site';
-        $conditionalDirectories [] = 'docs';
-        $conditionalDirectories [] = 'database\migrations';
+        $conditionalDirectories[] = 'Controllers\Admin';
+        $conditionalDirectories[] = 'Controllers\Site';
+        $conditionalDirectories[] = 'docs';
+        $conditionalDirectories[] = 'database\migrations';
 
         foreach ($conditionalDirectories as $folder) {
-            $targetFolder = $modulePath ."/{$folder}";
-            foreach(File::allFiles($targetFolder) as $directoryFile) {
-                
+            $targetFolder = $modulePath . "/{$folder}";
+            foreach (File::allFiles($targetFolder) as $directoryFile) {
+
                 $pathInfo = pathinfo($directoryFile)['basename'];
                 $fileName = strtolower(Str::plural(pathinfo($directoryFile)['filename']));
                 $fileName = str_replace("repositories", "", $fileName);
@@ -462,11 +454,11 @@ class CloneModuleBuilder extends Command
     protected function removeUnNeededRoutes()
     {
         $modulePath = $this->modulePath($this->moduleName);
-        $adminRoutePath  = $modulePath .DIRECTORY_SEPARATOR .'routes' .DIRECTORY_SEPARATOR .'admin.php';
-        $siteRoutePath  = $modulePath .DIRECTORY_SEPARATOR .'routes' .DIRECTORY_SEPARATOR .'site.php';
+        $adminRoutePath  = $modulePath . DIRECTORY_SEPARATOR . 'routes' . DIRECTORY_SEPARATOR . 'admin.php';
+        $siteRoutePath  = $modulePath . DIRECTORY_SEPARATOR . 'routes' . DIRECTORY_SEPARATOR . 'site.php';
         $adminFile = File::get($adminRoutePath);
         $siteFile = File::get($siteRoutePath);
-        foreach($this->unNeededSubModules as $unNeededSubModule) {
+        foreach ($this->unNeededSubModules as $unNeededSubModule) {
             // Route::apiResource('/regions', 'RegionsController');
             $controllerName = ucfirst($unNeededSubModule);
             $adminTargetLine = "Route::apiResource('/{$unNeededSubModule}', '{$controllerName}Controller');";
@@ -491,12 +483,12 @@ class CloneModuleBuilder extends Command
     {
         $modulePath = $this->modulePath($this->moduleName);
         $migrationFiles  = static::AVAILABLE_MODULES[$this->moduleName]['migrationFiles'][static::DATABASE_OPTIONS[$this->databaseDriver]];
-        foreach($this->unNeededSubModules as $unNeededSubModule) {
-            foreach($migrationFiles as $migrationFile) {
+        foreach ($this->unNeededSubModules as $unNeededSubModule) {
+            foreach ($migrationFiles as $migrationFile) {
                 $pathInfo = pathinfo($migrationFile)['basename'];
                 $fileName = strtolower(Str::plural(pathinfo($migrationFile)['filename']));
                 if (strpos($fileName, $unNeededSubModule) !== false) {
-                    $targetFile = $modulePath . DIRECTORY_SEPARATOR."database" .DIRECTORY_SEPARATOR ."migrations" . DIRECTORY_SEPARATOR."{$pathInfo}.php";
+                    $targetFile = $modulePath . DIRECTORY_SEPARATOR . "database" . DIRECTORY_SEPARATOR . "migrations" . DIRECTORY_SEPARATOR . "{$pathInfo}.php";
                     File::delete($targetFile);
                 }
             }

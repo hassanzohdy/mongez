@@ -15,7 +15,7 @@ class ForgetPasswordController extends ApiController
      */
     public function index(Request $request)
     {
-        $validator = $this->isValid($request);
+        $validator = $this->scan($request);
         if ($validator->passes()) {
             $user = repo('users')->getBy('email', $request->email)->resource;
             $user->code = mt_rand(10000, 99999);
@@ -37,7 +37,7 @@ class ForgetPasswordController extends ApiController
      *
      * @return mixed
      */
-    private function isValid(Request $request)
+    private function scan(Request $request)
     {
         return Validator::make($request->all(), [
             'email' => 'required|exists:users',

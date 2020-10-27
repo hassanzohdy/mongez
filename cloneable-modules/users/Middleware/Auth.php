@@ -18,56 +18,50 @@ class Auth
     protected $apiKey;
 
     /**
-     * Application type
+     * Current guardian info
+     * 
+     * @var array
+     */
+    protected $currentGuardian;
+
+    /**
+     * Current route without the application prefix and the api key
      * 
      * @var string
      */
-    protected $appType;
-
-    /**
-     * List of ignored routes that should not have any auth which is not RECOMMENDED for senstive data
-     * 
-     * @var array
-     */
-    protected $ignoredRoutes = [
-    ];
-
-    /**
-     * Routes that does not have permissions in admin app
-     * 
-     * @var array
-     */
-    protected $ignoredAdminRoutes = ["/api/admin/login"];
-
-    /**
-     * Routes that does not have permissions in site app
-     * 
-     * @var array
-     */
-    protected $ignoredSiteRoutes = ['/api/login', '/api/register'];
+    protected $currentRoute;
 
     /**
      * {@inheritDoc}
      */
     public function handle(Request $request, Closure $next)
     {
-        // pred($_SERVER);
-        $this->apiKey = env('API_KEY');
+        $this->apiKey = config('app.api-key');
 
-        // set default auth
-        if (Str::contains($request->uri(), '/admin')) {
-            $this->appType = 'admin';
-        } else {
-            $this->appType = 'site';
+        $uri = $request->uri();
+
+        if (Str::startsWith($uri, '/api')) {
+            $uri = Str::replaceFirst('/api', '', $uri);
         }
 
-        $guardInfo = config('auth.guards.' . $this->appType);
+        $guards = config('auth.guards');
+
+        foreach ($guards as $appType => $guard) {
+            if (empty($guard['prefix']) || !Str::startsWith($uri, $guard['prefix'])) continue;
+
+            $this->currentGuardian = $guard;
+            $this->currentGuardian['appType'] = $appType;
+
+            $this->currentRoute = Str::replaceFirst($guard['prefix'], '', $uri);
+
+            break;
+        }
 
         config([
-            'auth.defaults.guard' => $this->appType,
-            'app.type' => $this->appType,
-            'app.users-repo' => $guardInfo['repository'] ?? 'users',
-            'app.user-type' => $guardInfo['repository'] ?? 'users',
+            'auth.defaults.guard' => $this->currentGuardian['appType'],
+            'app.type' => $this->currentGuardian['appType'],
+            'app.users-repo' => $this->currentGuardian['repository'],
+            'app.user-type' => $this->currentGuardian['type'],
         ]);
 
         return $this->middleware($request, $next);
@@ -78,9 +72,9 @@ class Auth
      */
     protected function middleware(Request $request, Closure $next)
     {
-        $ignoredRoutes = $this->appType == 'admin' ? $this->ignoredAdminRoutes : $this->ignoredSiteRoutes;
+        $ignoredRoutes = $this->currentGuardian['ignoredRoutes'] ?? [];
 
-        if (in_array($request->uri(), $ignoredRoutes)) {
+        if (in_array($this->currentRoute, $ignoredRoutes)) {
             if ($request->authorizationValue() !== $this->apiKey) {
                 return response([
                     'error' => 'Invalid Request I',
@@ -93,7 +87,7 @@ class Auth
             list($tokenType, $accessToken) = $request->authorization();
 
             if ($tokenType == 'Bearer') {
-                $user = repo(config('app.users-repo'))->getByAccessToken($accessToken);
+                $user = repo($this->currentGuardian['repository'])->getByAccessToken($accessToken);
                 if ($user) {
                     BaseAuth::login($user);
 

@@ -1,11 +1,11 @@
 <?php
 namespace App\Modules\Users\Controllers\Admin\Auth;
 
-use Auth;
 use Validator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use HZ\Illuminate\Mongez\Managers\ApiController;
-use function GuzzleHttp\json_encode;
 
 class LoginController extends ApiController
 {
@@ -16,15 +16,14 @@ class LoginController extends ApiController
      */
     public function index(Request $request)
     {
-        
         $validator = $this->scan($request);
-        if ($validator->passes()) {
-            $credentials = $request->only(['email', 'password']);
-            if (!Auth::attempt($credentials)) {
-                return $this->unauthorized('Invalid Data');
+        if ($validator->passes()) {        
+            $repository = repo(config('app.users-repo'));            
+            $user = $repository->getByModel('email', $request->email);
+            if (! $user || ! Hash::check($request->password, $user->password)) {
+                return $this->unauthorized(trans('auth.invalidData'));
             } else {
-                
-                $user = user();
+                Auth::login($user);
 
                 $usersRepository = $this->{config('app.users-repo')};
 
@@ -35,7 +34,7 @@ class LoginController extends ApiController
                 $userInfo['accessToken'] = $accessToken;
 
                 return $this->success([
-                    'user' => $userInfo,
+                    $user->accountType() => $userInfo,
                 ]);
             }
         } else {

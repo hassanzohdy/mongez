@@ -2,7 +2,6 @@
 
 namespace HZ\Illuminate\Mongez\Managers\Database\MYSQL;
 
-use DB;
 use Storage;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
@@ -13,11 +12,11 @@ use Illuminate\Support\Traits\Macroable;
 use HZ\Illuminate\Mongez\Traits\RepositoryTrait;
 use Illuminate\Http\Resources\Json\JsonResource;
 use HZ\Illuminate\Mongez\Helpers\Repository\Select;
-use HZ\Illuminate\Mongez\Helpers\Filters\FilterManager;
-use HZ\Illuminate\Mongez\Contracts\Repositories\RepositoryInterface;
+use HZ\Illuminate\Mongez\Traits\Repository\Fillers;
 use HZ\Illuminate\Mongez\Traits\Repository\Cacheable;
 use HZ\Illuminate\Mongez\Traits\Repository\Deletable;
-use HZ\Illuminate\Mongez\Traits\Repository\Fillers;
+use HZ\Illuminate\Mongez\Helpers\Filters\FilterManager;
+use HZ\Illuminate\Mongez\Contracts\Repositories\RepositoryInterface;
 
 abstract class RepositoryManager implements RepositoryInterface
 {
@@ -428,41 +427,7 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     public function list(array $options): Collection
     {
-        $this->setOptions($options);
-
-        $this->query = $this->getQuery();
-
-        $this->table = $this->columnTableName();
-
-        $this->select();
-
-        if (static::USING_SOFT_DELETE === true) {
-            $retrieveMode = $this->option(static::RETRIEVAL_MODE, static::DEFAULT_RETRIEVAL_MODE);
-
-            if ($retrieveMode == static::RETRIEVE_ACTIVE_RECORDS) {
-                $deletedAtColumn = $this->column(static::DELETED_AT);
-
-                $this->query->whereNull($deletedAtColumn);
-            } elseif ($retrieveMode == static::RETRIEVE_DELETED_RECORDS) {
-                $deletedAtColumn = $this->column(static::DELETED_AT);
-                $this->query->whereNotNull($deletedAtColumn);
-            }
-        }
-
-        $filterManger = new FilterManager($this->query, $options, static::FILTER_BY);
-        $filterManger->merge(array_merge(static::FILTERS, config('mongez.filters', [])));
-
-        $this->filter();
-
-        $defaultOrderBy = [];
-
-        if ($orderBy = $this->option('orderBy')) {
-            $defaultOrderBy = $orderBy;
-        } elseif (!empty(static::ORDER_BY)) {
-            $defaultOrderBy = [$this->column(static::ORDER_BY[0]), static::ORDER_BY[1]];
-        }
-
-        $this->orderBy($this->option('orderBy', $defaultOrderBy));
+        $this->initiateListing($options);
 
         $this->trigger("listing", $this->query, $this);
 
@@ -505,6 +470,64 @@ abstract class RepositoryManager implements RepositoryInterface
         }
 
         return $records;
+    }
+
+    /**
+     * Get total records based on given options
+     * 
+     * @param array $options
+     * @return int
+     */
+    public function total(array $options)
+    {
+        $this->initiateListing($options);
+
+        return $this->query->count();
+    }
+
+    /**
+     * Initiate listing info
+     * 
+     * @param  array $options
+     * @return void
+     */
+    protected function initiateListing(array $options)
+    {
+        $this->setOptions($options);
+
+        $this->query = $this->getQuery();
+
+        $this->table = $this->columnTableName();
+
+        $this->select();
+
+        if (static::USING_SOFT_DELETE === true) {
+            $retrieveMode = $this->option(static::RETRIEVAL_MODE, static::DEFAULT_RETRIEVAL_MODE);
+
+            if ($retrieveMode == static::RETRIEVE_ACTIVE_RECORDS) {
+                $deletedAtColumn = $this->column(static::DELETED_AT);
+
+                $this->query->whereNull($deletedAtColumn);
+            } elseif ($retrieveMode == static::RETRIEVE_DELETED_RECORDS) {
+                $deletedAtColumn = $this->column(static::DELETED_AT);
+                $this->query->whereNotNull($deletedAtColumn);
+            }
+        }
+
+        $filterManger = new FilterManager($this->query, $options, static::FILTER_BY);
+        $filterManger->merge(array_merge(static::FILTERS, config('mongez.filters', [])));
+
+        $this->filter();
+
+        $defaultOrderBy = [];
+
+        if ($orderBy = $this->option('orderBy')) {
+            $defaultOrderBy = $orderBy;
+        } elseif (!empty(static::ORDER_BY)) {
+            $defaultOrderBy = [$this->column(static::ORDER_BY[0]), static::ORDER_BY[1]];
+        }
+
+        $this->orderBy($this->option('orderBy', $defaultOrderBy));
     }
 
     /**
@@ -558,7 +581,7 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     public function publish($id, $publishState)
     {
-        $this->getQuery()->where('id', (int )$id)->update([
+        $this->getQuery()->where('id', (int)$id)->update([
             'published' => (bool) $publishState
         ]);
     }
@@ -614,13 +637,12 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     public function wrap($model): JsonResource
     {
-        $resource = static::RESOURCE;
-
         if (is_array($model)) {
             $modelName = static::MODEL;
             $model = new $modelName($model);
         }
-
+        
+        $resource = static::RESOURCE;
         return new $resource($model);
     }
 
@@ -632,15 +654,16 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     public function wrapMany($collection)
     {
-        $resource = static::RESOURCE;
         $collection = collect($collection)->map(function ($item) {
             if (is_array($item)) {
                 $modelName = static::MODEL;
                 $item = new $modelName($item);
             }
-
+            
             return $item;
         });
+        
+        $resource = static::RESOURCE;
         return $resource::collection($collection);
     }
 
@@ -661,7 +684,8 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     public function getQuery()
     {
-        return DB::table($this->getTableName());
+        $model = static::MODEL;
+        return new $model;
     }
 
     /**
@@ -793,9 +817,7 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     public function create($data)
     {
-        $modelName = static::MODEL;
-
-        $model = new $modelName;
+        $model = $this->getQuery();
 
         $request = $this->getRequestWithData($data);
 
@@ -813,7 +835,7 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     public function update(int $id, $data)
     {
-        $model = (static::MODEL)::find($id);
+        $model = $this->getQuery()->find($id);
 
         $oldModel = clone $model;
 

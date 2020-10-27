@@ -324,11 +324,13 @@ abstract class JsonResourceManager extends JsonResource
      */
     public function collectDates(array $columns): JsonResourceManager
     {
+        if (empty($columns)) return $this;
+        
         $format = config('mongez.resources.dateFormat', 'd-m-Y h:i:s a');
         $timestamp = config('mongez.resources.dateTimestamp', true);
+        $timezone = new \DateTimeZone(config('app.timezone'));
 
         foreach ($columns as $key => $column) {
-
             if (is_string($key)) {
                 $format = $column;
                 $column = $key;
@@ -343,6 +345,7 @@ abstract class JsonResourceManager extends JsonResource
 
             if ($value instanceof UTCDateTime) {
                 $value = $value->toDateTime();
+                $value->setTimezone($timezone);
             } elseif (is_numeric($value)) {
                 $value = new DateTime("@{$value}");
             } elseif (is_array($value) && isset($value['date'])) {

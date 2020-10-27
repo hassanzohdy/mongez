@@ -16,9 +16,9 @@ class LoggedIn
         
         $accessToken = $request->authorizationValue();
 
-        $repositoryName = config('app.users-repo');
+        $repositoryName = config('app.users-repo', 'users');
 
-        $user = repo($repositoryName)->getByAccessToken($accessToken);
+        $user = repo($repositoryName)->getByAccessToken($accessToken ?: '');
         
         if ($user) {
             BaseAuth::login($user);

@@ -3,7 +3,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateUsersTable extends Migration
+class CreateSettingsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -12,10 +12,11 @@ class CreateUsersTable extends Migration
      */
     public function up()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->primary('id');            
-            $table->index('accessTokens.accessToken');            
-            $table->index('email');            
+        Schema::table('settings', function (Blueprint $table) {
+            // this is very important to create a unique index for the id
+            $table->primary('id');
+			$table->index('name');
+			$table->index('group');
         });
     }
 
@@ -26,6 +27,6 @@ class CreateUsersTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('settings');
     }
 }

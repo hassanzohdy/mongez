@@ -1,4 +1,5 @@
-﻿<?php
+<?php
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,7 +15,7 @@ Route::get('/logout', 'Modules\Users\Controllers\Admin\Auth\LogoutController@ind
 
 Route::group([
     'namespace' => 'Modules\Users\Controllers\Admin',
-    'middleware' => ['Authenticated','Authorized'], // this middleware is used to check if user/admin is logged in
+    'middleware' => ['logged-in'], // this middleware is used to check if user/admin is logged in
 ], function () {
     // Restful API CRUD routes
     Route::apiResource('/users/permissions', 'PermissionsController');

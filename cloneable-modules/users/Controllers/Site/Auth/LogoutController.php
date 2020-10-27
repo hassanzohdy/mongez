@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Modules\Users\Controllers\Admin\Auth;
+namespace App\Modules\Users\Controllers\Site\Auth;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,9 +16,14 @@ class LogoutController extends ApiController
     public function index(Request $request)
     {
         $user = user();
+
         $accessTokens = $user->accessTokens;
 
         $currentAccessToken = $request->authorizationValue();
+
+        if ($request->device) {
+            $user->removeDeviceToken($request->device);
+        }
 
         foreach ($accessTokens as $key => $accessToken) {
             if ($accessToken['token'] == $currentAccessToken) {

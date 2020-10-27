@@ -26,7 +26,6 @@ abstract class AdminApiController extends ApiController
         'repository' => '',
         'listOptions' => [
             'select' => [],
-            'filterBy' => [],
             'paginate' => null
         ],
         'returnOn' => [
@@ -77,18 +76,7 @@ abstract class AdminApiController extends ApiController
      */
     protected function listOptions(Request $request): array
     {
-        $listOptions = $this->controllerInfo('listOptions');
-
-        // if (! empty($listOptions['filterBy'])) {
-        //     $filterByValues = $request->only($listOptions['filterBy']);
-        //     $listOptions = array_merge($listOptions, $filterByValues);
-        //     unset($listOptions['filterBy']);
-        // }
-
-        $filterByValues = $request->all();
-        $listOptions = array_merge($listOptions, $filterByValues);
-
-        return $listOptions;
+        return array_merge($request->All(), $this->controllerInfo('listOptions'));
     }
 
     /**

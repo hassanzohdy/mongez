@@ -3,7 +3,7 @@ namespace App\Modules\Users\Traits\Auth;
 
 use Illuminate\Support\Facades\Hash;
 
-trait updatePassword 
+trait UpdatePassword 
 {
     /**
      * Check if the given password is matching the current one

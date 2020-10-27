@@ -1,24 +1,23 @@
 <?php
+
 namespace App\Modules\Users\Traits\Auth;
 
 use Illuminate\Support\Str;
 
-trait AccessToken 
+trait AccessToken
 {
     /**
      * Generate new access token to the given user model
      * 
      * @param  \App\Modules\Users\Models\User $user
-     * @param  |Illuminate\Http\Request $request
      * @return string
      */
-    public function generateAccessToken($user, $request)
+    public function generateAccessToken($user)
     {
         $accessToken = Str::random(96);
 
         $token = [
             'token' => $accessToken,
-            'userAgent' => $request->userAgent(),
         ];
 
         if (empty($user->accessTokens)) {
@@ -28,6 +27,8 @@ trait AccessToken
             array_push($accessTokens, $token);
             $user->accessTokens = $accessTokens;
         }
+
+        $user->accessToken = $accessToken;
 
         $user->save();
 
@@ -43,10 +44,9 @@ trait AccessToken
     public function getByAccessToken(string $accessToken)
     {
         $model = static::MODEL;
-        
-        $user =  $model::where('accessTokens.token', $accessToken)
-                       ->where('accessTokens.userAgent', request()->userAgent())->first();
-        
+
+        $user =  $model::where('accessTokens.token', $accessToken)->first();
+
         return $user ?: null;
     }
 }

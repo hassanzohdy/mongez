@@ -14,13 +14,13 @@ class UsersController extends AdminApiController
     protected $controllerInfo = [
         'repository' => 'users',
         'listOptions' => [
-            'select' => [],
+            'select' => ['id','name','group','email'],
             'filterBy' => [],
             'paginate' => null, // if set null, it will be automated based on repository configuration option
         ],
         'rules' => [
             'all' => [
-                'name' => 'required|string',
+                // 'name' => 'required|string',
             ],
             'store' => [],
             'update' => [],

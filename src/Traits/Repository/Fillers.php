@@ -67,14 +67,18 @@ trait Fillers
         foreach (static::DATA as $column) {
             if ($this->isIgnorable($request, $column)) continue;
 
+            if ($column === 'password') {
+                if ($request->password) {
+                    $model->password = bcrypt($request->password);
+                }
+
+                continue;
+            }
+
             if (!isset($request->$column)) {
                 $model->$column = null;
             } else {
-                if ($column == 'password' && $request->password) {
-                    $model->password = bcrypt($request->password);
-                } else {
-                    $model->$column = $request->$column;
-                }
+                $model->$column = $request->$column;
             }
         }
     }
