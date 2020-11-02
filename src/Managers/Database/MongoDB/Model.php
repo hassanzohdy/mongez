@@ -2,13 +2,16 @@
 
 namespace HZ\Illuminate\Mongez\Managers\Database\MongoDB;
 
-use DB;
 use DateTime;
+use Illuminate\Support\Facades\DB;
 use HZ\Illuminate\Mongez\Traits\ModelTrait;
+use HZ\Illuminate\Mongez\Traits\MongoDB\RecycleBin;
 use Jenssegers\Mongodb\Eloquent\Model as BaseModel;
 
 abstract class Model extends BaseModel
 {
+    use RecycleBin;
+    
     use ModelTrait {
         boot as traitBoot;
     }
