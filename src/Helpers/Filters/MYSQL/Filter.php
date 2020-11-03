@@ -89,7 +89,7 @@ class Filter
     public function filterInInt($columns, $value)
     {
         foreach ($columns as $column) {
-            $this->query->whereIn($column, (int) $value);
+            $this->query->whereIn($column, array_map('intval', (array) $value));
         }
     }
 

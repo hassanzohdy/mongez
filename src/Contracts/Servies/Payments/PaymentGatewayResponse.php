@@ -25,7 +25,7 @@ interface PaymentGatewayResponse
     const FAILED = 'failed';
 
     /**
-     * Get payment status
+     * Get payment status success | failed or pending
      * 
      * @return string
      */
