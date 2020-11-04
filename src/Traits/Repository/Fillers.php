@@ -174,7 +174,7 @@ trait Fillers
      */
     protected function getUploadsStorageDirectoryName(): string
     {
-        return static::UPLOADS_DIRECTORY ?: static::NAME;
+        return 'data/' . (static::UPLOADS_DIRECTORY ?: static::NAME);
     }
 
     /**
