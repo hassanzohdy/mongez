@@ -49,9 +49,15 @@ return [
     | 
     | has-admin: if set to false, then Laravel Mongez will treat the application as a single application with no admin panel 
     | 
+    | build: this will determine if the module will be created 
+    | to be served with the admin api controller + api controller or
+    | to be served with the admin view controller + view controller
+    | available values: view|api, defaults to api
+    | 
     */
     'module-builder' => [
         'has-admin' => true,
+        'build' => 'api',
     ],
 
     /*

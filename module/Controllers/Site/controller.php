@@ -2,16 +2,18 @@
 namespace App\Modules\ModuleName\Controllers\Site;
 
 use Illuminate\Http\Request;
-use HZ\Illuminate\Mongez\Managers\ApiController;
+use HZ\Illuminate\Mongez\Managers\BaseController;
 
-class ControllerName extends ApiController
+class ControllerName extends BaseController
 {
     /**
      * Repository name
      * 
      * @var string
      */
-    protected $repository = 'repo-name';
+    protected const REPOSITORY_NAME = 'repo-name';
+
+    VIEW
 
     /**
      * {@inheritDoc}

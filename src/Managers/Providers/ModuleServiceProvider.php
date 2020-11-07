@@ -5,14 +5,43 @@ namespace HZ\Illuminate\Mongez\Managers\Providers;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use HZ\Illuminate\Mongez\Contracts\Providers\ModuleServiceProviderInterface;
+use ReflectionClass;
 
 abstract class ModuleServiceProvider extends ServiceProvider implements ModuleServiceProviderInterface
 {
+    /**
+     * List of routes files
+     * 
+     * @const array
+     */
+    const ROUTES_TYPES = ['site', 'admin'];
+
+    /**
+     * Module build type
+     * 
+     * @const strong
+     */
+    const BUILD_MODE = 'api';
+
+    /**
+     * Views Name
+     * 
+     * @const strong
+     */
+    const VIEWS_NAME = '';
+
     /**
      * {@inheritDoc}
      */
     public function boot()
     {
+        if (static::VIEWS_NAME) {
+            $classInfo = new ReflectionClass($this);
+            $viewsPath = dirname($classInfo->getFileName()) . './../views';
+
+            $this->loadViewsFrom($viewsPath, static::VIEWS_NAME);
+        }
+
         $this->map();
     }
 
@@ -43,8 +72,17 @@ abstract class ModuleServiceProvider extends ServiceProvider implements ModuleSe
 
             $routeFilePath = 'routes/' . $routeType . '.php';
             $routeFilePath = lcfirst($this->namespace) . $routeFilePath;
-            Route::prefix('api' . $prefix)
-                ->middleware('api')
+
+            $prefix = '';
+            $middleware = 'web';
+
+            if (static::BUILD_MODE === 'api') {
+                $prefix = 'api';
+                $middleware = 'api';
+            }
+
+            Route::prefix($prefix . $prefix)
+                ->middleware($middleware)
                 ->namespace('App')
                 ->group(base_path($routeFilePath));
         }

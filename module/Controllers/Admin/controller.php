@@ -1,9 +1,9 @@
 <?php
 namespace App\Modules\ModuleName\Controllers\Admin;
 
-use HZ\Illuminate\Mongez\Managers\AdminApiController; 
+use HZ\Illuminate\Mongez\Managers\BaseController; 
 
-class ControllerName extends AdminApiController
+class ControllerName extends BaseController
 {
     /**
      * Controller info
@@ -11,6 +11,7 @@ class ControllerName extends AdminApiController
      * @var array
      */
     protected $controllerInfo = [
+        VIEW
         'repository' => 'repo-name',
         'listOptions' => [
             'select' => [],

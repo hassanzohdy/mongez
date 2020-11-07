@@ -87,6 +87,7 @@ class ModuleBuilder extends Command
                                        {--unique=}
                                        {--int=}
                                        {--float=}
+                                       {--build=}
                                        {--bool=}
                                        {--resource=}
                                        {--repository=}
@@ -108,7 +109,8 @@ class ModuleBuilder extends Command
     public function handle()
     {
         $this->module = $this->argument('moduleName');
-
+        $this->info['build'] = $this->option('build') ?: config('mongez.module-builder.build', 'api');
+        
         if ($this->optionHasValue('parent')) $this->info['parent'] = $this->option('parent');
 
         $this->moduleName = Str::studly($this->module);
@@ -277,10 +279,12 @@ class ModuleBuilder extends Command
             Command::error('You already have this module');
             die();
         }
+
         $controllerOptions = [
             'controller' => $controllerName,
-            '--module' => $this->moduleName,
+            '--module' => $this->moduleName,            
         ];
+
         $options = $this->setOptions([
             'parent',
             'type',
@@ -414,13 +418,13 @@ class ModuleBuilder extends Command
         // replace Filter
         $content = str_ireplace("FilterName", $filterName, $content);
 
-        if ($this->databaseName == 'mongodb') $this->databaseName = 'MongoDB';
-
+        $database = $this->databaseName == 'mongodb' ? 'MongoDB' : 'MYSQL';
+        
         $moduleName = $this->moduleName;
         if (isset($this->info['parent'])) $moduleName = ucfirst($this->info['parent']);
 
         // Replace the filter type depend on database driver
-        $content = str_replace('DatabaseName', $this->databaseName, $content);
+        $content = str_replace('DatabaseName', $database, $content);
 
         // Replace module name
         $content = str_ireplace("ModuleName", $moduleName, $content);
@@ -494,12 +498,27 @@ class ModuleBuilder extends Command
         if ($types == 'all') {
             $types = 'admin,site';
         }
+
         $types = explode(',', $types);
 
         $stringTypes = json_encode($types);
 
         // replace Route list
         $content = str_ireplace("ROUTES_LIST", $stringTypes, $content);
+
+        // views
+        $publishingView = '';
+
+        if ($this->info['build'] === 'view') {
+            $buildModeValue = 'web';
+            $viewName = Str::camel($this->moduleName);
+            $publishingView = $viewName;
+        }  else {
+            $buildModeValue = 'api';
+        }
+
+        $content = str_ireplace("BUILD_MODE_VALUE", $buildModeValue, $content);
+        $content = str_ireplace("VIEWS_NAME_VALUE", $publishingView, $content);
 
         // replace module name
         $content = str_ireplace("ModuleName", $this->moduleName, $content);

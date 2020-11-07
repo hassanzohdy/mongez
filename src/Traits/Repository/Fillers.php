@@ -190,6 +190,8 @@ trait Fillers
             $columns = static::DATE_DATA;
         }
 
+        $isMongoDb = strtolower(config('database.default')) === 'mongodb';
+
         foreach ((array) $columns as $column) {
             if ($this->isIgnorable($request, $column)) continue;
 
@@ -197,7 +199,8 @@ trait Fillers
 
             if (!$date) continue;
 
-            $model->$column = Carbon::parse($date);
+            $time = Carbon::parse($date);
+            $model->$column = $isMongoDb ? new \MongoDB\BSON\UTCDateTime($time) : $time;
         }
     }
 
