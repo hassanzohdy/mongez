@@ -93,6 +93,18 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     }
 
     /**
+     * Get the query handler
+     * 
+     * @return mixed
+     */
+    public function getQuery()
+    {
+        $model = static::MODEL;
+        return $model::whereNotNull('id');
+        return $model::where('id', '!=', -1);
+    }
+
+    /**
      * Pare the given arrayed value
      *
      * @param array $value
@@ -242,7 +254,7 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
 
             $documentModel = $documentModelClass::find((int) $request->$column);
 
-            $model->$column = $documentModel ? $documentModel->{$method}() : [];
+            $model->$column = $documentModel ? $documentModel->{$method}() : null;
         }
     }
 

@@ -84,7 +84,7 @@ abstract class RepositoryManager implements RepositoryInterface
      *
      * @const bool
      */
-    const UPLOADS_KEEP_FILE_NAME = false;
+    const UPLOADS_KEEP_FILE_NAME = true;
 
     /**
      * Event name to be triggered
@@ -460,7 +460,7 @@ abstract class RepositoryManager implements RepositoryInterface
     public function getQuery()
     {
         $model = static::MODEL;
-        return new $model;
+        return $model::whereNotNull('id');
     }
 
     /**
@@ -511,7 +511,8 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     public function create($data)
     {
-        $model = $this->getQuery();
+        $modelName = static::MODEL;
+        $model = new $modelName;
 
         $request = $this->getRequestWithData($data);
 
@@ -529,7 +530,7 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     public function update(int $id, $data)
     {
-        $model = $this->getQuery()->find($id);
+        $model = (static::MODEL)::find($id);
 
         $oldModel = clone $model;
 

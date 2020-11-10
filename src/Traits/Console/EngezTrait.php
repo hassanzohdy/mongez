@@ -259,7 +259,7 @@ trait EngezTrait
 
             $middleware = "";
             if (in_array('users', Mongez::getStored('modules'))) {
-                $middleware = "'authenticated','authorized'";
+                $middleware = "'authorized'";
             }
 
             // Set middleware list
