@@ -11,21 +11,21 @@ abstract class ModuleServiceProvider extends ServiceProvider implements ModuleSe
 {
     /**
      * List of routes files
-     * 
+     *
      * @const array
      */
     const ROUTES_TYPES = ['site', 'admin'];
 
     /**
      * Module build type
-     * 
+     *
      * @const strong
      */
     const BUILD_MODE = 'api';
 
     /**
      * Views Name
-     * 
+     *
      * @const strong
      */
     const VIEWS_NAME = '';
@@ -68,20 +68,19 @@ abstract class ModuleServiceProvider extends ServiceProvider implements ModuleSe
     public function mapApiRoutes()
     {
         foreach (static::ROUTES_TYPES as $routeType) {
-            $prefix = $routeType == 'admin' ? '/admin' : '';
+
+            $prefix = '';
+            if (static::BUILD_MODE === 'api') {
+                $prefix = '/api';
+                $middleware = 'api';
+            }
+            $prefix .= $routeType == 'admin' ? '/admin' : '';
 
             $routeFilePath = 'routes/' . $routeType . '.php';
             $routeFilePath = lcfirst($this->namespace) . $routeFilePath;
-
-            $prefix = '';
             $middleware = 'web';
 
-            if (static::BUILD_MODE === 'api') {
-                $prefix = 'api';
-                $middleware = 'api';
-            }
-
-            Route::prefix($prefix . $prefix)
+            Route::prefix($prefix)
                 ->middleware($middleware)
                 ->namespace('App')
                 ->group(base_path($routeFilePath));
