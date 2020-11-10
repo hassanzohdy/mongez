@@ -75,7 +75,7 @@ class ImageResize {
      * @param int $height
      * @return string
      */
-    public function resize($width, $height, $quality = 0)
+    public function resize($width, $height, $quality = 100)
     {
         $this->width = $width;
         $this->height = $height;
