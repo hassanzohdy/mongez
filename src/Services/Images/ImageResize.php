@@ -75,14 +75,14 @@ class ImageResize {
      * @param int $height
      * @return string
      */
-    public function resize($width, $height)
+    public function resize($width, $height, $quality = 0)
     {
         $this->width = $width;
         $this->height = $height;
         if (! $this->imageHasResized()) {
             $resizedImage = Image::make($this->imagePath)->resize($width, $height, function ($constraint) {
                 $constraint->aspectRatio();
-            })->encode($this->imageExtension);
+            })->encode($this->imageExtension, $quality);
             File::put(public_path() .$this->pathToImageFolder .$this->resizedImageName, $resizedImage->__toString());
         }
         return $this->pathToImageFolder .'/' .$this->resizedImageName;
