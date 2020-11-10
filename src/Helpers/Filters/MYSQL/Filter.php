@@ -26,7 +26,9 @@ class Filter
         'like' => 'filterLike',
         'in'   => 'filterIn',
         'notInInt' => 'filterNotInInt',
-        'notIn' => 'filterNotIn'
+        'notIn' => 'filterNotIn',
+        'null' => 'filterNull',
+        'notNull' => 'filterNotNull',
     ];
 
     /**
@@ -76,6 +78,34 @@ class Filter
     {
         foreach ($columns as $column) {
             $this->query->whereIn($column, (array) $value);
+        }
+    }
+
+    /**
+     * Filter null
+     * 
+     * @param array $columns
+     * @param string $value     
+     * @return void
+     */
+    public function filterNull($columns, $value)
+    {
+        foreach ($columns as $column) {
+            $this->query->whereNull($column);
+        }
+    }
+
+    /**
+     * Filter not null
+     * 
+     * @param array $columns
+     * @param string $value     
+     * @return void
+     */
+    public function filterNotNull($columns, $value)
+    {
+        foreach ($columns as $column) {
+            $this->query->whereNotNull($column);
         }
     }
 

@@ -68,7 +68,7 @@ abstract class ModuleServiceProvider extends ServiceProvider implements ModuleSe
     public function mapApiRoutes()
     {
         foreach (static::ROUTES_TYPES as $routeType) {
-            $prefix = $routeType == 'admin' ? '/admin' : '';
+            $appPath = $routeType == 'admin' ? '/admin' : '';
 
             $routeFilePath = 'routes/' . $routeType . '.php';
             $routeFilePath = lcfirst($this->namespace) . $routeFilePath;
@@ -81,7 +81,7 @@ abstract class ModuleServiceProvider extends ServiceProvider implements ModuleSe
                 $middleware = 'api';
             }
 
-            Route::prefix($prefix . $prefix)
+            Route::prefix($prefix . $appPath)
                 ->middleware($middleware)
                 ->namespace('App')
                 ->group(base_path($routeFilePath));

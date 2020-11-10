@@ -3,6 +3,7 @@
 namespace HZ\Illuminate\Mongez\Managers\Database\MongoDB;
 
 use DateTime;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use HZ\Illuminate\Mongez\Traits\ModelTrait;
 use HZ\Illuminate\Mongez\Traits\MongoDB\RecycleBin;
@@ -91,7 +92,8 @@ abstract class Model extends BaseModel
         static::creating(function ($model) {
             if (!$model->id) {
                 $model->id = static::nextId();
-            }
+                $model->_id = sha1(time() . Str::random(40)); 
+            }            
         });
     }
 

@@ -261,6 +261,6 @@ trait Fillers
      */
     protected function isIgnorable(Request $request, string $column): bool
     {
-        return in_array($column, static::WHEN_AVAILABLE_DATA) && !isset($request->$column);
+        return (static::WHEN_AVAILABLE_DATA === true || in_array($column, static::WHEN_AVAILABLE_DATA)) && !isset($request->$column);
     }
 }
