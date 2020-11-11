@@ -11,21 +11,21 @@ abstract class ModuleServiceProvider extends ServiceProvider implements ModuleSe
 {
     /**
      * List of routes files
-     * 
+     *
      * @const array
      */
     const ROUTES_TYPES = ['site', 'admin'];
 
     /**
      * Module build type
-     * 
+     *
      * @const strong
      */
     const BUILD_MODE = 'api';
 
     /**
      * Views Name
-     * 
+     *
      * @const strong
      */
     const VIEWS_NAME = '';

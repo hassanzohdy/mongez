@@ -21,7 +21,7 @@ abstract class ApiController extends Controller
 
     /**
      * Events Object
-     * 
+     *
      * @var Events
      */
     protected $events;
@@ -36,6 +36,10 @@ abstract class ApiController extends Controller
         if ($this->repository) {
             $this->repository = repo($this->repository);
         }
+
+        if (defined('static::REPOSITORY_NAME')) {
+            $this->repository = repo(static::REPOSITORY_NAME);
+        }
     }
 
     /**
@@ -49,7 +53,7 @@ abstract class ApiController extends Controller
         $data = $data ?: [
             'success' => true,
         ];
-  
+
         if (($eventResponse = $this->events->trigger('response.success', $data)) && is_array($eventResponse)) {
             $data = $eventResponse;
         }
@@ -66,11 +70,11 @@ abstract class ApiController extends Controller
     {
         if ($data instanceof MessageBag) {
             $errors = [];
-            
+
             foreach ($data->messages() as $input => $messagesList) {
                 $errors[$input] = $messagesList[0];
             }
-            
+
             $data = ['errors' => $errors];
         } elseif (is_string($data)) {
             $data = [
@@ -81,7 +85,7 @@ abstract class ApiController extends Controller
         if (($eventResponse = $this->events->trigger('response.badRequest', $data)) && is_array($eventResponse)) {
             $data = $eventResponse;
         }
-        
+
         return $this->send(Response::HTTP_BAD_REQUEST, $data);
     }
 
@@ -95,11 +99,11 @@ abstract class ApiController extends Controller
     {
         if ($data instanceof MessageBag) {
             $errors = [];
-            
+
             foreach ($data->messages() as $input => $messagesList) {
                 $errors[$input] = $messagesList[0];
             }
-            
+
             $data = ['errors' => $errors];
         } elseif (is_string($data)) {
             $data = [
@@ -110,7 +114,7 @@ abstract class ApiController extends Controller
         if (($eventResponse = $this->events->trigger('response.notFound', $data)) && is_array($eventResponse)) {
             $data = $eventResponse;
         }
-        
+
         return $this->send(Response::HTTP_NOT_FOUND, $data);
     }
 
@@ -127,7 +131,7 @@ abstract class ApiController extends Controller
         if (($eventResponse = $this->events->trigger('response.unauthorized', $message)) && is_array($eventResponse)) {
             $message = $eventResponse;
         }
-        
+
         return $this->send(Response::HTTP_UNPROCESSABLE_ENTITY, $message);
     }
 
@@ -143,7 +147,7 @@ abstract class ApiController extends Controller
         if (($eventResponse = $this->events->trigger('response.send', $message, $statusCode)) && is_array($eventResponse)) {
             $message = $eventResponse;
         }
-        
+
         return response()->json($message, $statusCode);
     }
 }
