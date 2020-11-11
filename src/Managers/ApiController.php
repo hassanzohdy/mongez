@@ -91,7 +91,7 @@ abstract class ApiController extends Controller
      * @param  array $data
      * @return string
      */
-    protected function notFound($data)
+    protected function notFound($data = [])
     {
         if ($data instanceof MessageBag) {
             $errors = [];

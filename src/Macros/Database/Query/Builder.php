@@ -73,7 +73,7 @@ class Builder
             $lngLatCoordinates = [$coordinates[1], $coordinates[0]];
 
             return $this->where($column, 'geoWithin', [
-                '$centerSphere' => [$lngLatCoordinates, $distanceInRadian],
+                '$centerSphere' => [$coordinates, $distanceInRadian],
             ]);
         };
     }
