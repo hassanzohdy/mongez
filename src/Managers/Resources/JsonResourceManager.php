@@ -12,28 +12,28 @@ abstract class JsonResourceManager extends JsonResource
 {
     /**
      * Request object
-     * 
+     *
      * @var \Illuminate\Http\Request
      */
     protected $request;
 
     /**
      * The data that will be returned
-     * 
+     *
      * @var array
      */
     protected $data = [];
 
     /**
      * Data that must be returned
-     * 
+     *
      * @const array
      */
     const DATA = [];
 
     /**
      * Data that should be returned if exists
-     * 
+     *
      * @const array
      */
     const WHEN_AVAILABLE = [];
@@ -41,67 +41,67 @@ abstract class JsonResourceManager extends JsonResource
     /**
      * Set that columns that will be formatted as dates
      * it could be numeric array or associated array to set the date format for certain columns
-     * 
+     *
      * @const array
      */
     const DATES = [];
 
     /**
      * Data that has multiple values based on locale codes
-     * 
+     *
      * @const array
      */
     const LOCALIZED = [];
 
     /**
      * List of assets that will have a full url if available
-     * 
+     *
      * @const array
      */
     const ASSETS = [];
 
     /**
      * Data that will be returned as a resources
-     * 
+     *
      * i.ie [city => CityResource::class]
-     * 
+     *
      * @const array
      */
     const RESOURCES = [];
 
     /**
      * Data that will be returned as a collection of resources
-     * 
+     *
      * i.ie [city => CityResource::class]
-     * 
+     *
      * @const array
      */
     const COLLECTABLE = [];
 
     /**
      * Assets function for generating full url
-     * 
+     *
      * @var string
      */
     protected $assetsUrlFunction;
 
     /**
-     * List of keys that will be unset before sending 
-     * 
+     * List of keys that will be unset before sending
+     *
      * @var array
      */
     protected static $disabledKeys = [];
 
     /**
      * List of keys that will be taken only
-     * 
+     *
      * @var array
      */
     protected static $allowedKeys = [];
 
     /**
      * Disable the given list of keys
-     * 
+     *
      * @param ...$keys
      * @return void
      */
@@ -112,7 +112,7 @@ abstract class JsonResourceManager extends JsonResource
 
     /**
      * Disable the given list of keys
-     * 
+     *
      * @param ...$keys
      * @return void
      */
@@ -175,7 +175,7 @@ abstract class JsonResourceManager extends JsonResource
 
     /**
      * Get assets function name
-     * 
+     *
      * @return string
      */
     public static function assetsFunction(): string
@@ -185,7 +185,7 @@ abstract class JsonResourceManager extends JsonResource
 
     /**
      * Get the full url for the given asset path
-     * 
+     *
      * @param string $path
      * @return string
      */
@@ -250,7 +250,6 @@ abstract class JsonResourceManager extends JsonResource
 
         foreach ($columns as $column) {
             $asset = Arr::get($resource, $column, null);
-
             if (!$asset) {
                 $this->set($column, null);
                 continue;
@@ -258,15 +257,13 @@ abstract class JsonResourceManager extends JsonResource
 
             if (is_array($asset)) {
                 $assets = [];
-
                 // the key here is very important
                 // as it might be an associated key not index
-                // i.e image in two or more locales, one image for each 
-                // locale code 
+                // i.e image in two or more locales, one image for each
+                // locale code
                 foreach ($asset as $key => $assetPath) {
                     $assets[$key] = call_user_func($this->assetsUrlFunction, $assetPath);
                 }
-
                 $this->set($column, $assets);
             } else {
                 $this->set($column, call_user_func($this->assetsUrlFunction, $asset));
@@ -325,7 +322,7 @@ abstract class JsonResourceManager extends JsonResource
     public function collectDates(array $columns): JsonResourceManager
     {
         if (empty($columns)) return $this;
-        
+
         $format = config('mongez.resources.dateFormat', 'd-m-Y h:i:s a');
         $timestamp = config('mongez.resources.dateTimestamp', true);
         $timezone = new \DateTimeZone(config('app.timezone'));
@@ -393,7 +390,7 @@ abstract class JsonResourceManager extends JsonResource
 
     /**
      * Check if the given value is empty
-     * Empty value is an empty array or a null value.  
+     * Empty value is an empty array or a null value.
      *
      * @param  mixed $value
      * @return boolean
@@ -405,7 +402,7 @@ abstract class JsonResourceManager extends JsonResource
 
     /**
      * Collect the given items and set it as collection
-     * 
+     *
      * @param   string $column
      * @param   string $resource
      * @param   mixed $collection
@@ -427,7 +424,6 @@ abstract class JsonResourceManager extends JsonResource
         }
 
         $resources = $resource::collection($collection);
-
         if ($resourceDetails) {
             $resources->collection = $resources->collection->map(function (JsonResourceManager $resource) use ($resourceDetails) {
                 if (!empty($resourceDetails['append'])) {
@@ -458,7 +454,7 @@ abstract class JsonResourceManager extends JsonResource
 
     /**
      * Extend data
-     * 
+     *
      * @param  \Request $request
      * @return array
      */
@@ -467,8 +463,8 @@ abstract class JsonResourceManager extends JsonResource
     }
 
     /**
-     * Get name 
-     * 
+     * Get name
+     *
      * @return mixed
      */
     protected function locale($column)
@@ -484,7 +480,7 @@ abstract class JsonResourceManager extends JsonResource
 
     /**
      * Get Resource info
-     * 
+     *
      * @return array
      */
     public function info()
@@ -493,7 +489,7 @@ abstract class JsonResourceManager extends JsonResource
     }
     /**
      * Set more data from outside the resource
-     * 
+     *
      * @param  string $key
      * @param  mixed $value
      * @return $this
@@ -507,7 +503,7 @@ abstract class JsonResourceManager extends JsonResource
 
     /**
      * Append the given key from the resource to the data array
-     * 
+     *
      * @param  string $key
      * @return $this
      */
@@ -518,7 +514,7 @@ abstract class JsonResourceManager extends JsonResource
 
     /**
      * Collect resources from array
-     * 
+     *
      * @param array $collection
      * @return mixed
      */

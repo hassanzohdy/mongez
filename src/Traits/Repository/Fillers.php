@@ -3,6 +3,7 @@
 namespace HZ\Illuminate\Mongez\Traits\Repository;
 
 use Carbon\Carbon;
+use HZ\Illuminate\Mongez\Services\Images\ImageResize;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
@@ -13,7 +14,7 @@ trait Fillers
 {
     /**
      * Get request object with data
-     * 
+     *
      * @param  Request|array $data
      * @return Request
      */
@@ -33,7 +34,7 @@ trait Fillers
 
     /**
      * Set data automatically from the DATA array
-     * 
+     *
      * @param  \Model $model
      * @param  \Request $request
      * @return void
@@ -57,10 +58,10 @@ trait Fillers
 
     /**
      * Set main data automatically from the DATA array
-     * 
+     *
      * @param  \Model $model
      * @param  \Request $request
-     * @return void  
+     * @return void
      */
     protected function setMainData($model, $request)
     {
@@ -85,10 +86,10 @@ trait Fillers
 
     /**
      * Set Arrayble data automatically from the DATA array
-     * 
+     *
      * @param  \Model $model
      * @param  \Request $request
-     * @return void  
+     * @return void
      */
     protected function setArraybleData($model, $request)
     {
@@ -113,10 +114,10 @@ trait Fillers
 
     /**
      * Set uploads data automatically from the DATA array
-     * 
+     *
      * @param  \Model $model
      * @param  \Request $request
-     * @return void  
+     * @return void
      */
     protected function upload($model, $request, $columns = null)
     {
@@ -140,12 +141,8 @@ trait Fillers
             return $fileName;
         };
 
-        foreach ((array) $columns as $column => $name) {
-            if (is_numeric($column)) {
-                $column = $name;
-            }
-
-            $file = $request->file($name);
+        foreach($columns as $column => $options) {
+            $file = $request->file($column);
 
             if (!$file) continue;
 
@@ -154,22 +151,103 @@ trait Fillers
 
                 foreach ($file as $index => $fileObject) {
                     if (!$fileObject->isValid()) continue;
+                    $file = $fileObject->storeAs($storageDirectory, $getFileName($fileObject));
+                    $fileOptions = $this->fileOptions($file, $options);
 
-                    $files[$index] = $fileObject->storeAs($storageDirectory, $getFileName($fileObject));
+                    if (! empty($fileOptions)) {
+                        $file = array_merge(
+                            [
+                                'original' => $file,
+                            ],
+                            $fileOptions
+                        );
+                    }
+
+                    $files[$index] = $file;
                 }
 
                 $model->$column = $files;
             } else {
                 if ($file instanceof UploadedFile && $file->isValid()) {
-                    $model->$column = $file->storeAs($storageDirectory, $getFileName($file));
+                    $file = $file->storeAs($storageDirectory, $getFileName($file));
+                    $fileOptions = $this->fileOptions($file, $options);
+                    if (! empty($fileOptions)) {
+                        $file = array_merge(
+                            [
+                                'original' => $file,
+                            ],
+                            $fileOptions
+                        );
+                    }
+                    $model->$column = $file;
                 }
             }
         }
+
+        // foreach ((array) $columns as $column => $name) {
+        //     if (is_numeric($column)) {
+        //         $column = $name;
+        //     }
+
+        //     $file = $request->file($name);
+
+        //     if (!$file) continue;
+
+        //     if (is_array($file)) {
+        //         $files = [];
+
+        //         foreach ($file as $index => $fileObject) {
+        //             if (!$fileObject->isValid()) continue;
+
+        //             $files[$index] = $fileObject->storeAs($storageDirectory, $getFileName($fileObject));
+        //         }
+
+        //         $model->$column = $files;
+        //     } else {
+        //         if ($file instanceof UploadedFile && $file->isValid()) {
+        //             $model->$column = $file->storeAs($storageDirectory, $getFileName($file));
+        //         }
+        //     }
+        // }
+    }
+
+
+    /**
+     * Create File options
+     *
+     * @param string $uploadedFile
+     * @param array  $options
+     * @return
+     */
+    protected function fileOptions($uploadedFile, $options)
+    {
+        $fileOptions = [];
+        if (array_key_exists('thumbnailImage', $options)) {
+            $ImageResize = new ImageResize($uploadedFile);
+            $thumbnailImage = $ImageResize->resize(
+                $options['thumbnailImage']['width'],
+                $options['thumbnailImage']['height'],
+                $options['thumbnailImage']['quality'],
+            );
+            $fileOptions ['thumbnailImage'] = $thumbnailImage;
+
+        }
+
+        if (array_key_exists('mediumImage', $options)) {
+            $ImageResize = new ImageResize($uploadedFile);
+            $mediumImage = $ImageResize->resize(
+                $options['mediumImage']['width'],
+                $options['mediumImage']['height'],
+                $options['mediumImage']['quality'],
+            );
+            $fileOptions ['mediumImage'] = $mediumImage;
+        }
+        return $fileOptions;
     }
 
     /**
      * Get the uploads storage directory name
-     * 
+     *
      * @return string
      */
     protected function getUploadsStorageDirectoryName(): string
@@ -179,7 +257,7 @@ trait Fillers
 
     /**
      * Set date data
-     * 
+     *
      * @param  Model $model
      * @param  Request $request
      * @return void
@@ -206,10 +284,10 @@ trait Fillers
 
     /**
      * Cast specific data automatically to int from the DATA array
-     * 
+     *
      * @param  \Model $model
      * @param  \Request $request
-     * @return void  
+     * @return void
      */
     protected function setIntData($model, Request $request)
     {
@@ -222,10 +300,10 @@ trait Fillers
 
     /**
      * Cast specific data automatically to float from the DATA array
-     * 
+     *
      * @param  \Model $model
      * @param  \Request $request
-     * @return void  
+     * @return void
      */
     protected function setFloatData($model, Request $request)
     {
@@ -238,10 +316,10 @@ trait Fillers
 
     /**
      * Cast specific data automatically to bool from the DATA array
-     * 
+     *
      * @param  \Model $model
      * @param  \Request $request
-     * @return void  
+     * @return void
      */
     protected function setBoolData($model, Request $request)
     {
@@ -254,10 +332,10 @@ trait Fillers
 
     /**
      * Check if the given column is ignorable
-     * 
+     *
      * @param  Request $request
      * @param  string $column
-     * @return bool 
+     * @return bool
      */
     protected function isIgnorable(Request $request, string $column): bool
     {
