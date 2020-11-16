@@ -17,7 +17,6 @@ class Filter extends MYSQLFilter
      * {@inheritDoc}
      */
     const NO_SQL_FILTER_MAP = [
-        'inInt' => 'filterInInt',
         'inBool' => 'filterInBool',
         'inBoolean' => 'filterInBool',
         'notInBool' => 'filterNotInBool',
