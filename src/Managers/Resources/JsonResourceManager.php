@@ -245,6 +245,8 @@ abstract class JsonResourceManager extends JsonResource
             } else {
                 $resource = $this->resource->getAttributes();
             }
+        } elseif ($this->resource instanceof Fluent) {
+            $resource = $this->resource->toArray();
         } else {
             $resource = (array) $this->resource;
         }
