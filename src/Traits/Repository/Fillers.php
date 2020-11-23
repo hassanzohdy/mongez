@@ -141,8 +141,12 @@ trait Fillers
             return $fileName;
         };
 
-        foreach($columns as $column => $options) {
-            $file = $request->file($column);
+        foreach ((array) $columns as $column => $name) {
+            if (is_numeric($column)) {
+                $column = $name;
+            }
+
+            $file = $request->file($name);
 
             if (!$file) continue;
 
@@ -151,35 +155,14 @@ trait Fillers
 
                 foreach ($file as $index => $fileObject) {
                     if (!$fileObject->isValid()) continue;
-                    $file = $fileObject->storeAs($storageDirectory, $getFileName($fileObject));
-                    $fileOptions = $this->fileOptions($file, $options);
 
-                    if (! empty($fileOptions)) {
-                        $file = array_merge(
-                            [
-                                'original' => $file,
-                            ],
-                            $fileOptions
-                        );
-                    }
-
-                    $files[$index] = $file;
+                    $files[$index] = $fileObject->storeAs($storageDirectory, $getFileName($fileObject));
                 }
 
                 $model->$column = $files;
             } else {
                 if ($file instanceof UploadedFile && $file->isValid()) {
-                    $file = $file->storeAs($storageDirectory, $getFileName($file));
-                    $fileOptions = $this->fileOptions($file, $options);
-                    if (! empty($fileOptions)) {
-                        $file = array_merge(
-                            [
-                                'original' => $file,
-                            ],
-                            $fileOptions
-                        );
-                    }
-                    $model->$column = $file;
+                    $model->$column = $file->storeAs($storageDirectory, $getFileName($file));
                 }
             }
         }
@@ -229,8 +212,7 @@ trait Fillers
                 $options['thumbnailImage']['height'],
                 $options['thumbnailImage']['quality']
             );
-            $fileOptions ['thumbnailImage'] = $thumbnailImage;
-
+            $fileOptions['thumbnailImage'] = $thumbnailImage;
         }
 
         if (array_key_exists('mediumImage', $options)) {
@@ -240,7 +222,7 @@ trait Fillers
                 $options['mediumImage']['height'],
                 $options['mediumImage']['quality']
             );
-            $fileOptions ['mediumImage'] = $mediumImage;
+            $fileOptions['mediumImage'] = $mediumImage;
         }
         return $fileOptions;
     }

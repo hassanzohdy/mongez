@@ -3,10 +3,11 @@
 namespace HZ\Illuminate\Mongez\Managers\Resources;
 
 use DateTime;
-use Illuminate\Database\Eloquent\Model;
-use MongoDB\BSON\UTCDateTime;
-use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Arr;
+use MongoDB\BSON\UTCDateTime;
+use Illuminate\Support\Fluent;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Resources\Json\JsonResource;
 
 abstract class JsonResourceManager extends JsonResource
 {
@@ -244,6 +245,8 @@ abstract class JsonResourceManager extends JsonResource
             } else {
                 $resource = $this->resource->getAttributes();
             }
+        } elseif ($this->resource instanceof Fluent) {
+            $resource = $this->resource->toArray();
         } else {
             $resource = (array) $this->resource;
         }
@@ -304,7 +307,7 @@ abstract class JsonResourceManager extends JsonResource
         foreach ($columns as $column => $resource) {
             if (isset($this->$column)) {
                 $resourceData = $this->$column;
-                $this->set($column, new $resource((object) $resourceData));
+                $this->set($column, new $resource(new Fluent($resourceData)));
             } else {
                 $this->set($column, null);
             }
@@ -412,7 +415,7 @@ abstract class JsonResourceManager extends JsonResource
     {
         if (is_array($collection)) {
             $collection = collect($collection)->map(function ($item) {
-                return (object) $item;
+                return new Fluent($item);
             });
         }
 
@@ -521,7 +524,7 @@ abstract class JsonResourceManager extends JsonResource
     public static function collectArray($collection)
     {
         return static::collection(collect($collection)->map(function ($resource) {
-            return (object) $resource;
+            return new Fluent($resource);
         }));
     }
 }

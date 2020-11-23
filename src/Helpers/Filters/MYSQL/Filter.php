@@ -24,9 +24,10 @@ class Filter
         '>=' => 'basicFilter',
         '<=' => 'basicFilter',
         'like' => 'filterLike',
-        'in'   => 'filterIn',
-        'notInInt' => 'filterNotInInt',
+        'in'   => 'filterIn',        
         'notIn' => 'filterNotIn',
+        'inInt' => 'filterInInt',
+        'notInInt' => 'filterNotInInt',
         'null' => 'filterNull',
         'notNull' => 'filterNotNull',
     ];

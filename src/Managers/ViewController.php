@@ -1,10 +1,10 @@
 <?php
 namespace HZ\Illuminate\Mongez\Managers;
 
-use App;
 use Illuminate\Http\Response;
 use Illuminate\Support\MessageBag;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\App;
 use HZ\Illuminate\Mongez\Events\Events;
 use HZ\Illuminate\Mongez\Traits\RepositoryTrait;
 
@@ -48,8 +48,11 @@ abstract class ViewController extends Controller
     public function __construct()
     {
         $this->events = App::make(Events::class);
+
         if (static::REPOSITORY_NAME) {
             $this->repository = repo(static::REPOSITORY_NAME);
+        } elseif ($this->repository) {
+            $this->repository = repo($this->repository);
         }
     }
 

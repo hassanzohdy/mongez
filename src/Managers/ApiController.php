@@ -1,9 +1,9 @@
 <?php
 namespace HZ\Illuminate\Mongez\Managers;
 
-use App;
 use Illuminate\Http\Response;
 use Illuminate\Support\MessageBag;
+use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
 use HZ\Illuminate\Mongez\Events\Events;
 use HZ\Illuminate\Mongez\Traits\RepositoryTrait;
@@ -11,6 +11,14 @@ use HZ\Illuminate\Mongez\Traits\RepositoryTrait;
 abstract class ApiController extends Controller
 {
     use RepositoryTrait;
+
+    /**
+     * Repository name
+     * If provided, then the repository property will be the object of the repository
+     * 
+     * @const string
+     */
+    protected const REPOSITORY_NAME = '';
 
     /**
      * Repository name
@@ -33,12 +41,11 @@ abstract class ApiController extends Controller
     public function __construct()
     {
         $this->events = App::make(Events::class);
-        if ($this->repository) {
-            $this->repository = repo($this->repository);
-        }
 
-        if (defined('static::REPOSITORY_NAME')) {
+        if (static::REPOSITORY_NAME) {
             $this->repository = repo(static::REPOSITORY_NAME);
+        } elseif ($this->repository) {
+            $this->repository = repo($this->repository);
         }
     }
 
