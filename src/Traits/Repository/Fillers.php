@@ -210,7 +210,7 @@ trait Fillers
             $thumbnailImage = $ImageResize->resize(
                 $options['thumbnailImage']['width'],
                 $options['thumbnailImage']['height'],
-                $options['thumbnailImage']['quality'],
+                $options['thumbnailImage']['quality']
             );
             $fileOptions['thumbnailImage'] = $thumbnailImage;
         }
@@ -220,7 +220,7 @@ trait Fillers
             $mediumImage = $ImageResize->resize(
                 $options['mediumImage']['width'],
                 $options['mediumImage']['height'],
-                $options['mediumImage']['quality'],
+                $options['mediumImage']['quality']
             );
             $fileOptions['mediumImage'] = $mediumImage;
         }
