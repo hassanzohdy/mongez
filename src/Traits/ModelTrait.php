@@ -8,6 +8,14 @@ use Illuminate\Support\Arr;
 trait ModelTrait
 {
     /**
+     * Set table prefix
+     * If set to null, then config:mongez.database.prefix will be used instead
+     * 
+     * @var string|null
+     */
+    public $prefix = null;
+
+    /**
      * If set to true, it will disable updated by during timeline
      *
      * @var boolean
@@ -33,6 +41,24 @@ trait ModelTrait
     public static function getTableName()
     {
         return (new static)->getTable();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getTable()
+    {
+        $table = parent::getTable();
+        $prefix = '';
+        if ($this->prefix !== null) {
+            $prefix = $this->prefix;
+        } elseif (config('mongez.database.prefix')) {
+            $prefix = config('mongez.database.prefix');
+        }
+
+        $table = $prefix . $table;
+
+        return $table;
     }
 
     /**

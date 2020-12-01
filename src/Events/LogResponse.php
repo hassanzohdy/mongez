@@ -8,7 +8,7 @@ class LogResponse
     /**
      * {@inheritDoc}
      */
-    public function modifyResponse($response, $statusCode)
+    public function log($response, $statusCode)
     {
         $request = request();
 

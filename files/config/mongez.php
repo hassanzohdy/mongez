@@ -6,14 +6,16 @@ return [
     | Database options
     |--------------------------------------------------------------------------
     | 
-    | These are the `resource` options that can be used with any `Resource` class
-    | The `assets` option defines the generating `url` for any asset, by default is `url()`
+    | `prefix` value will be added to every model query, 
+    | however, if the model has a `TABLE_PREFIX` constant with a value rather than NULL
+    | it will be used instead 
     |
     */
     'database' => [
         'mysql' => [
             'defaultStringLength' => 191,
         ],
+        'prefix' => '',
     ],
 
     /*
