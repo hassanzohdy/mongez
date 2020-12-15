@@ -19,6 +19,8 @@ class LogResponse
             $userInfo['accountType'] = $user->accountType();
         }
 
+        $response = json_decode(response($response)->getContent(), true);
+
         ResponseLog::create([
             'response' => $response,
             'statusCode' => $statusCode,
