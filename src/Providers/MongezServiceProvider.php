@@ -59,6 +59,17 @@ class MongezServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+
+        $request = request();
+
+        if ($LocaleCode = $request->header('LOCALE')) {
+            $request->request->set('locale', $LocaleCode);
+        }
+
+        if ($request->locale || $request->lang) {
+            App::setLocale($request->locale ?: $request->lang);
+        }
+
         if (!$this->app->runningInConsole()) {
             if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
                 die(json_encode([
@@ -108,7 +119,7 @@ class MongezServiceProvider extends ServiceProvider
         if ($database != 'mongodb') return;
 
         $path = Mongez::packagePath('src/Database/migrations/mongodb');
-        
+
         Artisan::call('migrate', ['--path' => $path]);
     }
 
@@ -167,16 +178,6 @@ class MongezServiceProvider extends ServiceProvider
         // register the repositories as singletones, only one instance in the entire application
         foreach ($this->config('repositories', []) as $repositoryClass) {
             $this->app->singleton($repositoryClass);
-        }
-
-        $request = request();
-
-        if ($LocaleCode = $request->server('HTTP_LOCALE')) {
-            $request->request->set('locale', $LocaleCode);
-        }
-
-        if ($request->locale || $request->lang) {
-            App::setLocale($request->locale || $request->lang);
         }
 
         $this->app->singleton(Events::class);
