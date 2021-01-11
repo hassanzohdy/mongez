@@ -59,7 +59,6 @@ class MongezServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-
         $request = request();
 
         if ($LocaleCode = $request->header('LOCALE')) {
@@ -68,17 +67,6 @@ class MongezServiceProvider extends ServiceProvider
 
         if ($request->locale || $request->lang) {
             App::setLocale($request->locale ?: $request->lang);
-        }
-
-        if (!$this->app->runningInConsole()) {
-            if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-                die(json_encode([
-                    'success' => true,
-                    'mongez' => true,
-                ]));
-            }
-
-            return;
         }
 
         if (!$this->app->runningInConsole()) {
