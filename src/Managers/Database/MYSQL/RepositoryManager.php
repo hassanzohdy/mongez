@@ -44,18 +44,18 @@ abstract class RepositoryManager implements RepositoryInterface
     use Listable;
 
     /**
-     * Repository name
-     *
-     * @const string
-     */
-    const NAME = '';
-
-    /**
      * Allow repository to be extended
      */
     use Macroable {
         __call as marcoableMethods;
     }
+
+    /**
+     * Repository name
+     *
+     * @const string
+     */
+    const NAME = '';
 
     /**
      * Model name
@@ -66,11 +66,29 @@ abstract class RepositoryManager implements RepositoryInterface
 
     /**
      * Event name to be triggered
-     * If set to empty, then it will be the class model name
+     * If empty, the repository name will be used instead
      *
      * @const string
      */
     const EVENT = '';
+
+    /**
+     * List of events 
+     *
+     * @const array
+     */
+    const EVENTS_LIST = [
+        'listing' => 'onListing',
+        'list' => 'onList',
+        'creating' => 'onCreating',
+        'create' => 'onCreate',
+        'updating' => 'onUpdating',
+        'update' => 'onUpdate',
+        'saving' => 'onSaving',
+        'save' => 'onSave',
+        'deleting' => 'onDeleting',
+        'delete' => 'onDelete',
+    ];
 
     /**
      * Uploads directory name
@@ -82,29 +100,9 @@ abstract class RepositoryManager implements RepositoryInterface
     /**
      * If set to true, then the file will be stored as its uploaded name
      *
-     * @const bool
+     * @const bool|null
      */
-    const UPLOADS_KEEP_FILE_NAME = true;
-
-    /**
-     * Event name to be triggered
-     * If set to empty, then it will be the class model name
-     *
-     * @const string
-     */
-    const EVENTS_LIST = [
-        'listing' => 'onListing',
-        'filtering' => 'filters',
-        'list' => 'onList',
-        'creating' => 'onCreating',
-        'create' => 'onCreate',
-        'saving' => 'onSaving',
-        'save' => 'onSave',
-        'updating' => 'onUpdating',
-        'update' => 'onUpdate',
-        'deleting' => 'onDeleting',
-        'delete' => 'onDelete',
-    ];
+    const UPLOADS_KEEP_FILE_NAME = null;
 
     /**
      * Set if the current repository uses a soft delete method or not
@@ -127,7 +125,6 @@ abstract class RepositoryManager implements RepositoryInterface
      * @const string
      */
     const DELETED_AT = 'deleted_at';
-
 
     /**
      * Table name
@@ -159,7 +156,7 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     const ARRAYBLE_DATA = [];
 
-    /**
+    /** 
      * Auto save uploads in this list
      * If it's an indexed array, in that case the request key will be as database column name
      * If it's associated array, the key will be request key and the value will be the database column name
@@ -217,7 +214,7 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     const RESOURCE = '';
 
-        /**
+    /**
      * Retrieve only the active `un-deleted` records
      *
      * @const string
@@ -267,9 +264,6 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     const FILTER_BY = [];
 
-    // unix timestamp 12045550123
-    // 12-04-2020 => 12045550123 strtotime()
-
     /**
      * Determine wether to use pagination in the `list` method
      * if set null, it will depend on pagination configurations
@@ -285,7 +279,6 @@ abstract class RepositoryManager implements RepositoryInterface
      * @const int|null
      */
     const ITEMS_PER_PAGE = null;
-
 
     /**
      * This property will has the final table name that will be used
@@ -399,7 +392,7 @@ abstract class RepositoryManager implements RepositoryInterface
     {
         $this->initiateListing($options);
 
-        $this->trigger("listing", $this->query, $this);
+        $this->trigger("listing", $this->query);
 
         $paginate = $this->option('paginate', static::PAGINATE);
 
@@ -407,10 +400,10 @@ abstract class RepositoryManager implements RepositoryInterface
             $paginate = false;
         }
 
-        if ($paginate === true || $paginate === null && config('mongez.pagination.paginate') === true) {
+        if ($paginate === true || $paginate === null && config('mongez.repository.pagination.paginate') === true) {
             $pageNumber = $this->option('page', 1);
 
-            $itemPerPage = (int) $this->option('itemsPerPage', static::ITEMS_PER_PAGE !== null ? static::ITEMS_PER_PAGE : config('mongez.pagination.itemsPerPage'));
+            $itemPerPage = (int) $this->option('itemsPerPage', static::ITEMS_PER_PAGE !== null ? static::ITEMS_PER_PAGE : config('mongez.repository.pagination.itemsPerPage'));
 
             $selectedColumns = !empty($this->select->list()) ? $this->select->list() : ['*'];
 
@@ -460,7 +453,7 @@ abstract class RepositoryManager implements RepositoryInterface
     public function getQuery()
     {
         $model = static::MODEL;
-        return $model::whereNotNull('id');
+        return $model::query();
     }
 
     /**

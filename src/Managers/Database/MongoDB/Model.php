@@ -151,16 +151,6 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * Get model info
-     * 
-     * @return mixed
-     */
-    public function info(): array
-    {
-        return $this->getAttributes();
-    }
-
-    /**
      * This method should return the info of the document that will be stored in another document, default to full info
      * 
      * @return array
@@ -201,6 +191,28 @@ abstract class Model extends BaseModel
     }
 
     /**
+     * Associate the given value to the given key
+     * 
+     * @param mixed $modelInfo
+     * @param string $column
+     * @return this
+     */
+    public function associate($modelInfo, $column)
+    {
+        $listOfValues = $this->$column ?? [];
+
+        if ($modelInfo instanceof Model) {
+            $listOfValues[] = $modelInfo->sharedInfo();
+        } else {
+            $listOfValues[] = $modelInfo;
+        }
+
+        $this->$column = $listOfValues;
+
+        return $this;
+    }
+
+    /**
      * Re-associate the given document
      * 
      * @param   mixed $modelInfo
@@ -237,28 +249,6 @@ abstract class Model extends BaseModel
         }
 
         $this->$column = $documents;
-
-        return $this;
-    }
-
-    /**
-     * Associate the given value to the given key
-     * 
-     * @param mixed $modelInfo
-     * @param string $column
-     * @return this
-     */
-    public function associate($modelInfo, $column)
-    {
-        $listOfValues = $this->$column ?? [];
-
-        if ($modelInfo instanceof Model) {
-            $listOfValues[] = $modelInfo->sharedInfo();
-        } else {
-            $listOfValues[] = $modelInfo;
-        }
-
-        $this->$column = $listOfValues;
 
         return $this;
     }

@@ -38,19 +38,9 @@ class Model extends BaseModel
      * @var array
      */
     protected $guarded = [];
-    
-    /**
-     * Get model info
-     * 
-     * @return mixed
-     */
-    public function info()
-    {
-        return $this->getAttributes();
-    }
 
     /**
-     * Get user by id that will be used with created by, updated by and deleted by
+     * Get user id that will be used with created by, updated by and deleted by
      * 
      * @return int
      */

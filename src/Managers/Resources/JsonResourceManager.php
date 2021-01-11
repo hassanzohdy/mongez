@@ -305,7 +305,7 @@ abstract class JsonResourceManager extends JsonResource
     public function collectResources(array $columns): JsonResourceManager
     {
         foreach ($columns as $column => $resource) {
-            if (isset($this->$column)) {
+            if (! empty($this->$column)) {
                 $resourceData = $this->$column;
                 $this->set($column, new $resource(new Fluent($resourceData)));
             } else {
@@ -326,8 +326,9 @@ abstract class JsonResourceManager extends JsonResource
     {
         if (empty($columns)) return $this;
 
-        $format = config('mongez.resources.dateFormat', 'd-m-Y h:i:s a');
-        $timestamp = config('mongez.resources.dateTimestamp', true);
+        $format = config('mongez.resources.date.format', 'd-m-Y h:i:s a');
+        $timestamp = config('mongez.resources.date.timestamp', true);
+        $humanTime = config('mongez.resources.date.humanTime', true);
         $timezone = new \DateTimeZone(config('app.timezone'));
 
         foreach ($columns as $key => $column) {
@@ -356,10 +357,23 @@ abstract class JsonResourceManager extends JsonResource
                 continue;
             }
 
-            $this->set($column, $timestamp ? [
-                'format' => $value->format($format),
-                'timestamp' => $value->getTimestamp(),
-            ] : $value->format($format));
+            if (! $humanTime && ! $timestamp) {
+                $this->set($column, $value->format($format));
+            } else {
+                $values = [
+                    'format' => $value->format($format),
+                ];
+
+                if ($timestamp) {
+                    $values['timestamp'] = $value->getTimestamp();
+                }
+
+                if ($humanTime) {
+                    $values['humanTime'] = \Carbon\Carbon::createFromTimeStamp($value->getTimestamp())->diffForHumans();
+                }
+
+                $this->set($column, $values);
+            }
         }
 
         return $this;

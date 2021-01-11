@@ -44,6 +44,20 @@ class Builder
     }
 
     /**
+     * A shorthand method for the `or where like ` clause
+     *
+     * @param  string $column
+     * @param  mixed $value
+     * @return $this
+     */
+    public function orWhereLike()
+    {
+        return function (string $column, $value) {
+            return $this->orWhere($column, 'LIKE', "%$value%");
+        };
+    }
+
+    /**
      * Search for location near by the given coordinates for the given distance 
      *
      * @example: $this->whereLocationNear('location', [20,59221, 4], 20); // search in location column for the given [lat, lng] coordinates in 20 km radius
@@ -59,36 +73,56 @@ class Builder
     public function whereLocationNear()
     {
         return function (string $column, array $coordinates, float $distance, string $distanceType = 'km') {
-            $distance = (float) $distance;
-            $distanceInRadian = $distance;
-            if ($distanceType === 'km') {
-                $distanceInRadian = $distance / 6371;
-            } elseif ($distanceType === 'miles') {
-                $distanceInRadian = $distance / 3959;
-            }
+            return $this->where($column, 'geoWithin', static::locationNear($coordinates, $distance, $distanceType));
+        };
+    }
 
-            // as coordinates are based in [lat, lng] structure
-            // we need to swap the values to be [lng, lat] 
-            // @see https://docs.mongodb.com/manual/reference/operator/query/centerSphere/#op._S_centerSphere
-            $lngLatCoordinates = [$coordinates[1], $coordinates[0]];
 
-            return $this->where($column, 'geoWithin', [
-                '$centerSphere' => [$coordinates, $distanceInRadian],
-            ]);
+    /**
+     * Search for location near by the given coordinates for the given distance 
+     *
+     * @example: $this->whereLocationNear('location', [20,59221, 4], 20); // search in location column for the given [lat, lng] coordinates in 20 km radius
+     * @example: $this->whereLocationNear('location', [20,59221, 4], 20, 'km'); // search in location column for the given [lat, lng] coordinates in 20 km radius
+     * @example: $this->whereLocationNear('location', [20,59221, 4], 40, 'miles'); // search in location column for the given [lat, lng] coordinates in 40 miles radius
+     * 
+     * @param  string $column
+     * @param  array $coordinates
+     * @param  float $distance
+     * @param  string $distanceType
+     * @return $this
+     */
+    public function orWhereLocationNear()
+    {
+        return function (string $column, array $coordinates, float $distance, string $distanceType = 'km') {
+            return $this->orWhere($column, 'geoWithin', static::locationNear($coordinates, $distance, $distanceType));
         };
     }
 
     /**
-     * A shorthand method for the `or where like ` clause
-     *
-     * @param  string $column
-     * @param  mixed $value
-     * @return $this
+     * Get location near by the given options
+     * 
+     * @param  array $coordinates
+     * @param  float $distance
+     * @param  string $distanceType
+     * @return array
      */
-    public function orWhereLike()
+    private static function locationNear(array $coordinates, $distance, string $distanceType): array
     {
-        return function (string $column, $value) {
-            return $this->orWhere($column, 'LIKE', "%$value%");
-        };
+        $distance = (float) $distance;
+        $distanceInRadian = $distance;
+        
+        if ($distanceType === 'km') {
+            $distanceInRadian = $distance / 6371;
+        } elseif ($distanceType === 'miles') {
+            $distanceInRadian = $distance / 3959;
+        }
+
+        // as coordinates are based in [lat, lng] structure
+        // we need to swap the values to be [lng, lat] 
+        // @see https://docs.mongodb.com/manual/reference/operator/query/centerSphere/#op._S_centerSphere
+        // $lngLatCoordinates = [$coordinates[1], $coordinates[0]];    
+        return [
+            '$centerSphere' => [$coordinates, $distanceInRadian],
+        ];
     }
 }

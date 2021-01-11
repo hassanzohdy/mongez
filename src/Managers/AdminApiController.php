@@ -76,7 +76,7 @@ abstract class AdminApiController extends ApiController
      */
     protected function listOptions(Request $request): array
     {
-        return array_merge($request->All(), $this->controllerInfo('listOptions'));
+        return array_merge($request->all(), $this->controllerInfo('listOptions'));
     }
 
     /**

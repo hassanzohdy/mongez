@@ -97,12 +97,12 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
      * 
      * @return mixed
      */
-    public function getQuery()
-    {
-        $model = static::MODEL;
-        return $model::whereNotNull('id');
-        return $model::where('id', '!=', -1);
-    }
+    // public function getQuery()
+    // {
+    //     $model = static::MODEL;
+    //     return $model::whereNotNull('id');
+    //     return $model::where('id', '!=', -1);
+    // }
 
     /**
      * Pare the given arrayed value

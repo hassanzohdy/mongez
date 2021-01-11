@@ -14,7 +14,7 @@ interface RepositoryInterface
     public function create($data);
 
     /**
-     * Update a specific record
+     * Update a the given record id
      * 
      * @param  int id
      * @param  \Illuminate\Http\Request|array $data
@@ -31,7 +31,7 @@ interface RepositoryInterface
     public function delete(int $id): bool;
 
     /**
-     * List of records
+     * Return List of records
      * 
      * @param  array options
      * @return Illuminate\Support\Collection

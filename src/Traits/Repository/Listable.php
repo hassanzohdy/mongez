@@ -60,6 +60,19 @@ trait Listable
     }
 
     /**
+     * Get list of models for the given options
+     *
+     * @param  array $options
+     * @return Illuminate\Support\Collection
+     */
+    public function listModels(array $options)
+    {
+        $$options['as-model'] = true;
+
+        return $this->list($otherOptions);
+    }
+
+    /**
      * Get total records based on given options
      *
      * @param array $options

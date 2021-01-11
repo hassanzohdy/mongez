@@ -51,7 +51,7 @@ class Pipeline
         $this->aggregationFramework = $aggregationFramework;
     }
 
-    
+
     /**
      * Sum the given column name 
      * Please note this method MUST BE CALLED directly after the group by method 
@@ -59,14 +59,14 @@ class Pipeline
      * @param string|array $columns
      * @return float   
      */
-    public function sum($columns) 
+    public function sum($columns)
     {
         if ($this->name !== 'group') {
             // throw new Exception('Sum Method Must be called directly after the groupBy Method');
             return $this->groupBy()->sum($columns);
         }
 
-        if (is_string($columns)) {        
+        if (is_string($columns)) {
             $columns = [
                 $columns => $columns,
             ];
@@ -92,14 +92,14 @@ class Pipeline
             $this->data = array_merge($this->data, $key);
         } else {
             if (isset($this->data[$key])) {
-                if (! is_array($value)) {
+                if (!is_array($value)) {
                     $value = [$value => '$' . $value];
                 }
 
                 $this->data[$key] = array_merge((array) $this->data[$key], $value);
             } else {
                 $this->data[$key] =  $value;
-            }            
+            }
         }
 
         return $this;
@@ -113,7 +113,7 @@ class Pipeline
      */
     public function select(...$columns)
     {
-        if (! in_array($this->name, ['group', 'project'])) {
+        if (!in_array($this->name, ['group', 'project'])) {
             return $this->aggregationFramework->select(...$columns);
         }
 
@@ -210,7 +210,7 @@ class Pipeline
                 static::MATCHING_OPERATOR[$operator] => $value,
             ]
         ];
-        
+
         $this->data('$or', $data);
 
         return $this;
@@ -285,29 +285,29 @@ class Pipeline
         return $this;
     }
 
-    /**
-     * Unwind the given column
-     * 
-     * @param string $column
-     * @return $this
-     */
-    public function unwind($column)
-    {
-        if ($this->name !== 'unwind') {
-            return $this->aggregationFramework->unwind($column);
-        }
+    // /**
+    //  * Unwind the given column
+    //  * 
+    //  * @param string $column
+    //  * @return $this
+    //  */
+    // public function unwind($column)
+    // {
+    //     if ($this->name !== 'unwind') {
+    //         return $this->aggregationFramework->unwind($column);
+    //     }
 
-        $this->data = $column;
+    //     $this->data = $column;
 
-        return $this;
-    }
+    //     return $this;
+    // }
 
     /**
      * Return the final name of the pipeline
      * 
      * @return string
      */
-    public function getName(): string 
+    public function getName(): string
     {
         return '$' . $this->name;
     }
@@ -317,7 +317,7 @@ class Pipeline
      * 
      * @return array|string
      */
-    public function getData() 
+    public function getData()
     {
         return $this->data;
     }
@@ -326,7 +326,7 @@ class Pipeline
      * @inheritDoc
      */
     public function limit($number)
-    {        
+    {
         $this->data((int) $number);
         return $this;
     }
@@ -335,13 +335,16 @@ class Pipeline
      * @inheritDoc
      */
     public function skip($number)
-    {        
+    {
         $this->data((int)$number);
         return $this;
     }
 
     /**
-     * @inheritDoc
+     * Unwind the given column
+     * 
+     * @param string $column
+     * @return $this
      */
     public function join($from, $localField, $foreignField, $as = null)
     {
@@ -349,24 +352,28 @@ class Pipeline
 
         $this->data([
             'from' => $from,
-            'localField' => $localField, 
+            'localField' => $localField,
             'foreignField' => $foreignField,
             'as' => $as
         ]);
         return $this;
     }
-    
+
     /**
      * @inheritDoc
      */
-    public function unwind($path, $includeArrayIndex, $preserveNullAndEmptyArrays)
-    {   
+    public function unwind($column, $includeArrayIndex, $preserveNullAndEmptyArrays)
+    {
+        if ($this->name !== 'unwind') {
+            return $this->aggregationFramework->unwind($column);
+        }
+
         $data = [
-            'path' => '$'.$path,
+            'path' => '$' . $column,
             'includeArrayIndex' => $includeArrayIndex,
             'preserveNullAndEmptyArrays' => $preserveNullAndEmptyArrays
         ];
-        
+
         if (!$includeArrayIndex) unset($data['includeArrayIndex']);
         $this->data($data);
         return $this;

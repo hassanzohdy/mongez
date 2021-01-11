@@ -15,17 +15,23 @@ use HZ\Illuminate\Mongez\{
 class RepositoryNameRepository extends RepositoryManager implements RepositoryInterface
 {
     /**
-     * {@inheritDoc}
+     * Repository Name
+     *
+     * @const string
      */
     const NAME = 'repo-name';
     
     /**
-     * {@inheritDoc}
+     * Model class name
+     *
+     * @const string
      */
     const MODEL = Model::class;
 
     /**
-     * {@inheritDoc}
+     * Resource class name
+     *
+     * @const string
      */
     const RESOURCE = Resource::class;
 

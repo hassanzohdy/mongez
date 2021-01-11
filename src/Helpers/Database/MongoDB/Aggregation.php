@@ -63,17 +63,6 @@ class Aggregation
     }
 
     /**
-     * unwind clause 
-     * 
-     * @param string $column 
-     * @return Pipeline 
-     */
-    public function unwind($column)
-    {
-        return $this->pipeline('unwind')->unwind($column);
-    }
-
-    /**
      * Group By day 
      * 
      * @param string $column

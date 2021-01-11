@@ -35,9 +35,7 @@ class Arr
     public static function outer()
     {
         return function (...$arrays) {
-            $union_array = array_merge(...$arrays);
-            $intersect_array = array_intersect(...$arrays);
-            return array_diff($union_array, $intersect_array);
+            return array_diff(array_merge(...$arrays), array_intersect(...$arrays));
         };
     }
 }

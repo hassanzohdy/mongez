@@ -15,17 +15,23 @@ use HZ\Illuminate\Mongez\{
 class RepositoryNameRepository extends RepositoryManager implements RepositoryInterface
 {
     /**
-     * {@inheritDoc}
+     * Repository Name
+     *
+     * @const string
      */
     const NAME = 'repo-name';
     
     /**
-     * {@inheritDoc}
+     * Model class name
+     *
+     * @const string
      */
     const MODEL = Model::class;
 
     /**
-     * {@inheritDoc}
+     * Resource class name
+     *
+     * @const string
      */
     const RESOURCE = Resource::class;
 
@@ -85,7 +91,7 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
     /**
      * Add the column if and only if the value is passed in the request.
      * 
-     * @cont array  
+     * @cont array|true  
      */
     const WHEN_AVAILABLE_DATA = [];
 
@@ -123,9 +129,10 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
 
     /**
      * Set any extra data or columns that need more customizations
-     * Please note this method is triggered on create or update call
+     * Please note this method is triggered on create or update method
+     * If the model id is present, then its an update operation otherwise its a create operation.
      * 
-     * @param   mixed $model
+     * @param   Model $model
      * @param   \Illuminate\Http\Request $request
      * @return  void
      */
@@ -144,7 +151,6 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
     {
         //
     }
-
     
     /**
      * Do any extra filtration here
@@ -166,5 +172,4 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
     {
         //
     }
-
 }

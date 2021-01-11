@@ -118,6 +118,7 @@ class Mongez
         if (! static::$mongezContent) {
             static::$mongezContent = static::getStorageFileContent();
         }
+
         return Arr::get(static::$mongezContent, $key);
     }
 
@@ -196,7 +197,9 @@ class Mongez
     {
         $list = static::getStored($key);
         $valueIndex = array_search($value, $list);
+
         unset($list[$valueIndex]);
+        
         static::setStored($key, $list);
         static::updateStorageFile();
     }

@@ -1,5 +1,7 @@
-<?php       
+<?php
+
 namespace HZ\Illuminate\Mongez\Contracts\Console;
+
 interface EngezInterface
 {
     /**
@@ -8,14 +10,14 @@ interface EngezInterface
      * @return void
      */
     public function init();
-    
+
     /**
      * Validate the passed argument to the module segment builder
      * 
      * @return void
      */
     public function validateArguments();
-    
+
     /**
      * Create the module segment
      * 

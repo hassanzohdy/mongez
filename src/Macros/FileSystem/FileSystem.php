@@ -7,12 +7,16 @@ class FileSystem
      * Get json content.  
      * 
      * @param string $path
-     * @return array
+     * @param bool $assoc
+     * @return array|stdClass
      */
     public function getJson()
     { 
         return function ($path, $assoc = true) {
             $content = $this->get($path);
+
+            if (! $content) return [];
+
             return json_decode($content, $assoc);    
         };
     }
@@ -20,15 +24,15 @@ class FileSystem
     /**
      * Put json content.  
      * 
-     * @param array  $content
-     * @param string $jsonOption
      * @param string $path
+     * @param array|object $content
+     * @param int $flags
      * @return void
      */
     public function putJson()
     { 
-        return function ($path, $content, $jsonOption=JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ) {
-            $this->put($path, json_encode($content, $jsonOption));
+        return function (string $path, $content, $flags = JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) {
+            $this->put($path, json_encode($content, $flags));
         };
     }
 }

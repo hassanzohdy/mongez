@@ -1,16 +1,45 @@
 <?php
+
 namespace HZ\Illuminate\Mongez\Managers;
 
 use Illuminate\Http\Response;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\MessageBag;
 use Illuminate\Support\Facades\App;
-use App\Http\Controllers\Controller;
 use HZ\Illuminate\Mongez\Events\Events;
 use HZ\Illuminate\Mongez\Traits\RepositoryTrait;
 
 abstract class ApiController extends Controller
 {
     use RepositoryTrait;
+
+    /**
+     * Return error as array
+     * 
+     * @const string 
+     */
+    public const ERROR_AS_ARRAY = 'array';
+
+    /**
+     * The returned key in the error array type 
+     * 
+     * @const string 
+     */
+    public const ERROR_AS_ARRAY_KEY = 'key';
+
+    /**
+     * The returned value in the error array type 
+     * 
+     * @const string 
+     */
+    public const ERROR_AS_ARRAY_VALUE = 'value';
+
+    /**
+     * Return error as object
+     * 
+     * @const string 
+     */
+    public const ERROR_AS_OBJECT = 'object';
 
     /**
      * Repository name
@@ -21,9 +50,10 @@ abstract class ApiController extends Controller
     protected const REPOSITORY_NAME = '';
 
     /**
-     * Repository name
-     * If provided, then the repository property will be the object of the repository
-     * @var mixed
+     * Repository Object
+     * Can be filled when REPOSITORY_NAME is provided.
+     * 
+     * @var RepositoryInterface
      */
     protected $repository = null;
 
@@ -64,7 +94,8 @@ abstract class ApiController extends Controller
         if (($eventResponse = $this->events->trigger('response.success', $data)) && is_array($eventResponse)) {
             $data = $eventResponse;
         }
-        return $this->send(Response::HTTP_OK, $data);
+
+        return $this->send($data, Response::HTTP_OK);
     }
 
     /**
@@ -78,8 +109,19 @@ abstract class ApiController extends Controller
         if ($data instanceof MessageBag) {
             $errors = [];
 
+            $errorReturn = config('mongez.controllers.response.errors.strategy', self::ERROR_AS_ARRAY);
+            $arrayKey = config('mongez.controllers.errors.arrayKey', self::ERROR_AS_ARRAY_KEY);
+            $arrayValue = config('mongez.controllers.errors.ArrayValue', self::ERROR_AS_ARRAY_VALUE);
+
             foreach ($data->messages() as $input => $messagesList) {
-                $errors[$input] = $messagesList[0];
+                if ($errorReturn === self::ERROR_AS_OBJECT) {
+                    $errors[$input] = $messagesList[0];
+                } elseif ($errorReturn === self::ERROR_AS_ARRAY) {
+                    $errors[] = [
+                        $arrayKey => $input,
+                        $arrayValue => $messagesList,
+                    ];
+                }
             }
 
             $data = ['errors' => $errors];
@@ -93,7 +135,7 @@ abstract class ApiController extends Controller
             $data = $eventResponse;
         }
 
-        return $this->send(Response::HTTP_BAD_REQUEST, $data);
+        return $this->send($data, Response::HTTP_BAD_REQUEST);
     }
 
     /**
@@ -104,15 +146,7 @@ abstract class ApiController extends Controller
      */
     protected function notFound($data = [])
     {
-        if ($data instanceof MessageBag) {
-            $errors = [];
-
-            foreach ($data->messages() as $input => $messagesList) {
-                $errors[$input] = $messagesList[0];
-            }
-
-            $data = ['errors' => $errors];
-        } elseif (is_string($data)) {
+        if (is_string($data)) {
             $data = [
                 'error' => $data,
             ];
@@ -122,7 +156,7 @@ abstract class ApiController extends Controller
             $data = $eventResponse;
         }
 
-        return $this->send(Response::HTTP_NOT_FOUND, $data);
+        return $this->send($data, Response::HTTP_NOT_FOUND);
     }
 
     /**
@@ -139,17 +173,17 @@ abstract class ApiController extends Controller
             $message = $eventResponse;
         }
 
-        return $this->send(Response::HTTP_UNPROCESSABLE_ENTITY, $message);
+        return $this->send($message, Response::HTTP_UNPROCESSABLE_ENTITY);
     }
 
     /**
      * Send Response
      *
-     * @param  int $statusCode
      * @param  array $message
-     * @return string
+     * @param  int $statusCode
+     * @return Response
      */
-    protected function send(int $statusCode, array $message)
+    protected function send(array $message, int $statusCode)
     {
         if (($eventResponse = $this->events->trigger('response.send', $message, $statusCode)) && is_array($eventResponse)) {
             $message = $eventResponse;

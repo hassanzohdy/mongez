@@ -76,11 +76,7 @@ trait Fillers
                 continue;
             }
 
-            if (!isset($request->$column)) {
-                $model->$column = null;
-            } else {
-                $model->$column = $request->$column;
-            }
+            $model->$column = $request->$column ?? null;
         }
     }
 
@@ -127,16 +123,18 @@ trait Fillers
 
         $storageDirectory = $this->getUploadsStorageDirectoryName();
 
-        if (true === static::UPLOADS_KEEP_FILE_NAME) {
+        $keepFileName = defined('static::UPLOADS_KEEP_FILE_NAME') ? static::UPLOADS_KEEP_FILE_NAME: config('mongez.repository.uploads.keepUploadsName', true);
+
+        if (true === $keepFileName) {
             $storageDirectory .= '/' . $model->getId();
         }
 
-        $getFileName = function (UploadedFile $fileObject): string {
+        $getFileName = function (UploadedFile $fileObject)use ($keepFileName): string  {
             $originalName = $fileObject->getClientOriginalName();
 
             $extension = File::extension($originalName) ?: $fileObject->guessExtension();
 
-            $fileName = false === static::UPLOADS_KEEP_FILE_NAME ? Str::random(40) . '.' . $extension : $originalName;
+            $fileName = false === $keepFileName ? Str::random(40) . '.' . $extension : $originalName;
 
             return $fileName;
         };
@@ -166,32 +164,6 @@ trait Fillers
                 }
             }
         }
-
-        // foreach ((array) $columns as $column => $name) {
-        //     if (is_numeric($column)) {
-        //         $column = $name;
-        //     }
-
-        //     $file = $request->file($name);
-
-        //     if (!$file) continue;
-
-        //     if (is_array($file)) {
-        //         $files = [];
-
-        //         foreach ($file as $index => $fileObject) {
-        //             if (!$fileObject->isValid()) continue;
-
-        //             $files[$index] = $fileObject->storeAs($storageDirectory, $getFileName($fileObject));
-        //         }
-
-        //         $model->$column = $files;
-        //     } else {
-        //         if ($file instanceof UploadedFile && $file->isValid()) {
-        //             $model->$column = $file->storeAs($storageDirectory, $getFileName($file));
-        //         }
-        //     }
-        // }
     }
 
 
@@ -234,7 +206,17 @@ trait Fillers
      */
     protected function getUploadsStorageDirectoryName(): string
     {
-        return 'data/' . (static::UPLOADS_DIRECTORY ?: static::NAME);
+        $baseDirectory = config('mongez.repository.uploads.uploadsDirectory', -1);
+
+        if ($baseDirectory === -1) {
+            $baseDirectory = 'data';
+        }
+
+        if ($baseDirectory) {
+            $baseDirectory .= '/';
+        }
+
+        return $baseDirectory . (static::UPLOADS_DIRECTORY ?: static::NAME);
     }
 
     /**

@@ -42,6 +42,16 @@ trait ModelTrait
     {
         return (new static)->getTable();
     }
+    
+    /**
+     * An alias method to `getAttributes` method
+     * 
+     * @return array
+     */
+    public function info(): array
+    {
+        return $this->attributes;
+    }
 
     /**
      * {@inheritdoc}
@@ -79,18 +89,11 @@ trait ModelTrait
      */
     public function pluck(...$columns): array
     {
-        $data = [];
-
         if (func_num_args() == 1 && is_array($columns[0])) {
             $columns = $columns[0];
         }
 
-        foreach ($columns as $column) {
-            if (!isset($this->$column)) continue;
-            $data[$column] = $this->$column;
-        }
-
-        return $data;
+        return $this->only($columns);
     }
     
     /**
@@ -136,6 +139,18 @@ trait ModelTrait
         static::updating(function ($model) {
             if (static::UPDATED_BY) {
                 $model->{static::UPDATED_BY} = $model->byUser();
+            }
+
+            $updatesLogModel = config('mongez.database.updatesLogModel');
+
+            // if updates log model is set, then the data of current model 
+            // will be logged before update happens.
+            if ($updatesLogModel) {
+                $updatesLogModel::create([
+                    'table' => $model->getTableName(),
+                    'id' => $model->id,
+                    'data' => json_encode($model->getAttributes(), JSON_UNESCAPED_SLASHES),
+                ]);
             }
         });
 

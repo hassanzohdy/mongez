@@ -10,12 +10,18 @@ return [
     | however, if the model has a `TABLE_PREFIX` constant with a value rather than NULL
     | it will be used instead 
     |
+    | `updatesLogModel` if set a model class, any updates that occurs to every model will be stored 
+    | in the given model to be logged later. 
+    |
+    | Please Note this will massively increase the updates log model size as every update is stored before the update happens.
+    | Please read the documentation for the column names  
     */
     'database' => [
         'mysql' => [
             'defaultStringLength' => 191,
         ],
         'prefix' => '',
+        'updatesLogModel' => HZ\Illuminate\Mongez\Models\UpdateLog::class, 
     ],
 
     /*
@@ -26,9 +32,21 @@ return [
     | These are the `resource` options that can be used with any `Resource` class
     | The `assets` option defines the generating `url` for any asset, by default is `url()`
     |
+    | The date key provides the date options that can be used for any date column 
+    | `format`: the date format that will be returned. 
+    | `timestamp`: if set to true, the unix timestamp will be returned as integer.  
+    | `human`: if set to true, a human time will be returned i.e 12 minutes ago.  
+    |  Please note that if the timestamp and human time are set to true, the 
+    |  date format will be returned as string, otherwise it will be returned as array`object`.   
+    |
     */
     'resources' => [
         'assets' => 'url',
+        'date' => [
+            'format' => 'd-m-Y h:i:s a',
+            'timestamp' => true,
+            'humanTime' => true,
+        ],
     ],
 
     /*
@@ -64,19 +82,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Pagination configurations
-    |--------------------------------------------------------------------------
-    | Pagination configurations work with `list` method in any repository.
-    |    
-    | Any value listed below will be applied on all repositories unless repository/method-call override.   
-    */
-    'pagination' => [
-        'paginate' => true,
-        'itemsPerPage' => 15,
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
     | Admin options
     |--------------------------------------------------------------------------
     |
@@ -89,6 +94,80 @@ return [
         'returnOn' => [
             'store' => 'single-record',
             'update' => 'single-record',
+        ],
+    ],
+
+    
+    /*
+    |--------------------------------------------------------------------------
+    | Repository Options
+    |--------------------------------------------------------------------------
+    |
+    | List of repository options located here
+    |
+    |--------------------------------------------------------------------------
+    | Pagination configurations
+    |--------------------------------------------------------------------------
+    | Uploads Directory
+    |
+    | Setting the uploads directory will be useful when dealing with git repositories to be ignored.
+    | If sets to null, then it won't be used 
+    | 
+    | This directory will be created inside local directory path in the `config/filesystem.php`    
+    |
+    | keepUploadsName
+    |
+    | If set to true, then all uploads names wil be kept as it is.
+    | If set to false, a random generated hashed name will be used instead.
+    |--------------------------------------------------------------------------
+    | Pagination configurations
+    |--------------------------------------------------------------------------
+    | Pagination configurations work with `list` method in any repository.
+    |    
+    | Any value listed below will be applied on all repositories unless repository/method-call override.   
+    |    
+    */
+    'repository' => [
+        'uploads' => [
+            'uploadsDirectory' => 'data',
+            'keepUploadsName' => true,
+        ],
+        'pagination' => [
+            'paginate' => true,
+            'itemsPerPage' => 15,
+        ],
+    ],
+
+    
+    /*
+    |--------------------------------------------------------------------------
+    | Controllers Options
+    |--------------------------------------------------------------------------
+    |
+    | Controllers Options
+    |
+    |--------------------------------------------------------------------------
+    | Response
+    |--------------------------------------------------------------------------
+    | badRequest Response Map strategy
+    |
+    | If the response map strategy is set as array, then it will be returned as array of objects 
+    | each object looks like [key => input, value => message]
+    | However, key and value can be customized as well.
+    | 
+    | Available Options: `array` | `object`, defaults to `array`
+    |
+    | The arrayKey will set the name of object key that will hold the input name, defaults to `key`
+    | The arrayValue will set the name of object key that will hold the error message itself, defaults to `value`
+    |
+    */
+    'controllers' => [
+        'response' => [
+            'errors' => [
+                'strategy' => 'array',
+                'arrayKey' => 'key',
+                'arrayValue' => 'value',
+            ],
         ],
     ],
 
