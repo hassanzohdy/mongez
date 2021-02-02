@@ -123,18 +123,18 @@ trait Fillers
 
         $storageDirectory = $this->getUploadsStorageDirectoryName();
 
-        $keepFileName = defined('static::UPLOADS_KEEP_FILE_NAME') ? static::UPLOADS_KEEP_FILE_NAME: config('mongez.repository.uploads.keepUploadsName', true);
+        $keepFileName = defined('static::UPLOADS_KEEP_FILE_NAME') ? static::UPLOADS_KEEP_FILE_NAME : config('mongez.repository.uploads.keepUploadsName', true);
 
         if (true === $keepFileName) {
-            $storageDirectory .= '/' . $model->getId();
+            $storageDirectory .= '/' . $model->getId() . '/' . mt_rand();
         }
 
-        $getFileName = function (UploadedFile $fileObject)use ($keepFileName): string  {
+        $getFileName = function (UploadedFile $fileObject) use ($keepFileName): string {
             $originalName = $fileObject->getClientOriginalName();
 
             $extension = File::extension($originalName) ?: $fileObject->guessExtension();
 
-            $fileName = false === $keepFileName ? Str::random(40) . '.' . $extension : $originalName;
+            $fileName = false === $keepFileName ? Str::random(40) . '.' . $extension : $this->adjustFileName($originalName);
 
             return $fileName;
         };
@@ -146,7 +146,10 @@ trait Fillers
 
             $file = $request->file($name);
 
-            if (!$file) continue;
+            if (!$file) {
+                $model->$column = $this->mergeOldAndNewFiles([], $column, $request, $model);
+                continue;
+            }
 
             if (is_array($file)) {
                 $files = [];
@@ -157,7 +160,7 @@ trait Fillers
                     $files[$index] = $fileObject->storeAs($storageDirectory, $getFileName($fileObject));
                 }
 
-                $model->$column = $files;
+                $model->$column = $this->mergeOldAndNewFiles($files, $column, $request, $model);
             } else {
                 if ($file instanceof UploadedFile && $file->isValid()) {
                     $model->$column = $file->storeAs($storageDirectory, $getFileName($file));
@@ -166,6 +169,42 @@ trait Fillers
         }
     }
 
+    /**
+     * Adjust the given file name
+     * 
+     * @param  string $fileName
+     * @return string
+     */
+    private function adjustFileName($fileName)
+    {
+        $fileName = preg_replace('/(\-+)/', '-', str_replace([
+            '-', '(', ')', '%', '#', ' ',
+        ], '-', $fileName));
+
+        return preg_replace('/\-\./', '.', $fileName);
+    }
+
+    /**
+     * Merge the given files with the old uploaded ones
+     * 
+     * @param  array $files
+     * @param  string $column
+     * @return array
+     */
+    private function mergeOldAndNewFiles(array $files, $column, $request, $model): array
+    {
+        $filesFromRequest = (array) $request->{$column . 'String'};
+
+        $oldImages = (array) $model->$column;
+
+        $unLinkedImages = array_diff($oldImages, $filesFromRequest);
+
+        foreach ($unLinkedImages as $unlinkedImage) {
+            $this->unlink($unlinkedImage);
+        }
+
+        return array_merge($files, $filesFromRequest);
+    }
 
     /**
      * Create File options

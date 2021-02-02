@@ -347,7 +347,7 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $this->eventName = static::EVENT ?: static::NAME;
 
-        $this->boot();
+        $this->boot();    
 
         // register events
         $this->registerEvents();

@@ -110,6 +110,7 @@ abstract class ApiController extends Controller
             $errors = [];
 
             $errorReturn = config('mongez.controllers.response.errors.strategy', self::ERROR_AS_ARRAY);
+            $errorMaxArrayLength = config('mongez.controllers.response.errors.maxArrayLength', 1);
             $arrayKey = config('mongez.controllers.errors.arrayKey', self::ERROR_AS_ARRAY_KEY);
             $arrayValue = config('mongez.controllers.errors.ArrayValue', self::ERROR_AS_ARRAY_VALUE);
 
@@ -119,7 +120,7 @@ abstract class ApiController extends Controller
                 } elseif ($errorReturn === self::ERROR_AS_ARRAY) {
                     $errors[] = [
                         $arrayKey => $input,
-                        $arrayValue => $messagesList,
+                        $arrayValue => $errorMaxArrayLength === 1 ? $messagesList[0] : array_slice($messagesList, 0, $errorMaxArrayLength),
                     ];
                 }
             }

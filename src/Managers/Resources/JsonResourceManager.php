@@ -513,7 +513,7 @@ abstract class JsonResourceManager extends JsonResource
      */
     public function set(string $key, $value)
     {
-        $this->data[$key] = $value;
+        Arr::set($this->data, $key, $value);
 
         return $this;
     }
