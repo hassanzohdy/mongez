@@ -19,7 +19,7 @@ class PostmanCollection extends Command
     /**
      * default generate file name
     */
-    const DEFAULT_GENERATE_FILE_NAME = 'project-api-collection';
+    const DEFAULT_GENERATED_FILE_NAME = 'project-api-collection';
 
     /**
      * Postman Files.
@@ -47,7 +47,7 @@ class PostmanCollection extends Command
      *
      * @var string
      */
-    protected $description = 'Generate Root Collection ..';
+    protected $description = 'Generate one postman collection of all modules.';
 
     /**
      * Create a new command instance.
@@ -86,7 +86,7 @@ class PostmanCollection extends Command
 
         $this->postmanFiles = array_filter(glob($modulePath . '/*/' . self::DOCS_FOLDER_NAME . '/*.postman.json'));
 
-        $this->info('Success Load Postman Files ..');
+        $this->info('Successfully Loaded Postman Files...');
     }
 
     /**
