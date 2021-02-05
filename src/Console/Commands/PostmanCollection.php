@@ -74,7 +74,7 @@ class PostmanCollection extends Command
     {
         $modulePath = $this->getModulePath();
 
-        $this->postmanFiles = array_filter(glob($modulePath . '/*/' . self::DOCS_FOLDER_NAME . '/*.postman.json'));
+        $this->postmanFiles = array_filter(glob($modulePath . '/*/' . self::DOCS_DIRECTORY_NAME . '/*.postman.json'));
 
         $this->info('Successfully Loaded Postman Files...');
     }
@@ -128,7 +128,7 @@ class PostmanCollection extends Command
 
         $collection['variable'] = $this->getGlobalVariables();
 
-        $fileName = $this->optionHasValue('fileName') ? $this->option('fileName') : self::DEFAULT_GENERATE_FILE_NAME;
+        $fileName = $this->optionHasValue('fileName') ? $this->option('fileName') : self::DEFAULT_GENERATED_FILE_NAME;
 
         file_put_contents(base_path("$fileName.postman.json"), json_encode($collection, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 
@@ -174,6 +174,6 @@ class PostmanCollection extends Command
     */
     private function getModulePath()
     {
-        return base_path(self::MODULE_PATH);
+        return base_path(self::MODULES_PATH);
     }
 }
