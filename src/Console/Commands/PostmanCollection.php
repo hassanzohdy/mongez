@@ -14,7 +14,7 @@ class PostmanCollection extends Command
     /**
      * Docs Folder Name
     */
-    const DOCS_FOLDER_NAME = 'docs';
+    const DOCS_DIRECTORY_NAME = 'docs';
 
     /**
      * default generate file name
@@ -48,16 +48,6 @@ class PostmanCollection extends Command
      * @var string
      */
     protected $description = 'Generate one postman collection of all modules.';
-
-    /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        parent::__construct();
-    }
 
     /**
      * Execute the console command.
