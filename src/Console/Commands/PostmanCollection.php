@@ -106,7 +106,6 @@ class PostmanCollection extends Command
     {
         $appName = env('APP_NAME', 'Postman Collection with Mongez');
 
-
         $collection = [
             'item' => [],
             'variable' => [],
@@ -145,14 +144,13 @@ class PostmanCollection extends Command
         $allGlobalVariables = [];
 
         foreach(array_column($this->filesContent, 'variable') as $globalVariable) {
-            foreach($globalVariable as $variable){
+            foreach($globalVariable as $variable) {
                 $allGlobalVariables[$variable['key']] = $variable;
             }
         }
         
         return $allGlobalVariables;
     }
-
 
     /**
      * parsing file from text to json
