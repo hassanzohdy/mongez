@@ -9,7 +9,7 @@ class PostmanCollection extends Command
     /**
      * Path Folder of modules
     */
-    const MODULE_PATH = 'app/Modules';
+    const MODULES_PATH = 'app/Modules';
 
     /**
      * Docs Folder Name
@@ -178,24 +178,12 @@ class PostmanCollection extends Command
     }
     
     /**
-     * Get Module Path 
+     * Get Module Path
      * 
      * @return string
     */
     private function getModulePath()
     {
         return base_path(self::MODULE_PATH);
-    }
-
-    /**
-     * Return Module Repo
-     * 
-     * @return mixed
-    */
-    public function getRepositry($repo)
-    {
-        $repositories = config('mongez.repositories');
-
-        return $repositories[$repo] ?? false;
     }
 }
