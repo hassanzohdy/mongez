@@ -14,6 +14,19 @@ if (! function_exists('user')) {
     }
 }
 
+if (! function_exists('toJson')) {
+    /**
+     * Encode the given data into a json content with unescaped slashes, pretty print and unescape unicode
+     * 
+     * @param mixed $data
+     * @return string
+     */
+    function toJson($data): string
+    {
+        return json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    }
+}
+
 if (! function_exists('pre')) {
     /**
      * print the given variable
