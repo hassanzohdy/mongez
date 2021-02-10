@@ -1,4 +1,5 @@
 <?php
+
 namespace HZ\Illuminate\Mongez\Events;
 
 use App;
@@ -40,17 +41,20 @@ class Events implements EventsInterface
             if (!isset($this->eventsList[$event])) continue;
 
 
-            foreach ($this->eventsList[$event] as $callbackString) {
-                if (!$this->isLoaded($callbackString)) {
-                    $this->load($callbackString);
+            foreach ($this->eventsList[$event] as $callback) {
+                if (is_string($callback)) {
+                    if (!$this->isLoaded($callback)) {
+                        $this->load($callback);
+                    }
+
+                    list($classObject, $method) = $this->get($callback);
+
+                    $return = $classObject->$method(...$callbackArguments);
+                } else {
+                    $return = $callback(...$callbackArguments);
                 }
 
-                list($classObject, $method) = $this->get($callbackString);
-
-                $return = $classObject->$method(...$callbackArguments);
-
                 if ($return === false) return false;
-
                 // change the first argument if the return data is altered
                 if (!is_null($return)) {
                     $callbackArguments[0] = $return;

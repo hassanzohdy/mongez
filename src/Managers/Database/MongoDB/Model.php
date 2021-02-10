@@ -12,7 +12,7 @@ use Jenssegers\Mongodb\Eloquent\Model as BaseModel;
 abstract class Model extends BaseModel
 {
     use RecycleBin;
-    
+
     use ModelTrait {
         boot as traitBoot;
     }
@@ -92,8 +92,8 @@ abstract class Model extends BaseModel
         static::creating(function ($model) {
             if (!$model->id) {
                 $model->id = static::nextId();
-                $model->_id = sha1(time() . Str::random(40)); 
-            }            
+                $model->_id = sha1(time() . Str::random(40));
+            }
         });
     }
 
@@ -169,6 +169,28 @@ abstract class Model extends BaseModel
         }
 
         return $info;
+    }
+
+    /**
+     * Get shared info plus the given columns
+     * 
+     * @param ...string $columns
+     * @return array
+     */
+    public function sharedInfoWith(...$columns): array
+    {
+        return array_merge($this->sharedInfo(), $this->pluck($columns));
+    }
+
+    /**
+     * Get shared info except the given columns
+     * 
+     * @param ...string $columns
+     * @return array
+     */
+    public function sharedInfoExcept(...$columns): array
+    {
+        return array_diff($this->sharedInfo(), $this->pluck($columns));
     }
 
     /**

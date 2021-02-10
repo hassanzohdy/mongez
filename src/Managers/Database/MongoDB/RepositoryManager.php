@@ -344,13 +344,59 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
                     $parentId = $model->$parentColumnName['id'] ?? null;
                     if (!$parentId) continue;
 
-                    list($parentRepositoryClass, $childNameInParent) = $parentRepositoryWithChildColumnName;
+                    list($parentRepositoryClass, $childNameInParent, $sharedInfoMethod) = $parentRepositoryWithChildColumnName;
+
+                    if (!$sharedInfoMethod) {
+                        $sharedInfoMethod = 'sharedInfo';
+                    }
 
                     $parentRepository = App::make($parentRepositoryClass);
 
-                    $parentRepository->disassociate($parentId, $model, $childNameInParent)->save();
+                    $this->updateParentForChild($parentId, $parentRepository, $model, $sharedInfoMethod, $childNameInParent, 'disassociate');
                 }
             });
+
+            $this->events->subscribe($this->eventName . '.save', function ($model, $request, $oldModel = null) {
+                foreach (static::CHILD_OF as $parentColumnName => $parentRepositoryWithChildColumnName) {
+                    $parentId = $model->$parentColumnName['id'] ?? null;
+
+                    if (!$parentId) continue;
+
+                    list($parentRepositoryClass, $childNameInParent) = $parentRepositoryWithChildColumnName;
+
+                    $sharedInfoMethod = $parentRepositoryWithChildColumnName[2] ?? 'sharedInfo';
+
+                    $parentRepository = App::make($parentRepositoryClass);
+
+                    $this->updateParentForChild($parentId, $parentRepository, $model, $sharedInfoMethod, $childNameInParent, 'reassociate');
+
+                    if ($oldModel && ($oldModel->$parentColumnName['id'] ?? null) != $parentId) {
+                        $this->updateParentForChild($oldModel->$parentColumnName['id'], $parentRepository, $oldModel, $sharedInfoMethod, $childNameInParent, 'disassociate');
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * Update Parent and trigger save event
+     * 
+     * @param  int $parentId
+     * @param  RepositoryInterface $parentRepository
+     * @param  Model $childModel
+     * @param  string $sharedInfoMethod
+     * @param  string $childNameInParent
+     * @param  string $associateMode reassociate|disassociate
+     * @return void
+     */
+    protected function updateParentForChild($parentId, $parentRepository, $childModel, $sharedInfoMethod, $childNameInParent, $associateMode)
+    {
+        $parentModel = $parentRepository->getModel($parentId);
+
+        if ($parentModel) {
+            $parentModel->$associateMode($childModel->$sharedInfoMethod(), $childNameInParent)->save();
+
+            $parentRepository->trigger('save', $parentModel, $this->request, $parentModel);
         }
     }
 
