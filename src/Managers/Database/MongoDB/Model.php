@@ -190,7 +190,7 @@ abstract class Model extends BaseModel
      */
     public function sharedInfoExcept(...$columns): array
     {
-        return array_diff($this->sharedInfo(), $this->pluck($columns));
+        return array_diff_key($this->sharedInfo(), $this->pluck($columns));
     }
 
     /**

@@ -21,7 +21,7 @@ return [
             'defaultStringLength' => 191,
         ],
         'prefix' => '',
-        'updatesLogModel' => HZ\Illuminate\Mongez\Models\UpdateLog::class, 
+        'updatesLogModel' => HZ\Illuminate\Mongez\Models\UpdateLog::class,
     ],
 
     /*
@@ -97,7 +97,7 @@ return [
         ],
     ],
 
-    
+
     /*
     |--------------------------------------------------------------------------
     | Repository Options
@@ -138,16 +138,10 @@ return [
         ],
     ],
 
-    
+
     /*
     |--------------------------------------------------------------------------
-    | Controllers Options
-    |--------------------------------------------------------------------------
-    |
-    | Controllers Options
-    |
-    |--------------------------------------------------------------------------
-    | Response
+    | Response Options
     |--------------------------------------------------------------------------
     | badRequest Response Map strategy
     |
@@ -161,13 +155,11 @@ return [
     | The arrayValue will set the name of object key that will hold the error message itself, defaults to `value`
     |
     */
-    'controllers' => [
-        'response' => [
-            'errors' => [
-                'strategy' => 'array',
-                'arrayKey' => 'key',
-                'arrayValue' => 'value',
-            ],
+    'response' => [
+        'errors' => [
+            'strategy' => 'array',
+            'arrayKey' => 'key',
+            'arrayValue' => 'value',
         ],
     ],
 
@@ -215,7 +207,7 @@ return [
     |
     */
     'events' => [],
-    
+
     /*
     |--------------------------------------------------------------------------
     | Cache driver
@@ -225,7 +217,7 @@ return [
     |
     */
     'cache' => [],
-    
+
     /*
     |--------------------------------------------------------------------------
     | Base filters 

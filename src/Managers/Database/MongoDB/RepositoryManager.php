@@ -19,14 +19,6 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     const FILTER_CLASS = Filter::class;
 
     /**
-     * Set if the current repository uses a soft delete method or not
-     * This is mainly used in the where clause
-     * 
-     * @var bool
-     */
-    const USING_SOFT_DELETE = false;
-
-    /**
      * Set the columns will be filled with single record of collection data
      * i.e [country => CountryModel::class]
      * 
@@ -41,6 +33,13 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
      * @const array
      */
     const MULTI_DOCUMENTS_DATA = [];
+
+    /**
+     * Geo Location data 
+     * 
+     * @const array
+     */
+    const LOCATION_DATA = [];
 
     /**
      * Set of the parents repositories of current repo
@@ -91,18 +90,6 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
 
         return $this->getBy('id', (int) $id);
     }
-
-    /**
-     * Get the query handler
-     * 
-     * @return mixed
-     */
-    // public function getQuery()
-    // {
-    //     $model = static::MODEL;
-    //     return $model::whereNotNull('id');
-    //     return $model::where('id', '!=', -1);
-    // }
 
     /**
      * Pare the given arrayed value
@@ -225,6 +212,26 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
         // add the extra methods
         $this->setDocumentData($model, $request);
         $this->setMultiDocumentData($model, $request);
+        $this->setLocationData($model, $request);
+    }
+
+    /**
+     * Set location data
+     * 
+     * @param  Model $model
+     * @param  Request $request
+     * @return void
+     */
+    protected function setLocationData($model, $request)
+    {
+        foreach (static::LOCATION_DATA as $locationKey) {
+            $location = $request->$locationKey;
+            $model->$locationKey = [
+                'type' => 'Point',
+                'coordinates' => [(float) $location['lat'], (float) $location['lng']],
+                'address' => $location['address'] ?? null,
+            ];
+        }
     }
 
     /**
@@ -256,6 +263,22 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
 
             $model->$column = $documentModel ? $documentModel->{$method}() : null;
         }
+    }
+
+    /**
+     * Filter by geo locations.
+     *
+     * @param string $column
+     * @param float $distance
+     * @return void
+     */
+    public function whereNearBy($column, $distance)
+    {
+        $location = $this->option($column);
+
+        if (! $location) return;
+
+        $this->query->whereLocationNear($column, [(float) $location['lat'], (float) $location['lng']], $distance);
     }
 
     /**

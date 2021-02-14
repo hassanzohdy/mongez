@@ -106,13 +106,30 @@ abstract class ApiController extends Controller
      */
     protected function badRequest($data)
     {
+        $data = $this->mapResponseError($data);
+
+        if (($eventResponse = $this->events->trigger('response.badRequest', $data)) && is_array($eventResponse)) {
+            $data = $eventResponse;
+        }
+
+        return $this->send($data, Response::HTTP_BAD_REQUEST);
+    }
+
+    /**
+     * Map error based on configurations
+     * 
+     * @param  mixed $data
+     * @return array
+     */
+    protected function mapResponseError($data)
+    {
+        $errorMaxArrayLength = config('mongez..response.errors.maxArrayLength', 1);
+        $errorReturn = config('mongez.response.errors.strategy', self::ERROR_AS_ARRAY);
+        $arrayKey = config('mongez.response.errors.arrayKey', self::ERROR_AS_ARRAY_KEY);
+        $arrayValue = config('mongez.response.errors.ArrayValue', self::ERROR_AS_ARRAY_VALUE);
+
         if ($data instanceof MessageBag) {
             $errors = [];
-
-            $errorReturn = config('mongez.controllers.response.errors.strategy', self::ERROR_AS_ARRAY);
-            $errorMaxArrayLength = config('mongez.controllers.response.errors.maxArrayLength', 1);
-            $arrayKey = config('mongez.controllers.errors.arrayKey', self::ERROR_AS_ARRAY_KEY);
-            $arrayValue = config('mongez.controllers.errors.ArrayValue', self::ERROR_AS_ARRAY_VALUE);
 
             foreach ($data->messages() as $input => $messagesList) {
                 if ($errorReturn === self::ERROR_AS_OBJECT) {
@@ -128,15 +145,16 @@ abstract class ApiController extends Controller
             $data = ['errors' => $errors];
         } elseif (is_string($data)) {
             $data = [
-                'error' => $data,
+                'errors' => [
+                    [
+                        $arrayKey => 'error',
+                        $arrayValue => $data,
+                    ]
+                ],
             ];
         }
 
-        if (($eventResponse = $this->events->trigger('response.badRequest', $data)) && is_array($eventResponse)) {
-            $data = $eventResponse;
-        }
-
-        return $this->send($data, Response::HTTP_BAD_REQUEST);
+        return $data;
     }
 
     /**
@@ -145,13 +163,9 @@ abstract class ApiController extends Controller
      * @param  array $data
      * @return string
      */
-    protected function notFound($data = [])
+    protected function notFound($data)
     {
-        if (is_string($data)) {
-            $data = [
-                'error' => $data,
-            ];
-        }
+        $data = $this->mapResponseError($data);
 
         if (($eventResponse = $this->events->trigger('response.notFound', $data)) && is_array($eventResponse)) {
             $data = $eventResponse;
@@ -163,33 +177,33 @@ abstract class ApiController extends Controller
     /**
      * Unauthorized data
      *
-     * @param  string $message
+     * @param  mixed $data
      * @return string
      */
-    protected function unauthorized(string $message)
+    protected function unauthorized($data)
     {
-        $message = ['error' => $message];
+        $data = $this->mapResponseError($data);
 
-        if (($eventResponse = $this->events->trigger('response.unauthorized', $message)) && is_array($eventResponse)) {
-            $message = $eventResponse;
+        if (($eventResponse = $this->events->trigger('response.unauthorized', $data)) && is_array($eventResponse)) {
+            $data = $eventResponse;
         }
 
-        return $this->send($message, Response::HTTP_UNPROCESSABLE_ENTITY);
+        return $this->send($data, Response::HTTP_UNPROCESSABLE_ENTITY);
     }
 
     /**
      * Send Response
      *
-     * @param  array $message
+     * @param  array $data
      * @param  int $statusCode
      * @return Response
      */
-    protected function send(array $message, int $statusCode)
+    protected function send(array $data, int $statusCode)
     {
-        if (($eventResponse = $this->events->trigger('response.send', $message, $statusCode)) && is_array($eventResponse)) {
-            $message = $eventResponse;
+        if (($eventResponse = $this->events->trigger('response.send', $data, $statusCode)) && is_array($eventResponse)) {
+            $data = $eventResponse;
         }
 
-        return response()->json($message, $statusCode);
+        return response()->json($data, $statusCode);
     }
 }

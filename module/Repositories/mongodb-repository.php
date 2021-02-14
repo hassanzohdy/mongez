@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Modules\ModuleName\Repositories;
 
 use App\Modules\ModuleName\{
@@ -20,7 +21,7 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
      * @const string
      */
     const NAME = 'repo-name';
-    
+
     /**
      * Model class name
      *
@@ -40,8 +41,8 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
      * 
      * @const array
      */
-    const DATA = [DATA_LIST];       
-    
+    const DATA = [DATA_LIST];
+
     /**
      * Auto save uploads in this list
      * If it's an indexed array, in that case the request key will be as database column name
@@ -49,8 +50,8 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
      * 
      * @const array
      */
-    const UPLOADS = [UPLOADS_LIST];       
-    
+    const UPLOADS = [UPLOADS_LIST];
+
     /**
      * Auto fill the following columns as arrays directly from the request
      * It will encoded and stored as `JSON` format, 
@@ -80,7 +81,14 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
      * @cont array  
      */
     const BOOLEAN_DATA = [BOOL_LIST];
-    
+
+    /**
+     * Geo Location data 
+     * 
+     * @const array
+     */
+    const LOCATION_DATA = [];
+
     /**
      * Set columns list of date values.
      * 
@@ -117,7 +125,7 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
      * @const array
      */
     const FILTER_BY = [];
-    
+
     /**
      * Set of the parents repositories of current repo
      *
@@ -165,17 +173,17 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
      * @param   \Illuminate\Http\Request $request
      * @return  void
      */
-    protected function setData($model, $request) 
+    protected function setData($model, $request)
     {
         // 
     }
-    
+
     /**
      * Do any extra filtration here
      * 
      * @return  void
      */
-    protected function filter() 
+    protected function filter()
     {
         // 
     }
