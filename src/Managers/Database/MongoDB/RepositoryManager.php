@@ -252,6 +252,8 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     protected function setDocumentData($model, $request)
     {
         foreach (static::DOCUMENT_DATA as $column => $documentModelClass) {
+            if ($this->isIgnorable($request, $column)) continue;
+
             if (is_array($documentModelClass)) {
                 list($class, $method) = $documentModelClass;
                 $documentModelClass = $class;
@@ -291,6 +293,8 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     protected function setMultiDocumentData($model, $request)
     {
         foreach (static::MULTI_DOCUMENTS_DATA as $column => $documentModelClass) {
+            if ($this->isIgnorable($request, $column)) continue;
+
             if (!$request->$column) {
                 $model->$column = [];
                 continue;

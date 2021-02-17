@@ -193,7 +193,9 @@ trait Fillers
      */
     private function mergeOldAndNewFiles(array $files, $column, $request, $model): array
     {
-        $filesFromRequest = (array) $request->{$column . 'String'};
+        $filesFromRequest = array_map(function ($file) {
+            return ltrim($file, '/');
+        }, (array) $request->{$column . 'String'});
 
         $oldImages = (array) $model->$column;
 
@@ -342,6 +344,6 @@ trait Fillers
      */
     protected function isIgnorable(Request $request, string $column): bool
     {
-        return (static::WHEN_AVAILABLE_DATA === true || in_array($column, static::WHEN_AVAILABLE_DATA)) && !isset($request->$column);
+        return (static::WHEN_AVAILABLE_DATA === true || in_array($column, static::WHEN_AVAILABLE_DATA)) && !$request->has($column);
     }
 }
