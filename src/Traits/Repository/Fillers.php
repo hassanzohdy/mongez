@@ -147,6 +147,7 @@ trait Fillers
             $file = $request->file($name);
 
             if (!$file) {
+
                 $model->$column = $this->mergeOldAndNewFiles([], $column, $request, $model);
                 continue;
             }
@@ -191,13 +192,17 @@ trait Fillers
      * @param  string $column
      * @return array
      */
-    private function mergeOldAndNewFiles(array $files, $column, $request, $model): array
+    private function mergeOldAndNewFiles(array $files, $column, $request, $model)
     {
         $filesFromRequest = array_map(function ($file) {
             return ltrim($file, '/');
         }, (array) $request->{$column . 'String'});
 
-        $oldImages = (array) $model->$column;
+        $images = $model->$column;
+
+        if ($images && is_string($images)) return $images;
+
+        $oldImages = (array) $images;
 
         $unLinkedImages = array_diff($oldImages, $filesFromRequest);
 
