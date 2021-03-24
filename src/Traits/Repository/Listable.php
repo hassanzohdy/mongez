@@ -183,7 +183,7 @@ trait Listable
      */
     public function publish($id, $publishState)
     {
-        $this->getQuery()->where('id', (int)$id)->update([
+        $this->getQuery()->where('id', (int) $id)->update([
             'published' => (bool) $publishState
         ]);
     }

@@ -512,6 +512,8 @@ abstract class JsonResourceManager extends JsonResource
 
         if (empty($value) || !Mongez::requestHasLocaleCode()) return null;
 
+        if (is_string($value)) return $value;
+
         $localeCode = Mongez::getRequestLocaleCode();
 
         // get the localization mode
