@@ -1,4 +1,5 @@
 <?php
+
 namespace HZ\Illuminate\Mongez\Traits\Repository;
 
 use Illuminate\Support\Arr;
@@ -85,7 +86,7 @@ trait Listable
         return $this->query->count();
     }
 
-        /**
+    /**
      * Initiate listing info
      *
      * @param  array $options
@@ -155,7 +156,7 @@ trait Listable
     {
         $item = $this->get($id);
 
-        if (!$item->published) return null;
+        if (!$item || !$item->published) return null;
 
         return $item;
     }
@@ -166,9 +167,10 @@ trait Listable
      * @param array $options
      * @return Collection
      */
-    public function published(array $options = [])
+    public function listPublished(array $options = [])
     {
         $options['published'] = true;
+
         return $this->list($options);
     }
 
@@ -186,7 +188,7 @@ trait Listable
         ]);
     }
 
-        /**
+    /**
      * Set pagination info from pagination data
      *
      * @param object $data

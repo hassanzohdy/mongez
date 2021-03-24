@@ -16,7 +16,7 @@ class LogResponse
 
         if ($user = user()) {
             $userInfo = $user->sharedInfo();
-            $userInfo['accountType'] = $user->accountType();
+            // $userInfo['accountType'] = $user->accountType();
         }
 
         $response = json_decode(response($response)->getContent(), true);

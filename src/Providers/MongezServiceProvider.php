@@ -3,7 +3,6 @@
 namespace HZ\Illuminate\Mongez\Providers;
 
 use File;
-use Closure;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\App;
@@ -63,12 +62,15 @@ class MongezServiceProvider extends ServiceProvider
     {
         $request = request();
 
-        if ($LocaleCode = $request->header('LOCALE')) {
-            $request->request->set('locale', $LocaleCode);
+        $localeCode = $request->header('LOCALE-CODE');
+
+        if (! $localeCode && ($request->localeCode || $request->langCode)) {
+            $localeCode = $request->localeCode ?: $request->langCode;
         }
 
-        if ($request->locale || $request->lang) {
-            App::setLocale($request->locale ?: $request->lang);
+        if ($localeCode) {
+            App::setLocale($localeCode);
+            Mongez::setRequestLocaleCode($localeCode);
         }
 
         if (!$this->app->runningInConsole()) {

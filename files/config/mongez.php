@@ -61,6 +61,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Localization Mode
+    |--------------------------------------------------------------------------
+    | 
+    | This will determine the type of handing data that has multiple values based on locale code
+    | Mainly it will be used with resources when returning the data
+    | 
+    | Available options: array|object
+    */
+    'localizationMode' => 'array',
+
+    /*
+    |--------------------------------------------------------------------------
     | Module builder
     |--------------------------------------------------------------------------
     |

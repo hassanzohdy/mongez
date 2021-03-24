@@ -39,6 +39,13 @@ class Mongez
     protected static $mongezFilePath;
 
     /**
+     * Request locale code
+     *
+     * @var string
+     */
+    protected static $requestLocaleCode = '';
+
+    /**
      * Mongez file content
      * 
      * @var array
@@ -54,6 +61,37 @@ class Mongez
     public static function init()
     {
         static::$mongezFilePath = static::getMongezStorageDirectory() . '/' . static::MONGEZ_STORAGE_FILE_NAME;           
+    }
+
+    /**
+     * Set request locale code
+     * 
+     * @param  string $requestLocaleCode
+     * @return void
+     */
+    public static function setRequestLocaleCode(string $requestLocaleCode)
+    {
+        static::$requestLocaleCode = $requestLocaleCode;
+    }
+
+    /**
+     * Check if request has a locale code key
+     * 
+     * @return bool
+     */
+    public static function requestHasLocaleCode(): bool
+    {
+        return static::$requestLocaleCode !== '';
+    }
+
+    /**
+     * Get request locale code
+     * 
+     * @return string
+     */
+    public static function getRequestLocaleCode(): string
+    {
+        return static::$requestLocaleCode;
     }
 
     /**

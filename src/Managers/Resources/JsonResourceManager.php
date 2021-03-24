@@ -166,11 +166,13 @@ abstract class JsonResourceManager extends JsonResource
                 }
             }
         }
-        if (array_key_exists('accessTokens', $this->data)) {
+
+        if (isset($this->data['accessTokens'])) {
             $token = $this->data['accessTokens'][0]['token'];
             unset($this->data['accessTokens']);
             $this->data['accessToken'] = $token;
         }
+
         return $this->data;
     }
 
@@ -305,7 +307,7 @@ abstract class JsonResourceManager extends JsonResource
     public function collectResources(array $columns): JsonResourceManager
     {
         foreach ($columns as $column => $resource) {
-            if (! empty($this->$column)) {
+            if (!empty($this->$column)) {
                 $resourceData = $this->$column;
                 $this->set($column, new $resource(new Fluent($resourceData)));
             } else {
@@ -326,11 +328,6 @@ abstract class JsonResourceManager extends JsonResource
     {
         if (empty($columns)) return $this;
 
-        $format = config('mongez.resources.date.format', 'd-m-Y h:i:s a');
-        $timestamp = config('mongez.resources.date.timestamp', true);
-        $humanTime = config('mongez.resources.date.humanTime', true);
-        $timezone = new \DateTimeZone(config('app.timezone'));
-
         foreach ($columns as $key => $column) {
             if (is_string($key)) {
                 $format = $column;
@@ -344,39 +341,59 @@ abstract class JsonResourceManager extends JsonResource
 
             $value = $this->$column;
 
-            if ($value instanceof UTCDateTime) {
-                $value = $value->toDateTime();
-                $value->setTimezone($timezone);
-            } elseif (is_numeric($value)) {
-                $value = new DateTime("@{$value}");
-            } elseif (is_array($value) && isset($value['date'])) {
-                $value = new DateTime($value['date']);
-            } elseif (is_string($value)) {
-                $value = new DateTime($value);
-            } elseif (!$value instanceof DateTime) {
-                continue;
-            }
-
-            if (! $humanTime && ! $timestamp) {
-                $this->set($column, $value->format($format));
-            } else {
-                $values = [
-                    'format' => $value->format($format),
-                ];
-
-                if ($timestamp) {
-                    $values['timestamp'] = $value->getTimestamp();
-                }
-
-                if ($humanTime) {
-                    $values['humanTime'] = \Carbon\Carbon::createFromTimeStamp($value->getTimestamp())->diffForHumans();
-                }
-
-                $this->set($column, $values);
-            }
+            $this->setDate($column, $value);
         }
 
         return $this;
+    }
+
+    /**
+     * Set date
+     * 
+     * @param string $column
+     * @param mixed $value
+     * @return void
+     */
+    protected function setDate($column, $value, $options = [])
+    {
+        $options = array_merge([
+            'format' =>  config('mongez.resources.date.format', 'd-m-Y h:i:s a'),
+            'timestamp' => config('mongez.resources.date.timestamp', true),
+            'humanTime' => config('mongez.resources.date.humanTime', true),
+        ], $options);
+
+
+        if ($value instanceof UTCDateTime) {
+            $value = $value->toDateTime();
+            $timezone = new \DateTimeZone(config('app.timezone'));
+            $value->setTimezone($timezone);
+        } elseif (is_numeric($value)) {
+            $value = new DateTime("@{$value}");
+        } elseif (is_array($value) && isset($value['date'])) {
+            $value = new DateTime($value['date']);
+        } elseif (is_string($value)) {
+            $value = new DateTime($value);
+        } elseif (!$value instanceof DateTime) {
+            return;
+        }
+
+        if (!$options['humanTime'] && !$options['timestamp']) {
+            $this->set($column, $value->format($options['format']));
+        } else {
+            $values = [
+                'format' => $value->format($options['format']),
+            ];
+
+            if ($options['timestamp']) {
+                $values['timestamp'] = $value->getTimestamp();
+            }
+
+            if ($options['humanTime']) {
+                $values['humanTime'] = \Carbon\Carbon::createFromTimeStamp($value->getTimestamp())->diffForHumans();
+            }
+
+            $this->set($column, $values);
+        }
     }
 
     /**
@@ -429,6 +446,10 @@ abstract class JsonResourceManager extends JsonResource
     {
         if (is_array($collection)) {
             $collection = collect($collection)->map(function ($item) {
+                if (!is_array($item) && !is_string($item)) {
+                    return [];
+                }
+
                 return new Fluent($item);
             });
         }
@@ -486,13 +507,27 @@ abstract class JsonResourceManager extends JsonResource
      */
     protected function locale($column)
     {
-        if (empty($this->$column)) return null;
+        $value = $this->$column;
 
-        if ($this->request->locale) {
-            return $this->$column[$this->request->locale] ?? $this->$column;
-        } else {
-            return $this->$column;
+        if (empty($value) || !Mongez::requestHasLocaleCode()) return null;
+
+        $localeCode = Mongez::getRequestLocaleCode();
+
+        // get the localization mode
+        // it cn be an object or an array of objects
+        $localizationMode = config('mognez.localizationMode', 'array');
+
+        if ($localizationMode === 'array' && isset($value[0])) {
+            foreach ($value as $localizedValue) {
+                if ($localizedValue['localeCode'] === $localeCode) {
+                    return $value['text'];
+                }
+            }
+        } elseif ($localizationMode === 'object' && isset($value[$localeCode])) {
+            return $value[$localeCode];
         }
+
+        return null;
     }
 
     /**

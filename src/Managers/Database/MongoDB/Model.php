@@ -229,7 +229,7 @@ abstract class Model extends BaseModel
             $listOfValues[] = $modelInfo;
         }
 
-        $this->$column = $listOfValues;
+        $this->setAttribute($column, $listOfValues);
 
         return $this;
     }
@@ -270,7 +270,7 @@ abstract class Model extends BaseModel
             $documents[] = $modelInfo;
         }
 
-        $this->$column = $documents;
+        $this->setAttribute($column, $documents);
 
         return $this;
     }
@@ -300,7 +300,7 @@ abstract class Model extends BaseModel
             $newArray[] = $value;
         }
 
-        $this->$column = $newArray;
+        $this->setAttribute($column, $newArray);
 
         return $this;
     }
