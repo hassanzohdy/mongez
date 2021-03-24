@@ -520,13 +520,18 @@ abstract class JsonResourceManager extends JsonResource
         // it cn be an object or an array of objects
         $localizationMode = config('mognez.localizationMode', 'array');
 
-        if ($localizationMode === 'array' && isset($value[0])) {
+        // the OR in the following if conditions is used as a fallback for the data that is 
+        // not matching the current localization mode 
+        // for example, if the data is stored as object and the localization mode is an array
+        // in that case it will be rendered as an array 
+
+        if ($localizationMode === 'array' && isset($value[0]) || isset($value[0])) {
             foreach ($value as $localizedValue) {
                 if ($localizedValue['localeCode'] === $localeCode) {
-                    return $value['text'];
+                    return $localizedValue['text'];
                 }
             }
-        } elseif ($localizationMode === 'object' && isset($value[$localeCode])) {
+        } elseif ($localizationMode === 'object' && isset($value[$localeCode]) || isset($value[$localeCode])) {
             return $value[$localeCode];
         }
 

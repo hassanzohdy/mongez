@@ -174,6 +174,19 @@ trait Listable
         return $this->list($options);
     }
 
+
+    /**
+     * Alias to listPublished
+     *
+     * @deprecated
+     * @param array $options
+     * @return Collection
+     */
+    public function published(array $options = [])
+    {
+        return $this->listPublished($options);
+    }
+
     /**
      * Publish/Unpublish the model id
      *
