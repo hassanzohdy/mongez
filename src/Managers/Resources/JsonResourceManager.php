@@ -7,6 +7,7 @@ use Illuminate\Support\Arr;
 use MongoDB\BSON\UTCDateTime;
 use Illuminate\Support\Fluent;
 use Illuminate\Database\Eloquent\Model;
+use HZ\Illuminate\Mongez\Helpers\Mongez;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 abstract class JsonResourceManager extends JsonResource
