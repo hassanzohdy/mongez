@@ -84,6 +84,7 @@ abstract class ModuleServiceProvider extends ServiceProvider implements ModuleSe
             Route::prefix($prefix . $appPath)
                 ->middleware($middleware)
                 ->namespace('App')
+                ->name($routeType . '.')
                 ->group(base_path($routeFilePath));
         }
     }
