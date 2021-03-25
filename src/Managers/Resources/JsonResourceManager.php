@@ -535,7 +535,7 @@ abstract class JsonResourceManager extends JsonResource
             return $value[$localeCode];
         }
 
-        return null;
+        return $value;
     }
 
     /**
