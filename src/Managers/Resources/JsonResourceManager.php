@@ -288,8 +288,8 @@ abstract class JsonResourceManager extends JsonResource
     public function collectCollectables(array $columns): JsonResourceManager
     {
         foreach ($columns as $column => $resource) {
-            if (isset($this->$column)) {
-                $collection = $this->$column;
+            if (isset($this->resource->$column)) {
+                $collection = $this->resource->$column;
                 $this->collect($column, $resource, $collection);
             } else {
                 $this->set($column, []);
@@ -308,8 +308,8 @@ abstract class JsonResourceManager extends JsonResource
     public function collectResources(array $columns): JsonResourceManager
     {
         foreach ($columns as $column => $resource) {
-            if (!empty($this->$column)) {
-                $resourceData = $this->$column;
+            if (!empty($this->resource->$column)) {
+                $resourceData = $this->resource->$column;
                 $this->set($column, new $resource(new Fluent($resourceData)));
             } else {
                 $this->set($column, null);
@@ -335,12 +335,12 @@ abstract class JsonResourceManager extends JsonResource
                 $column = $key;
             }
 
-            if (!isset($this->$column)) {
+            if (!isset($this->resource->$column)) {
                 $this->set($column, null);
                 continue;
             }
 
-            $value = $this->$column;
+            $value = $this->resource->$column;
 
             $this->setDate($column, $value);
         }
@@ -362,7 +362,6 @@ abstract class JsonResourceManager extends JsonResource
             'timestamp' => config('mongez.resources.date.timestamp', true),
             'humanTime' => config('mongez.resources.date.humanTime', true),
         ], $options);
-
 
         if ($value instanceof UTCDateTime) {
             $value = $value->toDateTime();
@@ -406,7 +405,7 @@ abstract class JsonResourceManager extends JsonResource
     public function filterWhenAvailable(array $columns): JsonResourceManager
     {
         foreach ($columns as $column) {
-            $value = $this->$column ?? null;
+            $value = $this->resource->$column ?? null;
             $dataValue = $this->data[$column] ?? null;
 
             if (
@@ -508,7 +507,7 @@ abstract class JsonResourceManager extends JsonResource
      */
     protected function locale($column)
     {
-        $value = $this->$column;
+        $value = $this->resource->$column;
 
         if (empty($value)) return null;
 
