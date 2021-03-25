@@ -510,9 +510,9 @@ abstract class JsonResourceManager extends JsonResource
     {
         $value = $this->$column;
 
-        if (empty($value) || !Mongez::requestHasLocaleCode()) return null;
-
-        if (is_string($value)) return $value;
+        if (empty($value)) return null;
+        
+        if (is_string($value) || ! Mongez::requestHasLocaleCode()) return $value;
 
         $localeCode = Mongez::getRequestLocaleCode();
 
