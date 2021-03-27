@@ -50,7 +50,15 @@ class Request
         return function (): array {
             $authorization = $this->server('HTTP_AUTHORIZATION') ?: $this->server('REDIRECT_HTTP_AUTHORIZATION');
 
-            if (!$authorization) return [];
+            if (!$authorization) {
+                if ($token = $this->get('Token')) {
+                    return ['Bearer', $token];
+                } elseif ($key = $this->get('Key')) {
+                    return ['key', $key];
+                }
+
+                return [];
+            }
 
             return explode(' ', $authorization);
         };
