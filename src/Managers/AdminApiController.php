@@ -118,9 +118,9 @@ abstract class AdminApiController extends ApiController
      */
     public function store(Request $request)
     {
-        $rules = array_merge($this->allValidation(), $this->storeValidation($request));
+        $rules = array_merge($this->allValidation($request), $this->storeValidation($request));
 
-        $databaseRules = ['unique', 'exists'];
+        // $databaseRules = ['unique', 'exists'];
 
         // foreach ($rules as $name => & $rulesList) {
         //     $rulesList = explode('|', $rulesList);
