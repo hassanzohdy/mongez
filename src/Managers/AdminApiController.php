@@ -2,11 +2,11 @@
 
 namespace HZ\Illuminate\Mongez\Managers;
 
-use Validator;
 use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Validator;
 
 abstract class AdminApiController extends ApiController
 {
@@ -90,7 +90,7 @@ abstract class AdminApiController extends ApiController
         $id = (int) $id;
 
         if (!$this->repository->has($id)) {
-            return $this->badRequest('not-found');
+            return $this->notFound(trans('notFound'));
         }
 
         return $this->success([
@@ -118,7 +118,7 @@ abstract class AdminApiController extends ApiController
      */
     public function store(Request $request)
     {
-        $rules = array_merge((array) $this->controllerInfo('rules.all'), $this->storeValidation($request));
+        $rules = array_merge($this->allValidation(), $this->storeValidation($request));
 
         $databaseRules = ['unique', 'exists'];
 
@@ -159,12 +159,17 @@ abstract class AdminApiController extends ApiController
      */
     public function destroy($id)
     {
+        if (!$this->repository->has($id)) {
+            return $this->notFound(trans('notFound'));
+        }
+
         if ($this->repository->deleteHasDependence()) {
             $deletingValidationErrors = $this->validateBeforeDeleting($this->repository->getDeleteDependencies(), $id);
             if (!empty($deletingValidationErrors)) {
                 return $this->badRequest($deletingValidationErrors);
             }
         }
+
         $this->repository->delete((int) $id);
 
         return $this->success();
@@ -184,7 +189,6 @@ abstract class AdminApiController extends ApiController
         $isUsingSoftDelete = $this->repository->isUsingSoftDelete();
 
         foreach ($deleteDependenceTables as $table) {
-
             $rules = Rule::unique($table['tableName'], $table['key']);
 
             if ($isUsingSoftDelete) {
@@ -200,11 +204,13 @@ abstract class AdminApiController extends ApiController
 
             $validationRules['messages']['unique.' . $table['tableName'] . '_id'] = $table['message'];
         }
+
         $validator = Validator::make($validationRules['data'], $validationRules['rules'], $validationRules['messages']);
 
         if ($validator->fails()) {
             $errors[] = $validator->errors();
         }
+
         return $errors;
     }
 
@@ -218,12 +224,12 @@ abstract class AdminApiController extends ApiController
     public function update(Request $request, $id)
     {
         if (!$this->repository->has($id)) {
-            return $this->badRequest('Not Found');
+            return $this->notFound(trans('notFound'));
         }
 
-        $rules = array_merge((array) $this->controllerInfo('rules.all'), $this->updateValidation($id, $request));
+        $rules = array_merge($this->allValidation($request, $id), $this->updateValidation($id, $request));
 
-        foreach ($rules as $name => &$rulesList) {
+        foreach ($rules as &$rulesList) {
             if (!is_array($rulesList)) {
                 $rulesList = explode('|', $rulesList);
             }
@@ -271,12 +277,23 @@ abstract class AdminApiController extends ApiController
     /**
      * Make custom validation for store
      *
-     * @param int $id
      * @param mixed $request
      * @return array
      */
     protected function storeValidation($request): array
     {
         return (array) $this->controllerInfo('rules.store');
+    }
+
+    /**
+     * Make custom validation for store or update
+     *
+     * @param mixed $request
+     * @param int $id
+     * @return array
+     */
+    protected function allValidation($request, $id = null): array
+    {
+        return (array) $this->controllerInfo('rules.all');
     }
 }
