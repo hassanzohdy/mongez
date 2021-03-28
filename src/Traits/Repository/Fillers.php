@@ -126,18 +126,8 @@ trait Fillers
         $keepFileName = defined('static::UPLOADS_KEEP_FILE_NAME') ? static::UPLOADS_KEEP_FILE_NAME : config('mongez.repository.uploads.keepUploadsName', true);
 
         if (true === $keepFileName) {
-            $storageDirectory .= '/' . $model->getId() . '/' . mt_rand();
+            $storageDirectory .= '/' . $model->getId();
         }
-
-        $getFileName = function (UploadedFile $fileObject) use ($keepFileName): string {
-            $originalName = $fileObject->getClientOriginalName();
-
-            $extension = File::extension($originalName) ?: $fileObject->guessExtension();
-
-            $fileName = false === $keepFileName ? Str::random(40) . '.' . $extension : $this->adjustFileName($originalName);
-
-            return $fileName;
-        };
 
         foreach ((array) $columns as $column => $name) {
             if (is_numeric($column)) {
@@ -147,7 +137,6 @@ trait Fillers
             $file = $request->file($name);
 
             if (!$file) {
-
                 $model->$column = $this->mergeOldAndNewFiles([], $column, $request, $model);
                 continue;
             }
@@ -158,16 +147,39 @@ trait Fillers
                 foreach ($file as $index => $fileObject) {
                     if (!$fileObject->isValid()) continue;
 
-                    $files[$index] = $fileObject->storeAs($storageDirectory, $getFileName($fileObject));
+                    $files[$index] = $fileObject->storeAs($storageDirectory, $this->getFileName($fileObject));
                 }
 
-                $model->$column = $this->mergeOldAndNewFiles($files, $column, $request, $model);
+                $model->$column = $files;
             } else {
                 if ($file instanceof UploadedFile && $file->isValid()) {
-                    $model->$column = $file->storeAs($storageDirectory, $getFileName($file));
+                    $model->$column = $file->storeAs($storageDirectory, $this->getFileName($file));
                 }
             }
         }
+    }
+
+    /**
+     * Get file name
+     * 
+     * @param UploadedFile $fileObject
+     * @return string
+     */
+    protected function getFileName(UploadedFile $fileObject): string
+    {
+        static $keepFileName = null;
+
+        if ($keepFileName === null) {
+            $keepFileName = defined('static::UPLOADS_KEEP_FILE_NAME') ? static::UPLOADS_KEEP_FILE_NAME : config('mongez.repository.uploads.keepUploadsName', true);
+        }
+
+        $originalName = $fileObject->getClientOriginalName();
+
+        $extension = File::extension($originalName) ?: $fileObject->guessExtension();
+
+        $fileName = false === $keepFileName ? Str::random(40) . '.' . $extension : $this->adjustFileName($originalName);
+
+        return $fileName;
     }
 
     /**
@@ -265,6 +277,7 @@ trait Fillers
         return $baseDirectory . (static::UPLOADS_DIRECTORY ?: static::NAME);
     }
 
+
     /**
      * Set date data
      *
@@ -278,7 +291,7 @@ trait Fillers
             $columns = static::DATE_DATA;
         }
 
-        // $isMongoDb = strtolower(config('database.default')) === 'mongodb';
+        $isMongoDb = strtolower(config('database.default')) === 'mongodb';
 
         foreach ((array) $columns as $column) {
             if ($this->isIgnorable($request, $column)) continue;
