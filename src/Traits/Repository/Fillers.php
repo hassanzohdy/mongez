@@ -123,11 +123,7 @@ trait Fillers
 
         $storageDirectory = $this->getUploadsStorageDirectoryName();
 
-        $keepFileName = defined('static::UPLOADS_KEEP_FILE_NAME') ? static::UPLOADS_KEEP_FILE_NAME : config('mongez.repository.uploads.keepUploadsName', true);
-
-        if (true === $keepFileName) {
-            $storageDirectory .= '/' . $model->getId();
-        }
+        $storageDirectory .= '/' . $model->getId();
 
         foreach ((array) $columns as $column => $name) {
             if (is_numeric($column)) {
@@ -150,7 +146,7 @@ trait Fillers
                     $files[$index] = $fileObject->storeAs($storageDirectory, $this->getFileName($fileObject));
                 }
 
-                $model->$column = $files;
+                $model->$column = $this->mergeOldAndNewFiles($files, $column, $request, $model);
             } else {
                 if ($file instanceof UploadedFile && $file->isValid()) {
                     $model->$column = $file->storeAs($storageDirectory, $this->getFileName($file));
@@ -212,7 +208,7 @@ trait Fillers
 
         $images = $model->$column;
 
-        if ($images && is_string($images)) return $images;
+        if ($images && is_string($images) || (empty($filesFromRequest) && empty($files))) return $images;
 
         $oldImages = (array) $images;
 
@@ -222,7 +218,7 @@ trait Fillers
             $this->unlink($unlinkedImage);
         }
 
-        return array_merge($files, $filesFromRequest);
+        return array_merge($filesFromRequest, $files);
     }
 
     /**
