@@ -11,6 +11,41 @@ class ResourceName extends JsonResourceManager
      * @const array
      */
     const DATA = [DATA_LIST];
+
+    /**
+     * String Data
+     * 
+     * @const array
+     */
+    const STRING_DATA = [];
+    
+    /**
+     * Boolean Data
+     * 
+     * @const array
+     */
+    const BOOLEAN_DATA = [];
+    
+    /**
+     * Integer Data
+     * 
+     * @const array
+     */
+    const INTEGER_DATA = [];
+    
+    /**
+     * Float Data
+     * 
+     * @const array
+     */
+    const FLOAT_DATA = [];
+    
+    /**
+     * Object Data
+     * 
+     * @const array
+     */
+    const OBJECT_DATA = [];
     
     /**
      * Data that should be returned if exists

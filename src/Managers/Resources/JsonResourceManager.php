@@ -13,25 +13,46 @@ use Illuminate\Http\Resources\Json\JsonResource;
 abstract class JsonResourceManager extends JsonResource
 {
     /**
-     * Request object
-     *
-     * @var \Illuminate\Http\Request
-     */
-    protected $request;
-
-    /**
-     * The data that will be returned
-     *
-     * @var array
-     */
-    protected $data = [];
-
-    /**
      * Data that must be returned
      *
      * @const array
      */
     const DATA = [];
+
+    /**
+     * String Data
+     * 
+     * @const array
+     */
+    const STRING_DATA = [];
+    
+    /**
+     * Boolean Data
+     * 
+     * @const array
+     */
+    const BOOLEAN_DATA = [];
+    
+    /**
+     * Integer Data
+     * 
+     * @const array
+     */
+    const INTEGER_DATA = [];
+    
+    /**
+     * Float Data
+     * 
+     * @const array
+     */
+    const FLOAT_DATA = [];
+    
+    /**
+     * Object Data
+     * 
+     * @const array
+     */
+    const OBJECT_DATA = [];
 
     /**
      * Data that should be returned if exists
@@ -79,6 +100,20 @@ abstract class JsonResourceManager extends JsonResource
      * @const array
      */
     const COLLECTABLE = [];
+
+    /**
+     * Request object
+     *
+     * @var \Illuminate\Http\Request
+     */
+    protected $request;
+
+    /**
+     * The data that will be returned
+     *
+     * @var array
+     */
+    protected $data = [];
 
     /**
      * Assets function for generating full url
@@ -138,6 +173,16 @@ abstract class JsonResourceManager extends JsonResource
         }
 
         $this->collectData(static::DATA);
+
+        $this->collectStringData(static::STRING_DATA);
+
+        $this->collectIntegerData(static::INTEGER_DATA);
+
+        $this->collectFloatData(static::FLOAT_DATA);
+
+        $this->collectBooleanData(static::BOOLEAN_DATA);
+
+        $this->collectObjectData(static::OBJECT_DATA);
 
         $this->collectLocalized(static::LOCALIZED);
 
@@ -214,6 +259,66 @@ abstract class JsonResourceManager extends JsonResource
             }
 
             $this->set($column, $value);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Collect String Data
+     *
+     * @param array $columns
+     * @return JsonResourceManager
+     */
+    public function collectStringData(array $columns): JsonResourceManager
+    {
+        foreach ($columns as $column) {
+            $this->set($column, (string) $this->resource->$column ?? '');
+        }
+
+        return $this;
+    }
+
+    /**
+     * Collect Integer Data
+     *
+     * @param array $columns
+     * @return JsonResourceManager
+     */
+    public function collectIntegerData(array $columns): JsonResourceManager
+    {
+        foreach ($columns as $column) {
+            $this->set($column, (int) ($this->resource->$column ?? 0));
+        }
+
+        return $this;
+    }
+
+    /**
+     * Collect Float Data
+     *
+     * @param array $columns
+     * @return JsonResourceManager
+     */
+    public function collectFloatData(array $columns): JsonResourceManager
+    {
+        foreach ($columns as $column) {
+            $this->set($column, (float) ($this->resource->$column ?? 0));
+        }
+
+        return $this;
+    }
+
+    /**
+     * Collect Object Data
+     *
+     * @param array $columns
+     * @return JsonResourceManager
+     */
+    public function collectObjectData(array $columns): JsonResourceManager
+    {
+        foreach ($columns as $column) {
+            $this->set($column, (object) ($this->resource->$column ?? []));
         }
 
         return $this;
