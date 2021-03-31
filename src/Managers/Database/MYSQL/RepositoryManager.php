@@ -215,6 +215,17 @@ abstract class RepositoryManager implements RepositoryInterface
     const RESOURCE = '';
 
     /**
+     * Apps Resources Map
+     * Useful when need to return certain shape in a certain app
+     * 
+     * App name here is the app type listed in the auth.guards config
+     * ${APP_NAME} => Resource::class
+     * 
+     * @const array
+     */
+    const APP_RESOURCES = [];
+
+    /**
      * Retrieve only the active `un-deleted` records
      *
      * @const string

@@ -32,6 +32,14 @@ trait Listable
     protected $paginationInfo = [];
 
     /**
+     * Current used resource class, 
+     * defaults to static::RESOURCE
+     * 
+     * @var string
+     */
+    private $currentResource;
+
+    /**
      * {@inheritDoc}
      */
     public function has($value, string $column = 'id'): bool
@@ -43,6 +51,53 @@ trait Listable
         $model = static::MODEL;
 
         return $model::where($column, $value)->exists();
+    }
+
+    /**
+     * Use the given resource class
+     * 
+     * @param  string $resourceClass
+     * @return $this
+     */
+    public function useResource(string $resourceClass): self 
+    {
+        $this->currentResource = $resourceClass;
+
+        return $this;
+    }
+
+    /**
+     * Get list of data with its shared info only 
+     * 
+     * @param  string $repository
+     * @param array $ids
+     * @return array
+     */
+    protected function listSharedInfo(string $repository, $ids): array
+    {
+        return repo($repository)->listModels([
+            'id' => $ids,
+        ])->map(function ($item) {
+            return $item->sharedInfo();
+        })->toArray();
+    }
+
+    /**
+     * Get current used resource class name
+     * 
+     * @return string
+     */
+    public function getResourceClass(): string
+    {
+        if ($this->currentResource) return $this->currentResource;
+
+        if (! empty(static::APPS_RESOURCES)) {
+            $appType = config('app.type');
+
+            if (! empty(static::APPS_RESOURCES[$appType])) return static::APPS_RESOURCES[$appType];
+        }
+
+        return $this->currentResource ?: static::RESOURCE;
     }
 
     /**
@@ -174,7 +229,6 @@ trait Listable
         return $this->list($options);
     }
 
-
     /**
      * Alias to listPublished
      *
@@ -241,7 +295,7 @@ trait Listable
             $model = new $modelName($model);
         }
 
-        $resource = static::RESOURCE;
+        $resource = $this->getResourceClass();
         return new $resource($model);
     }
 
@@ -262,7 +316,7 @@ trait Listable
             return $item;
         });
 
-        $resource = static::RESOURCE;
+        $resource = $this->getResourceClass();
         return $resource::collection($collection);
     }
 
