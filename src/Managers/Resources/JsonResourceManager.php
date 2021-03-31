@@ -252,6 +252,8 @@ abstract class JsonResourceManager extends JsonResource
     public function collectData(array $columns): JsonResourceManager
     {
         foreach ($columns as $column) {
+            if ($this->ignoreEmptyColumn($column)) continue;
+
             $value = $this->resource->$column ?? null;
 
             if (is_float($value)) {
@@ -273,7 +275,9 @@ abstract class JsonResourceManager extends JsonResource
     public function collectStringData(array $columns): JsonResourceManager
     {
         foreach ($columns as $column) {
-            $this->set($column, (string) $this->resource->$column ?? '');
+            if ($this->ignoreEmptyColumn($column)) continue;
+
+            $this->set($column, (string) ($this->resource->$column ?? ''));
         }
 
         return $this;
@@ -288,6 +292,8 @@ abstract class JsonResourceManager extends JsonResource
     public function collectIntegerData(array $columns): JsonResourceManager
     {
         foreach ($columns as $column) {
+            if ($this->ignoreEmptyColumn($column)) continue;
+
             $this->set($column, (int) ($this->resource->$column ?? 0));
         }
 
@@ -303,6 +309,8 @@ abstract class JsonResourceManager extends JsonResource
     public function collectFloatData(array $columns): JsonResourceManager
     {
         foreach ($columns as $column) {
+            if ($this->ignoreEmptyColumn($column)) continue;
+
             $this->set($column, (float) ($this->resource->$column ?? 0));
         }
 
@@ -318,6 +326,8 @@ abstract class JsonResourceManager extends JsonResource
     public function collectBooleanData(array $columns): JsonResourceManager
     {
         foreach ($columns as $column) {
+            if ($this->ignoreEmptyColumn($column)) continue;
+
             $this->set($column, (bool) ($this->resource->$column ?? false));
         }
 
@@ -333,6 +343,8 @@ abstract class JsonResourceManager extends JsonResource
     public function collectObjectData(array $columns): JsonResourceManager
     {
         foreach ($columns as $column) {
+            if ($this->ignoreEmptyColumn($column)) continue;
+
             $this->set($column, (object) ($this->resource->$column ?? []));
         }
 
@@ -348,6 +360,8 @@ abstract class JsonResourceManager extends JsonResource
     public function collectLocalized(array $columns): JsonResourceManager
     {
         foreach ($columns as $column) {
+            if ($this->ignoreEmptyColumn($column)) continue;
+
             $this->set($column, $this->locale($column));
         }
 
@@ -466,6 +480,21 @@ abstract class JsonResourceManager extends JsonResource
         }
 
         return $this;
+    }
+
+    /**
+     * Determine whether to ignore the empty data for the given column
+     * 
+     * @param string $column
+     * @return bool
+     */
+    protected function ignoreEmptyColumn(string $column): bool
+    {
+        $value = $this->resource->$column ?? null;
+
+        if (in_array($value, [0, false], true)) return false;
+
+        return empty($value) && in_array($column, static::WHEN_AVAILABLE);
     }
 
     /**
@@ -607,7 +636,7 @@ abstract class JsonResourceManager extends JsonResource
             });
         }
 
-        $this->data[$column] = $resources;
+        $this->set($column, $resources);
     }
 
     /**
@@ -629,7 +658,7 @@ abstract class JsonResourceManager extends JsonResource
     {
         $value = $this->resource->$column;
 
-        if (empty($value)) return null;
+        if (empty($value)) return '';
 
         if (is_string($value) || !Mongez::requestHasLocaleCode()) return $value;
 
@@ -647,11 +676,11 @@ abstract class JsonResourceManager extends JsonResource
         if ($localizationMode === 'array' && isset($value[0]) || isset($value[0])) {
             foreach ($value as $localizedValue) {
                 if ($localizedValue['localeCode'] === $localeCode) {
-                    return $localizedValue['text'];
+                    return (string) $localizedValue['text'];
                 }
             }
         } elseif ($localizationMode === 'object' && isset($value[$localeCode]) || isset($value[$localeCode])) {
-            return $value[$localeCode];
+            return (string) $value[$localeCode];
         }
 
         return $value;
