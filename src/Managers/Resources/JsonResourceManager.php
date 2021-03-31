@@ -310,6 +310,21 @@ abstract class JsonResourceManager extends JsonResource
     }
 
     /**
+     * Collect Float Data
+     *
+     * @param array $columns
+     * @return JsonResourceManager
+     */
+    public function collectBooleanData(array $columns): JsonResourceManager
+    {
+        foreach ($columns as $column) {
+            $this->set($column, (bool) ($this->resource->$column ?? false));
+        }
+
+        return $this;
+    }
+
+    /**
      * Collect Object Data
      *
      * @param array $columns
