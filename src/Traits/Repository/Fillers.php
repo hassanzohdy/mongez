@@ -210,15 +210,17 @@ trait Fillers
 
         if ($images && is_string($images) || (empty($filesFromRequest) && empty($files))) return $images;
 
-        $oldImages = (array) $images;
+        // $oldImages = (array) $images;
 
-        $unLinkedImages = array_diff($oldImages, $filesFromRequest);
+        // // $unLinkedImages = array_diff($oldImages, $filesFromRequest);
 
-        foreach ($unLinkedImages as $unlinkedImage) {
-            $this->unlink($unlinkedImage);
-        }
+        // // foreach ($unLinkedImages as $unlinkedImage) {
+        // //     $this->unlink($unlinkedImage);
+        // // }
 
-        return array_merge($filesFromRequest, $files);
+        return array_unique(
+            array_merge($filesFromRequest, $files)
+        );
     }
 
     /**
@@ -346,7 +348,11 @@ trait Fillers
         foreach (static::BOOLEAN_DATA as $column) {
             if ($this->isIgnorable($request, $column)) continue;
 
-            $model->$column = (bool) $request->input($column);
+            if (($inputValue = $request->input($column)) === 'false') {
+                $model->$column = false;
+            }
+
+            $model->$column = $inputValue;
         }
     }
 

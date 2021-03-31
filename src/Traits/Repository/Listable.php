@@ -68,9 +68,9 @@ trait Listable
      */
     public function listModels(array $options)
     {
-        $$options['as-model'] = true;
+        $options['as-model'] = true;
 
-        return $this->list($otherOptions);
+        return $this->list($options);
     }
 
     /**

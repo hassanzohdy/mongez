@@ -5,7 +5,6 @@ namespace HZ\Illuminate\Mongez\Managers\Providers;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use HZ\Illuminate\Mongez\Contracts\Providers\ModuleServiceProviderInterface;
-use ReflectionClass;
 
 abstract class ModuleServiceProvider extends ServiceProvider implements ModuleServiceProviderInterface
 {
@@ -36,8 +35,7 @@ abstract class ModuleServiceProvider extends ServiceProvider implements ModuleSe
     public function boot()
     {
         if (static::VIEWS_NAME) {
-            $classInfo = new ReflectionClass($this);
-            $viewsPath = dirname($classInfo->getFileName()) . './../views';
+            $viewsPath = __DIR__ . './../views';
 
             $this->loadViewsFrom($viewsPath, static::VIEWS_NAME);
         }
