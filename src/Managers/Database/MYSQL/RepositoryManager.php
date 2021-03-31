@@ -223,7 +223,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * 
      * @const array
      */
-    const APP_RESOURCES = [];
+    const APPS_RESOURCES = [];
 
     /**
      * Retrieve only the active `un-deleted` records
