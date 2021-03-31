@@ -25,28 +25,28 @@ abstract class JsonResourceManager extends JsonResource
      * @const array
      */
     const STRING_DATA = [];
-    
+
     /**
      * Boolean Data
      * 
      * @const array
      */
     const BOOLEAN_DATA = [];
-    
+
     /**
      * Integer Data
      * 
      * @const array
      */
     const INTEGER_DATA = [];
-    
+
     /**
      * Float Data
      * 
      * @const array
      */
     const FLOAT_DATA = [];
-    
+
     /**
      * Object Data
      * 
@@ -666,6 +666,7 @@ abstract class JsonResourceManager extends JsonResource
     {
         return $this->toArray(request());
     }
+
     /**
      * Set more data from outside the resource
      *
