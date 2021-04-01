@@ -3,9 +3,10 @@
     "description": "A Robust application handler for building neat laravel application(s).",
     "keywords": ["laravel","mongez", "module", "builder"],
     "license": "MIT",
-    "version": "1.7.4",
+    "version": "1.7.5",
     "require": {
-        "php": ">=7",
+        "php": ">=7",        
+        "cocur/slugify": "^4.0",
         "illuminate/support": "5.6.x|5.7.x|5.8.x|6.x.x|7.x.x|8.x.x"
     },
     "authors": [

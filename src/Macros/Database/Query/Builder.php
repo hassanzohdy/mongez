@@ -106,7 +106,7 @@ class Builder
      * @param  string $distanceType
      * @return array
      */
-    private static function locationNear(array $coordinates, $distance, string $distanceType): array
+    public function locationNear(array $coordinates, $distance, string $distanceType): array
     {
         $distance = (float) $distance;
         $distanceInRadian = $distance;

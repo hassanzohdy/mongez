@@ -352,7 +352,7 @@ trait Fillers
                 $model->$column = false;
             }
 
-            $model->$column = $inputValue;
+            $model->$column = (bool) $inputValue;
         }
     }
 
