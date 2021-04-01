@@ -76,7 +76,7 @@ trait Fillers
                 continue;
             }
 
-            $model->$column = $request->$column ?? null;
+            Arr::set($model, $column, $request->input($column) ?? null);
         }
     }
 
@@ -91,9 +91,12 @@ trait Fillers
     {
         foreach (static::ARRAYBLE_DATA as $column) {
             if ($this->isIgnorable($request, $column)) continue;
-            $value = array_filter((array) $request->$column);
+
+            $value = array_filter((array) $request->input($column));
+
             $value = $this->handleArrayableValue($value);
-            $model->$column = $value;
+
+            Arr::set($model, $column, $value);
         }
     }
 
@@ -133,7 +136,9 @@ trait Fillers
             $file = $request->file($name);
 
             if (!$file) {
-                $model->$column = $this->mergeOldAndNewFiles([], $column, $request, $model);
+                $files = $this->mergeOldAndNewFiles([], $column, $request, $model);
+                Arr::set($model, $column, $files);
+
                 continue;
             }
 
@@ -146,10 +151,13 @@ trait Fillers
                     $files[$index] = $fileObject->storeAs($storageDirectory, $this->getFileName($fileObject));
                 }
 
-                $model->$column = $this->mergeOldAndNewFiles($files, $column, $request, $model);
+                $files = $this->mergeOldAndNewFiles($files, $column, $request, $model);
+
+                Arr::set($model, $column, $files);
             } else {
                 if ($file instanceof UploadedFile && $file->isValid()) {
-                    $model->$column = $file->storeAs($storageDirectory, $this->getFileName($file));
+                    $filePath = $file->storeAs($storageDirectory, $this->getFileName($file));
+                    Arr::set($model, $column, $filePath);
                 }
             }
         }
@@ -206,7 +214,7 @@ trait Fillers
             return ltrim($file, '/');
         }, (array) $request->{$column . 'String'});
 
-        $images = $model->$column;
+        $images = Arr::get($model, $column);
 
         if ($images && is_string($images) || (empty($filesFromRequest) && empty($files))) return $images;
 
@@ -289,8 +297,6 @@ trait Fillers
             $columns = static::DATE_DATA;
         }
 
-        $isMongoDb = strtolower(config('database.default')) === 'mongodb';
-
         foreach ((array) $columns as $column) {
             if ($this->isIgnorable($request, $column)) continue;
 
@@ -298,9 +304,7 @@ trait Fillers
 
             if (!$date) continue;
 
-            // $time = Carbon::parse($date);
-            // $model->$column = $isMongoDb ? new \MongoDB\BSON\UTCDateTime($time) : $time;
-            $model->$column = Carbon::parse($date);
+            Arr::set($model, $column, Carbon::parse($date));
         }
     }
 
@@ -316,7 +320,7 @@ trait Fillers
         foreach (static::INTEGER_DATA as $column) {
             if ($this->isIgnorable($request, $column)) continue;
 
-            $model->$column = (int) $request->input($column);
+            Arr::set($model, $column, (int) $request->input($column));
         }
     }
 
@@ -332,7 +336,7 @@ trait Fillers
         foreach (static::FLOAT_DATA as $column) {
             if ($this->isIgnorable($request, $column)) continue;
 
-            $model->$column = (float) $request->input($column);
+            Arr::set($model, $column, (float) $request->input($column));
         }
     }
 
@@ -349,10 +353,10 @@ trait Fillers
             if ($this->isIgnorable($request, $column)) continue;
 
             if (($inputValue = $request->input($column)) === 'false') {
-                $model->$column = false;
+                Arr::set($model, $column, false);
             }
 
-            $model->$column = (bool) $inputValue;
+            Arr::set($model, $column, (bool) $inputValue);
         }
     }
 

@@ -72,8 +72,12 @@ class Builder
      */
     public function whereLocationNear()
     {
-        return function (string $column, array $coordinates, float $distance, string $distanceType = 'km') {
-            return $this->where($column, 'geoWithin', static::locationNear($coordinates, $distance, $distanceType));
+        $locationNear = function ($coordinates, $distance, $distanceType) {
+            return static::locationNear($coordinates, $distance, $distanceType);
+        };
+
+        return function (string $column, array $coordinates, float $distance, string $distanceType = 'km') use ($locationNear) {
+            return $this->where($column, 'geoWithin', $locationNear($coordinates, $distance, $distanceType));
         };
     }
 
@@ -93,8 +97,12 @@ class Builder
      */
     public function orWhereLocationNear()
     {
-        return function (string $column, array $coordinates, float $distance, string $distanceType = 'km') {
-            return $this->orWhere($column, 'geoWithin', static::locationNear($coordinates, $distance, $distanceType));
+        $locationNear = function ($coordinates, $distance, $distanceType) {
+            return static::locationNear($coordinates, $distance, $distanceType);
+        };
+
+        return function (string $column, array $coordinates, float $distance, string $distanceType = 'km') use ($locationNear) {
+            return $this->orWhere($column, 'geoWithin', $locationNear($coordinates, $distance, $distanceType));
         };
     }
 
