@@ -100,17 +100,18 @@ class Builder
 
     /**
      * Get location near by the given options
+     * It has to be private function so it can not be read when reading all class methods to inject method macros
      * 
      * @param  array $coordinates
      * @param  float $distance
      * @param  string $distanceType
      * @return array
      */
-    public function locationNear(array $coordinates, $distance, string $distanceType): array
+    private static function locationNear(array $coordinates, $distance, string $distanceType): array
     {
         $distance = (float) $distance;
         $distanceInRadian = $distance;
-        
+
         if ($distanceType === 'km') {
             $distanceInRadian = $distance / 6371;
         } elseif ($distanceType === 'miles') {
