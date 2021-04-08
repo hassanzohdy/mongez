@@ -226,11 +226,13 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     {
         foreach (static::LOCATION_DATA as $locationKey) {
             $location = $request->$locationKey;
-            $model->$locationKey = [
-                'type' => 'Point',
-                'coordinates' => [(float) $location['lat'], (float) $location['lng']],
-                'address' => $location['address'] ?? null,
-            ];
+            if ($location) {
+                $model->$locationKey = [
+                    'type' => 'Point',
+                    'coordinates' => [(float) $location['lat'], (float) $location['lng']],
+                    'address' => $location['address'] ?? null,
+                ];
+            }
         }
     }
 
@@ -371,11 +373,10 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
                     $parentId = $model->$parentColumnName['id'] ?? null;
                     if (!$parentId) continue;
 
-                    list($parentRepositoryClass, $childNameInParent, $sharedInfoMethod) = $parentRepositoryWithChildColumnName;
+                    [$parentRepositoryClass, $childNameInParent] = $parentRepositoryWithChildColumnName;
 
-                    if (!$sharedInfoMethod) {
-                        $sharedInfoMethod = 'sharedInfo';
-                    }
+                    // as the third value in the array is optional, we'll separate it from the list function
+                    $sharedInfoMethod = $parentRepositoryWithChildColumnName[2] ?? 'sharedInfo';
 
                     $parentRepository = App::make($parentRepositoryClass);
 

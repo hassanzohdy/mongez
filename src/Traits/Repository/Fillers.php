@@ -23,7 +23,7 @@ trait Fillers
         if (is_array($data)) {
             $request = $this->request;
             foreach ($data as $key => $value) {
-                Arr::set($request, $key, $value);
+                $this->setToModel($request, $key, $value);
             }
         } else {
             $request = $data;
@@ -76,7 +76,7 @@ trait Fillers
                 continue;
             }
 
-            Arr::set($model, $column, $request->input($column) ?? null);
+            $this->setToModel($model, $column, $this->input($column));
         }
     }
 
@@ -92,11 +92,11 @@ trait Fillers
         foreach (static::ARRAYBLE_DATA as $column) {
             if ($this->isIgnorable($request, $column)) continue;
 
-            $value = array_filter((array) $request->input($column));
+            $value = array_filter((array) $this->input($column));
 
             $value = $this->handleArrayableValue($value);
 
-            Arr::set($model, $column, $value);
+            $this->setToModel($model, $column, $value);
         }
     }
 
@@ -137,7 +137,7 @@ trait Fillers
 
             if (!$file) {
                 $files = $this->mergeOldAndNewFiles([], $column, $request, $model);
-                Arr::set($model, $column, $files);
+                $this->setToModel($model, $column, $files);
 
                 continue;
             }
@@ -153,11 +153,11 @@ trait Fillers
 
                 $files = $this->mergeOldAndNewFiles($files, $column, $request, $model);
 
-                Arr::set($model, $column, $files);
+                $this->setToModel($model, $column, $files);
             } else {
                 if ($file instanceof UploadedFile && $file->isValid()) {
                     $filePath = $file->storeAs($storageDirectory, $this->getFileName($file));
-                    Arr::set($model, $column, $filePath);
+                    $this->setToModel($model, $column, $filePath);
                 }
             }
         }
@@ -300,11 +300,11 @@ trait Fillers
         foreach ((array) $columns as $column) {
             if ($this->isIgnorable($request, $column)) continue;
 
-            $date = $request->input($column);
+            $date = $this->input($column);
 
             if (!$date) continue;
 
-            Arr::set($model, $column, Carbon::parse($date));
+            $this->setToModel($model, $column, Carbon::parse($date));
         }
     }
 
@@ -320,7 +320,7 @@ trait Fillers
         foreach (static::INTEGER_DATA as $column) {
             if ($this->isIgnorable($request, $column)) continue;
 
-            Arr::set($model, $column, (int) $request->input($column));
+            $this->setInt($model, $column, $this->input($column));
         }
     }
 
@@ -336,7 +336,7 @@ trait Fillers
         foreach (static::FLOAT_DATA as $column) {
             if ($this->isIgnorable($request, $column)) continue;
 
-            Arr::set($model, $column, (float) $request->input($column));
+            $this->setFloat($model, $column, $this->input($column));
         }
     }
 
@@ -352,12 +352,64 @@ trait Fillers
         foreach (static::BOOLEAN_DATA as $column) {
             if ($this->isIgnorable($request, $column)) continue;
 
-            if (($inputValue = $request->input($column)) === 'false') {
-                Arr::set($model, $column, false);
+            if (($inputValue = $this->input($column)) === 'false') {
+                $this->setToModel($model, $column, false);
             }
 
-            Arr::set($model, $column, (bool) $inputValue);
+            $this->setBool($model, $column, $inputValue);
         }
+    }
+
+    /**
+     * Set the given key/value to the model
+     * 
+     * @param  Model $model
+     * @param  string $key
+     * @param  mixed $value
+     * @return void
+     */
+    protected function setToModel($model, string $key, $value)
+    {
+        $model->$key = $value;
+    }
+
+    /**
+     * Set boolean value
+     * 
+     * @param  Model $model
+     * @param  string $key
+     * @param  mixed $value
+     * @return void
+     */
+    protected function setBool($model, string $key, $value)
+    {
+        $this->setToModel($model, $key, (bool) $value);
+    }
+
+    /**
+     * Set int value
+     * 
+     * @param  Model $model
+     * @param  string $key
+     * @param  mixed $value
+     * @return void
+     */
+    protected function setInt($model, string $key, $value)
+    {
+        $this->setToModel($model, $key, (int) $value);
+    }
+
+    /**
+     * Set float value
+     * 
+     * @param  Model $model
+     * @param  string $key
+     * @param  mixed $value
+     * @return void
+     */
+    protected function setFloat($model, string $key, $value)
+    {
+        $this->setToModel($model, $key, (float) $value);
     }
 
     /**
@@ -370,5 +422,19 @@ trait Fillers
     protected function isIgnorable(Request $request, string $column): bool
     {
         return (static::WHEN_AVAILABLE_DATA === true || in_array($column, static::WHEN_AVAILABLE_DATA)) && !$request->has($column);
+    }
+
+    /**
+     * Get input value
+     * 
+     * @param  string $key
+     * @param  mixed $default
+     * @return mixed
+     */
+    protected function input(string $key, $default = null)
+    {
+        $value = $this->request->input($key) ?? $this->request->$key;
+
+        return $value ?: $default;
     }
 }

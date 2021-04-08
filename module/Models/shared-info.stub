@@ -1,0 +1,7 @@
+	/** 
+	* Shared info of the model  
+	* This is used for getting simple info 
+	* 
+	* @const array 
+	*/
+	const SHARED_INFO = {{ columns }};
