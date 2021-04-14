@@ -218,17 +218,14 @@ trait Fillers
 
         if ($images && is_string($images) || (empty($filesFromRequest) && empty($files))) return $images;
 
-        // $oldImages = (array) $images;
+        foreach ($filesFromRequest as $key => $oldFile) {
+            if (!isset($files[$key])) continue;
 
-        // // $unLinkedImages = array_diff($oldImages, $filesFromRequest);
+            $this->unlink($oldFile);
+            unset($filesFromRequest[$key]);
+        }
 
-        // // foreach ($unLinkedImages as $unlinkedImage) {
-        // //     $this->unlink($unlinkedImage);
-        // // }
-
-        return array_unique(
-            array_merge($filesFromRequest, $files)
-        );
+        return array_merge($filesFromRequest, $files);
     }
 
     /**
