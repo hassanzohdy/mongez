@@ -430,7 +430,7 @@ trait Fillers
      */
     protected function input(string $key, $default = null)
     {
-        $value = $this->request->input($key) ?? $this->request->$key;
+        $value = $this->request->input($key) ?? $this->request->__get($key);
 
         return $value ?: $default;
     }
