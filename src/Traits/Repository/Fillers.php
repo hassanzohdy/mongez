@@ -22,9 +22,7 @@ trait Fillers
     {
         if (is_array($data)) {
             $request = $this->request;
-            foreach ($data as $key => $value) {
-                $this->setToModel($request, $key, $value);
-            }
+            $request->merge($data);
         } else {
             $request = $data;
         }
