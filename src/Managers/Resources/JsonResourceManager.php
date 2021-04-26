@@ -573,7 +573,7 @@ abstract class JsonResourceManager extends JsonResource
      * @param  DateTime $date
      * @return string
      */
-    protected function getLocalizedDte($date)
+    protected function getLocalizedDate($date)
     {
         $formatter = new IntlDateFormatter(
             Mongez::getRequestLocaleCode() ?: App::getLocale(),
