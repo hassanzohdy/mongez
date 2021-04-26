@@ -3,9 +3,11 @@
 namespace HZ\Illuminate\Mongez\Managers\Resources;
 
 use DateTime;
+use IntlDateFormatter;
 use Illuminate\Support\Arr;
 use MongoDB\BSON\UTCDateTime;
 use Illuminate\Support\Fluent;
+use Illuminate\Support\Facades\App;
 use Illuminate\Database\Eloquent\Model;
 use HZ\Illuminate\Mongez\Helpers\Mongez;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -525,6 +527,7 @@ abstract class JsonResourceManager extends JsonResource
             'format' =>  config('mongez.resources.date.format', 'd-m-Y h:i:s a'),
             'timestamp' => config('mongez.resources.date.timestamp', true),
             'humanTime' => config('mongez.resources.date.humanTime', true),
+            'intl' => config('mongez.resources.date.intl', true),
         ], $options);
 
         if ($value instanceof UTCDateTime) {
@@ -542,7 +545,7 @@ abstract class JsonResourceManager extends JsonResource
         }
 
         if (!$options['humanTime'] && !$options['timestamp']) {
-            $this->set($column, $value->format($options['format']));
+            $this->set($column, $options['intl'] ? $this->getLocalizedDate($value) : $value->format($options['format']));
         } else {
             $values = [
                 'format' => $value->format($options['format']),
@@ -552,12 +555,33 @@ abstract class JsonResourceManager extends JsonResource
                 $values['timestamp'] = $value->getTimestamp();
             }
 
+            if ($options['intl']) {
+                $values['text'] = $this->getLocalizedDate($value);
+            }
+
             if ($options['humanTime']) {
                 $values['humanTime'] = \Carbon\Carbon::createFromTimeStamp($value->getTimestamp())->diffForHumans();
             }
 
             $this->set($column, $values);
         }
+    }
+
+    /**
+     * Get a localized date based on current locale code
+     * 
+     * @param  DateTime $date
+     * @return string
+     */
+    protected function getLocalizedDte($date)
+    {
+        $formatter = new IntlDateFormatter(
+            Mongez::getRequestLocaleCode() ?: App::getLocale(),
+            IntlDateFormatter::FULL ,
+            IntlDateFormatter::SHORT,
+        );
+
+        return $formatter->format($date);
     }
 
     /**
@@ -641,9 +665,9 @@ abstract class JsonResourceManager extends JsonResource
                             case 'assets':
                                 $resource->collectAssets($columns);
                                 break;
-                            // case 'whenAvailable':
-                            //     // $resource->filterWhenAvailable($columns);
-                            //     break;
+                                // case 'whenAvailable':
+                                //     // $resource->filterWhenAvailable($columns);
+                                //     break;
                         }
                     }
                 }
