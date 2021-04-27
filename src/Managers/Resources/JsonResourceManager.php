@@ -468,7 +468,13 @@ abstract class JsonResourceManager extends JsonResource
         if (empty($columns)) return $this;
 
         foreach ($columns as $key => $column) {
+            $dateOptions = [];
             if (is_string($key)) {
+                if (is_string($column)) {
+                    $dateOptions['format'] = $column;
+                } else {
+                    $dateOptions = $column;
+                }
                 $column = $key;
             }
 
@@ -481,7 +487,7 @@ abstract class JsonResourceManager extends JsonResource
                 continue;
             }
 
-            $this->setDate($column, $value);
+            $this->setDate($column, $value, $dateOptions);
         }
 
         return $this;
