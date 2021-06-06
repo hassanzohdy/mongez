@@ -90,7 +90,7 @@ abstract class AdminApiController extends ApiController
         $id = (int) $id;
 
         if (!$this->repository->has($id)) {
-            return $this->notFound(trans('notFound'));
+            return $this->notFound(trans('response.notFound'));
         }
 
         return $this->success([
@@ -160,7 +160,7 @@ abstract class AdminApiController extends ApiController
     public function destroy($id)
     {
         if (!$this->repository->has($id)) {
-            return $this->notFound(trans('notFound'));
+            return $this->notFound(trans('response.notFound'));
         }
 
         if ($this->repository->deleteHasDependence()) {
@@ -224,7 +224,7 @@ abstract class AdminApiController extends ApiController
     public function update(Request $request, $id)
     {
         if (!$this->repository->has($id)) {
-            return $this->notFound(trans('notFound'));
+            return $this->notFound(trans('response.notFound'));
         }
 
         $rules = array_merge($this->allValidation($request, $id), $this->updateValidation($id, $request));
