@@ -123,10 +123,10 @@ abstract class ApiController extends Controller
      */
     protected function mapResponseError($data)
     {
-        $errorMaxArrayLength = config('mongez..response.errors.maxArrayLength', 1);
+        $errorMaxArrayLength = config('mongez.response.errors.maxArrayLength', 1);
         $errorReturn = config('mongez.response.errors.strategy', self::ERROR_AS_ARRAY);
         $arrayKey = config('mongez.response.errors.arrayKey', self::ERROR_AS_ARRAY_KEY);
-        $arrayValue = config('mongez.response.errors.ArrayValue', self::ERROR_AS_ARRAY_VALUE);
+        $arrayValue = config('mongez.response.errors.arrayValue', self::ERROR_AS_ARRAY_VALUE);
 
         if ($data instanceof MessageBag) {
             $errors = [];
