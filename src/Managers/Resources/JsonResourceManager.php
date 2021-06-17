@@ -720,23 +720,22 @@ abstract class JsonResourceManager extends JsonResource
         // in that case it will be rendered as an array 
 
         if ($localizationMode === 'array' && isset($value[0]) || isset($value[0])) {
+            $valuesList = [];
             foreach ($value as $localizedValue) {
                 // check if it is an array of values
                 if (isset($localizedValue[0])) {
-                    $valuesList = [];
                     foreach ($localizedValue as $subValue) {
                         if ($subValue['localeCode'] === $localeCode) {
                             $valuesList[] = (string) $subValue['text'];
                         }
                     }
-
-                    if (!empty($valuesList)) return $valuesList;
                 } else {
                     if ($localizedValue['localeCode'] === $localeCode) {
                         return (string) $localizedValue['text'];
                     }
                 }
             }
+            return $valuesList ?: $value;
         } elseif ($localizationMode === 'object' && isset($value[$localeCode]) || isset($value[$localeCode])) {
             return (string) $value[$localeCode];
         }
