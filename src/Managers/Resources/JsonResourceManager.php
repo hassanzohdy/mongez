@@ -583,7 +583,7 @@ abstract class JsonResourceManager extends JsonResource
     {
         $formatter = new IntlDateFormatter(
             Mongez::getRequestLocaleCode() ?: App::getLocale(),
-            IntlDateFormatter::FULL ,
+            IntlDateFormatter::FULL,
             IntlDateFormatter::SHORT,
         );
 
@@ -721,8 +721,20 @@ abstract class JsonResourceManager extends JsonResource
 
         if ($localizationMode === 'array' && isset($value[0]) || isset($value[0])) {
             foreach ($value as $localizedValue) {
-                if ($localizedValue['localeCode'] === $localeCode) {
-                    return (string) $localizedValue['text'];
+                // check if it is an array of values
+                if (isset($localizedValue[0])) {
+                    $valuesList = [];
+                    foreach ($localizedValue as $subValue) {
+                        if ($subValue['localeCode'] === $localeCode) {
+                            $valuesList[] = (string) $subValue['text'];
+                        }
+                    }
+
+                    if (!empty($valuesList)) return $valuesList;
+                } else {
+                    if ($localizedValue['localeCode'] === $localeCode) {
+                        return (string) $localizedValue['text'];
+                    }
                 }
             }
         } elseif ($localizationMode === 'object' && isset($value[$localeCode]) || isset($value[$localeCode])) {
