@@ -42,7 +42,7 @@ class Builder
             return $this->where($column, 'LIKE', "%$value%");
         };
     }
-
+    
     /**
      * A shorthand method for the `or where like ` clause
      *
