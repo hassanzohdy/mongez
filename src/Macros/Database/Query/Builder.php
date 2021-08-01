@@ -87,6 +87,12 @@ class Builder
         };
     }
 
+            return $this->whereRaw([
+                '$where' => "($columns).match(/$value/)"
+            ]);
+        };
+    }
+    
     /**
      * A shorthand method for the `or where like ` clause
      *
