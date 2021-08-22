@@ -1,16 +1,29 @@
 <?php
+
 namespace HZ\Illuminate\Mongez\Console\Commands;
 
-use File;
-use Illuminate\Support\Str;
-use Illuminate\Console\Command;
-use HZ\Illuminate\Mongez\Helpers\Mongez;
-use HZ\Illuminate\Mongez\Traits\Console\EngezTrait;
 use HZ\Illuminate\Mongez\Contracts\Console\EngezInterface;
+use HZ\Illuminate\Mongez\Managers\Console\EngezGeneratorCommand;
+use Illuminate\Support\Facades\Artisan;
 
-class EngezModel extends Command implements EngezInterface
+class EngezModel extends EngezGeneratorCommand implements EngezInterface
 {
-    use EngezTrait;
+    /**
+     * List of options that can be used in other generators like the module builder
+     * 
+     * @const string
+     */
+    public const MODEL_OPTIONS = '
+    {--share=}
+    ';
+
+    /**
+     * List of options text only
+     * 
+     * @const array
+     */
+    public const MODEL_OPTIONS_LIST = ['share'];
+
     /**
      * The name and signature of the console command.
      *
@@ -18,16 +31,9 @@ class EngezModel extends Command implements EngezInterface
      */
     protected $signature = 'engez:model {model} 
                                         {--module=} 
-                                        {--data=}
-                                        {--uploads=}
-                                        {--index=}
-                                        {--int=}
-                                        {--bool}
-                                        {--float=}
-                                        {--table=}                                        
-                                        {--unique=}
-                                        {--parent=}
-                                        ';
+                                        ' . EngezGeneratorCommand::DATA_TYPES_OPTIONS
+                                          . EngezGeneratorCommand::TABLE_INDEXES_OPTIONS
+                                          . EngezModel::MODEL_OPTIONS;
 
     /**
      * The console command description.
@@ -37,19 +43,12 @@ class EngezModel extends Command implements EngezInterface
     protected $description = 'Make new model to specific module';
 
     /**
-     * The database name 
+     * The model name 
      * 
      * @var string
      */
-    protected $databaseName;
-    
-    /**
-     * The module name
-     *
-     * @var array
-     */
-    protected $availableModules = [];
-    
+    protected string $modelName;
+
     /**
      * Execute the console command.
      *
@@ -58,58 +57,31 @@ class EngezModel extends Command implements EngezInterface
     public function handle()
     {
         $this->init();
-        $this->validateArguments();   
+        $this->validateArguments();
         $this->create();
 
-        if ($this->databaseName == 'mongodb' && $this->option('data')) {
-            $this->createSchema();
-        }
-        $this->createMigration();
+        // this is deprecated, use normal migration for data mapping instead
+        // if ($this->isMongoDB()) {
+        // $this->createSchema();
+        // }
+
         $this->info('Model created successfully');
     }
-    
-    /**
-     * Validate The module name
-     *
-     * @return void
-     */
-    public function validateArguments()
-    {
-        $availableModules = Mongez::getStored('modules');
-        
-        if (! $this->option('module')) {
-            return $this->info('module option is required');
-        }
-
-        if (! in_array(strtolower($this->info['moduleName']), $availableModules)) {
-            return $this->info('This module is not available');
-        }
-
-        if ($this->option('parent')) {
-            if (! in_array(strtolower($this->info['parent']), $availableModules)) {
-                Command::error('This parent module is not available');
-                die();
-            }    
-        }
-    }
 
     /**
-     * Set controller info.
+     * Prepare data
      * 
      * @return void
      */
     public function init()
     {
-        $this->databaseName = strtolower(config('database.default'));
+        parent::init();
 
-        $this->info['modelName'] = Str::studly($this->argument('model'));
-        $this->info['moduleName'] = Str::studly($this->option('module'));    
-        
-        if ($this->optionHasValue('parent')) {
-            $this->info['parent'] = $this->option('parent');
-        }
+        $this->setModuleName($this->option('module'));
+
+        $this->modelName = $this->modelClass($this->argument('model'));
     }
-    
+
     /**
      * Create Model 
      *
@@ -117,62 +89,74 @@ class EngezModel extends Command implements EngezInterface
      */
     public function create()
     {
-        $model = $this->info['modelName'];
+        $this->createModel();
+        $this->info('Creating Migration File');
+        $this->createMigration();
+    }
 
-        $modelName = basename(str_replace('\\', '/', $model));
-
+    /**
+     * Create the model file
+     * 
+     * @return void
+     */
+    protected function createModel()
+    {
         // make it singular 
-        
-        $modelName = Str::singular($modelName);
 
-        $this->info['modelName'] = $modelName;
-        
-        $modelPath = dirname($model);
+        $modelName = $this->modelName;
 
-        $modelPath = array_map(function ($segment) {
-            return Str::singular($segment);
-        }, explode('\\', $modelPath));
-
-        $modelPath = implode('\\', $modelPath);
-
-        $content = File::get($this->path("Models/model.php"));
-
-        // replace model name
-        $content = str_ireplace("ModelName", "{$modelName}", $content);
-
-        if ($this->databaseName == 'mongodb') $this->databaseName = 'MongoDB';
-        // replace database name 
-        $content = str_replace('DatabaseName', $this->databaseName, $content);
-
-        // replace module name
-        $targetModule = $this->info['moduleName'];   
-        if (isset($this->info['parent'])) {
-            $targetModule = str::studly($this->info['parent']);
-        }
-        
-        $content = str_ireplace("ModuleName", $targetModule, $content);
+        $data = [];
 
         // Add shared info constant in mongodb driver
-        if ($this->databaseName == 'mongodb') {
-            $tabs = "\n" . str_repeat("\t", 1);
-            $singleTab = "\n" . str_repeat("\t", 0);
-            $sharedInfo = "{$singleTab}{";
-            $sharedInfo .= $tabs;
-            $sharedInfo .= "/** {$tabs}* Shared info of the model  {$tabs}* This is used for getting simple info {$tabs}* {$tabs}* @const array {$tabs}*/";
-            $sharedInfo .= "{$tabs}const SHARED_INFO = ['id'];";
-            $sharedInfo .= "{$singleTab}}";
-            $content = str_replace("{}", $sharedInfo, $content);   
+        if ($this->isMongoDB()) {
+            $sharedColumns = $this->optionHasValue('share') ? $this->option('share') : 'id';
+
+            $data[] = $this->replaceStub('Models/shared-info', [
+                '{{ columns }}' => $this->stubStringAsArray($sharedColumns),
+            ]);
         }
-        
-        $modelDirectory = $this->modulePath("Models/");
 
-        $this->checkDirectory($modelDirectory);
+        if ($this->optionHasValue('date')) {
+            $dateColumns = $this->option('date');
 
-        $this->info['modelPath'] = $modelPath . '\\' . $modelName;
-        // create the file
-        $this->createFile("$modelDirectory/{$modelName}.php", $content, 'Model');
+            $data[] = $this->replaceStub('Models/date', [
+                '{{ columns }}' => $this->stubStringAsArray($dateColumns),
+            ]);
+        }
+
+        $replaces = [
+            // replace model name
+            '{{ ModelName }}' => $modelName,
+            // replace database name 
+            '{{ DatabaseName }}' => $this->getDatabaseName(),
+            // replace module name
+            '{{ ModuleName }}' => $this->getModule(),
+            // replace data
+            '{{ data }}' => $this->stubData($data, "\t//"),
+        ];
+
+        $this->putFile("Models/$modelName.php", $this->replaceStub('Models/model', $replaces), 'Model');
     }
-    
+
+    /**
+     * Create migration file of table in mysql 
+     *
+     * @param string $dataFileName
+     * @return void 
+     */
+    protected function createMigration()
+    {
+        $moduleWithModelName = $this->snake($this->getModule() . $this->plural($this->modelName));
+
+        $migrationsOptions = [
+            'migrationName' => 'create_' . $moduleWithModelName . '_table',
+            '--module' => $this->option('module'),
+            '--table' => strtolower($this->plural($this->modelName)),
+        ];
+
+        Artisan::call('engez:migration', $this->withDataTypes($migrationsOptions, EngezGeneratorCommand::TABLE_INDEXES));
+    }
+
     /**
      * Create schema of table in mongo 
      *
@@ -183,23 +167,21 @@ class EngezModel extends Command implements EngezInterface
     {
         $defaultContent = [
             '_id' => "objectId",
-            'id'=>'int', 
+            'id' => 'int',
         ];
-        
-        $databaseFileName = strtolower(str::plural($this->info['moduleName']));
-        
+
         $path = $this->modulePath("database/migrations");
-        
-        $this->checkDirectory($path);
 
-        $customData = explode(',', $this->option('data')) ?? [];
-        
-        unset($customData['id'], $customData['_id']);
+        $this->makeDirectory($path);
 
-        $customData = array_fill_keys($customData, 'string');
-        
-        $content = array_merge($defaultContent, $customData);   
+        $stringData = explode(',', $this->option('string')) ?? [];
 
-        $this->createFile("$path/{$databaseFileName}.json", json_encode($content, JSON_PRETTY_PRINT), 'Schema');
+        unset($stringData['id'], $stringData['_id']);
+
+        $stringData = array_fill_keys($stringData, 'string');
+
+        $content = array_merge($defaultContent, $stringData);
+
+        $this->createFile("$path/{$this->modelName}.json", json_encode($content, JSON_PRETTY_PRINT), 'Schema');
     }
 }

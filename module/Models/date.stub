@@ -1,0 +1,6 @@
+	/** 
+	* List Of Date columns  
+	* 
+	* @var array 
+	*/
+	protected $dates = {{ columns }};

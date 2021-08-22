@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
 
-abstract class AdminViewController extends Controller
+abstract class AdminUIController extends Controller
 {
     /**
      * Repository object

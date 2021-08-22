@@ -1,12 +1,9 @@
 <?php
+
 namespace HZ\Illuminate\Mongez\Services\Images;
 
-Use File;
-use Image;
-
-class ImageWatermark extends BaseImage {
-
-
+class ImageWatermark extends BaseImage
+{
     /**
      * Watermark image path
      *
@@ -20,7 +17,7 @@ class ImageWatermark extends BaseImage {
     public function __construct($imagePath)
     {
         parent::__construct($imagePath);
-        $this->watermarkImagePath = public_path($this->pathToImageFolder .$this->imageName .'-watermark.' .$this->imageExtension);
+        $this->watermarkImagePath = public_path($this->pathToImageFolder . $this->imageName . '-watermark.' . $this->imageExtension);
     }
 
     /**
@@ -32,9 +29,9 @@ class ImageWatermark extends BaseImage {
      * @param int    $yAxis
      * @return string
      */
-    public function setWatermark($watermarkImagePath, $position, $xAxis = 0 ,$yAxis = 0)
+    public function setWatermark($watermarkImagePath, $position, $xAxis = 0, $yAxis = 0)
     {
-        if (! $this->imageHasWatermark()) {
+        if (!$this->imageHasWatermark()) {
             $watermarkImage = $this->getImageObject(public_path($watermarkImagePath));
             $imageWithWatermark = $this->imageObject->insert(
                 $watermarkImage,

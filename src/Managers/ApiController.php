@@ -47,7 +47,7 @@ abstract class ApiController extends Controller
      * 
      * @const string
      */
-    protected const REPOSITORY_NAME = '';
+    public const REPOSITORY_NAME = '';
 
     /**
      * Repository Object
@@ -55,7 +55,7 @@ abstract class ApiController extends Controller
      * 
      * @var RepositoryInterface
      */
-    protected $repository = null;
+    protected $repository;
 
     /**
      * Events Object
@@ -74,8 +74,6 @@ abstract class ApiController extends Controller
 
         if (static::REPOSITORY_NAME) {
             $this->repository = repo(static::REPOSITORY_NAME);
-        } elseif ($this->repository) {
-            $this->repository = repo($this->repository);
         }
     }
 
@@ -160,11 +158,15 @@ abstract class ApiController extends Controller
     /**
      * Send not found request data
      *
-     * @param  array $data
-     * @return string
+     * @param  string $data
+     * @return Response
      */
-    protected function notFound($data)
+    protected function notFound($data = null)
     {
+        if ($data === null) {
+            $data = trans('response.notFound');
+        }
+
         $data = $this->mapResponseError($data);
 
         if (($eventResponse = $this->events->trigger('response.notFound', $data)) && is_array($eventResponse)) {
@@ -180,9 +182,9 @@ abstract class ApiController extends Controller
      * @param  mixed $data
      * @return string
      */
-    protected function unauthorized($data)
+    protected function unauthorized($data = null)
     {
-        $data = $this->mapResponseError($data);
+        $data = $this->mapResponseError($data ?: trans('response.unauthorized'));
 
         if (($eventResponse = $this->events->trigger('response.unauthorized', $data)) && is_array($eventResponse)) {
             $data = $eventResponse;

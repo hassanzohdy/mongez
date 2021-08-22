@@ -1,4 +1,5 @@
 <?php
+
 namespace HZ\Illuminate\Mongez\Managers\Database\MYSQL;
 
 use HZ\Illuminate\Mongez\Traits\ModelTrait;
@@ -47,5 +48,5 @@ class Model extends BaseModel
     protected function byUser()
     {
         return user()->id ?? 0;
-    } 
+    }
 }

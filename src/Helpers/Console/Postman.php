@@ -74,7 +74,7 @@ class Postman
         $this->data = [];
         $this->parent = $data['parent'];
         $this->singleModuleName = $data['modelName'];
-        $this->moduleName = strtolower(str::plural($this->singleModuleName));
+        $this->moduleName = strtolower(Str::plural($this->singleModuleName));
 
         foreach($data['data'] as $textInput => $dataType) {
             $this->data [] = [

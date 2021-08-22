@@ -2,8 +2,9 @@
 
 namespace HZ\Illuminate\Mongez\Traits\MongoDB;
 
-use DB;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 trait RecycleBin
 {
@@ -14,8 +15,6 @@ trait RecycleBin
     {
         $recordInfo = $this->info();
 
-        $tableName = $this->getTable();
-
         $trashTable = static::trashTable();
 
         $primaryId = $this->id;
@@ -23,6 +22,8 @@ trait RecycleBin
         DB::collection($trashTable)->insert([
             'primaryId' => $primaryId,
             'record' => $recordInfo,
+            'deletedBy' => ($user = user()) ? $user->sharedInfo() : null,
+            'deletedAt' => Carbon::now(),
         ]);
 
         parent::delete();

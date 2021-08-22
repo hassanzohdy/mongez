@@ -2,6 +2,7 @@
 
 namespace HZ\Illuminate\Mongez\Managers\Providers;
 
+use ReflectionClass;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use HZ\Illuminate\Mongez\Contracts\Providers\ModuleServiceProviderInterface;
@@ -9,67 +10,98 @@ use HZ\Illuminate\Mongez\Contracts\Providers\ModuleServiceProviderInterface;
 abstract class ModuleServiceProvider extends ServiceProvider implements ModuleServiceProviderInterface
 {
     /**
+     * Module Name
+     *
+     * @const strong
+     */
+    public const NAME = '';
+
+    /**
      * List of routes files
      *
      * @const array
      */
-    const ROUTES_TYPES = ['site', 'admin'];
+    public const ROUTES_TYPES = ['site', 'admin'];
 
     /**
      * Module build type
      *
      * @const strong
      */
-    const BUILD_MODE = 'api';
+    public const BUILD_MODE = 'api';
 
     /**
-     * Views Name
+     * Determine if the module has views
      *
-     * @const strong
+     * @const string
      */
-    const VIEWS_NAME = '';
+    public const VIEW_PREFIX = '';
+
+    /**
+     * Determine if the module has translations
+     *
+     * @const string
+     */
+    public const TRANSLATION_PREFIX = '';
+
+    /**
+     * Modules directory path
+     * 
+     * @var string
+     */
+    protected string $moduleBaseDirectory;
+
+    /**
+     * Namespace for old modules, now the entire class path is set in routes
+     * 
+     * @var string
+     */
+    protected $namespace = '';
 
     /**
      * {@inheritDoc}
      */
     public function boot()
-    {
-        if (static::VIEWS_NAME) {
-            $viewsPath = __DIR__ . './../views';
+    {        
+        $classInfo = new ReflectionClass($this);
 
-            $this->loadViewsFrom($viewsPath, static::VIEWS_NAME);
+        $this->moduleBaseDirectory = realpath(dirname($classInfo->getFileName()) . './../');
+
+        $this->mapRoutes();
+
+        if (static::VIEW_PREFIX) {
+            $this->loadViewsFrom($this->moduleBaseDirectory . '/views', static::VIEW_PREFIX);
         }
 
-        $this->map();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function map()
-    {
-        if ($this->routesAreCached()) {
-            $this->loadCachedRoutes();
-        } else {
-            $this->mapApiRoutes();
-
-            $this->app->booted(function () {
-                $this->app['router']->getRoutes()->refreshNameLookups();
-                $this->app['router']->getRoutes()->refreshActionLookups();
-            });
+        if (static::TRANSLATION_PREFIX) {
+            $this->loadTranslationsFrom($this->moduleBaseDirectory . '/lang', static::TRANSLATION_PREFIX);
         }
     }
 
     /**
-     * {@inheritDoc}
+     * Map Routes
+     * 
+     * @return void
      */
-    public function mapApiRoutes()
+    public function mapRoutes()
+    {
+        if (!$this->app->routesAreCached()) {
+            $this->mapRoutesList();
+        }
+    }
+
+    /**
+     * Map uncached routes
+     * 
+     * @return void
+     */
+    public function mapRoutesList()
     {
         foreach (static::ROUTES_TYPES as $routeType) {
             $appPath = $routeType == 'admin' ? '/admin' : '';
 
             $routeFilePath = 'routes/' . $routeType . '.php';
-            $routeFilePath = lcfirst($this->namespace) . $routeFilePath;
+            $routeFilePath = $this->moduleBaseDirectory . '/' . $routeFilePath;
 
             $prefix = '';
             $middleware = 'web';
@@ -81,31 +113,9 @@ abstract class ModuleServiceProvider extends ServiceProvider implements ModuleSe
 
             Route::prefix($prefix . $appPath)
                 ->middleware($middleware)
-                ->namespace('App')
+                ->namespace($this->namespace)
                 ->name($routeType . '.')
-                ->group(base_path($routeFilePath));
+                ->group($routeFilePath);
         }
-    }
-
-    /**
-     * Determine if the application routes are cached.
-     *
-     * @return bool
-     */
-    protected function routesAreCached()
-    {
-        return $this->app->routesAreCached();
-    }
-
-    /**
-     * Load the cached routes for the application.
-     *
-     * @return void
-     */
-    protected function loadCachedRoutes()
-    {
-        $this->app->booted(function () {
-            require $this->app->getCachedRoutesPath();
-        });
     }
 }

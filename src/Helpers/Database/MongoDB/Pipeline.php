@@ -3,7 +3,6 @@
 namespace HZ\Illuminate\Mongez\Helpers\Database\MongoDB;
 
 use DateTime;
-use Exception;
 use MongoDB\BSON\UTCDateTime;
 
 class Pipeline
@@ -254,6 +253,14 @@ class Pipeline
      */
     public function whereBetween($column, $minValue, $maxValue): Pipeline
     {
+        if ($minValue instanceof DateTime) {
+            $minValue = new UTCDateTime($minValue->format('Uv'));
+        }
+
+        if ($maxValue instanceof DateTime) {
+            $maxValue = new UTCDateTime($maxValue->format('Uv'));
+        }
+
         $this->data($column, [
             static::MATCHING_OPERATOR['>='] => $minValue,
             static::MATCHING_OPERATOR['<='] => $maxValue,

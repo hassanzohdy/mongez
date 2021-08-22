@@ -1,7 +1,6 @@
 <?php
 namespace HZ\Illuminate\Mongez\Traits;
 
-use App;
 use Illuminate\Support\Str;
 
 trait RepositoryTrait
@@ -9,17 +8,24 @@ trait RepositoryTrait
     /**
      * Get repositories dynamically
      *
-     * @param string $repository
+     * @param string $key
      * @return \HZ\Illuminate\Mongez\Contracts\RepositoryInterface 
      */
-    public function __get(string $repository)
+    public function __get($key)
     {
-        if (Str::endsWith($repository, 'Repository')) {
-            $repository = Str::replaceLast('Repository', '', $repository);
-        } else if (Str::endsWith($repository, 'Repo')) {            
-            $repository = Str::replaceLast('Repo', '', $repository);
+        $repository = null;
+        if (Str::endsWith($key, 'Repository')) {
+            $repository = Str::replaceLast('Repository', '', $key);
+        } else if (Str::endsWith($key, 'Repo')) {            
+            $repository = Str::replaceLast('Repo', '', $key);
         }
 
-        return repo($repository);
+        if ($repository) {
+            return repo($repository);
+        }
+
+        if (method_exists(parent::class, '__get')) {
+            return $repository ? repo($repository) : parent::__get($key);
+        }
     }
 }

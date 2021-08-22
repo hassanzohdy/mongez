@@ -1,0 +1,7 @@
+
+    /**
+     * Translation Name Prefix
+     * 
+     * @const string
+     */
+    public const TRANSLATION_PREFIX = '{{ translationName }}';

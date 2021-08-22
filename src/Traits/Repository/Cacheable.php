@@ -49,7 +49,7 @@ trait Cacheable
      */
     protected function driver(): CacheStorage
     {
-        return Cache::store(config('mongez.cache.driver'));
+        return Cache::store(config('mongez.repository.cache.driver'));
     }
 
     /**

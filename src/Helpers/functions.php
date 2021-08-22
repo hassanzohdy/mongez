@@ -1,4 +1,9 @@
 <?php
+declare(strict_types=1);
+
+use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\App;
 use HZ\Illuminate\Mongez\Exceptions\NotFoundRepositoryException;
 use HZ\Illuminate\Mongez\Contracts\Repositories\RepositoryInterface;
 
@@ -29,29 +34,31 @@ if (! function_exists('toJson')) {
 
 if (! function_exists('pre')) {
     /**
-     * print the given variable
+     * print the given data
      * 
-     * @param mixed $var
+     * @param mixed ...$vars
      * @return void
      */
-    function pre($var)
+    function pre(...$vars)
     {
-        echo '<pre>';
-        print_r($var);
-        echo '</pre>';
+        foreach ($vars as $var) {
+            echo '<pre>';
+            print_r($var);
+            echo '</pre>';
+        }
     }
 }
 
 if (! function_exists('pred')) {
     /**
-     * print the given variable then stop the script execution
+     * print the given dta then stop the script execution
      * 
-     * @param mixed $var
+     * @param mixed ...$vars
      * @return void
      */
-    function pred($data)
+    function pred(...$vars)
     {
-        pre($data);
+        pre(...$vars);
         die();
     }
 }
@@ -77,7 +84,7 @@ if (! function_exists('repo')) {
         if (! $repositoryClass) { 
             throw new NotFoundRepositoryException(sprintf('Call to undefined repository: %s', $repository)); 
         }
-        
+       
         $repositoryClass = App::make($repositoryClass);
 
         return $repos[$repository] = $repositoryClass; 

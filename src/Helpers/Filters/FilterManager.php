@@ -1,8 +1,9 @@
 <?php
+
 namespace HZ\Illuminate\Mongez\Helpers\Filters;
 
-use App;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\App;
 
 class FilterManager
 {
@@ -30,12 +31,11 @@ class FilterManager
     /** 
      * Set required data for filters
      * 
-     * @param string \Illuminate\Database\Query\Builder
+     * @param \Illuminate\Database\Query\Builder $query
      * @param array  $options
      * @param array  $filterBy
-     * @param \Illuminate\Database\Query\Builder $query
-    */
-    public function __construct($query, $options, $filterBy) 
+     */
+    public function __construct($query, $options, $filterBy)
     {
         $this->query = $query;
         $this->options = $options;
@@ -43,24 +43,31 @@ class FilterManager
     }
 
     /**
-     * Merge filter class.
+     * Filter by the given classes
      * 
-     * @param string $filterClass
+     * @param array $filterClasses
      * @return void
      */
-    public function merge(array $filterClasses) 
+    public function filter(array $filterClasses)
     {
-        foreach($filterClasses as $filterClass) {
+        $collectOptions = $this->getRequestedOptions();
+
+        foreach ($filterClasses as $filterClass) {
             $filterObject = App::make($filterClass);
-            $filterObject->query = $this->query;
-            $sendedOptions = $this->getRequestedOptions();
-            foreach ($sendedOptions as $option) {
+
+            $filterObject->setQuery($this->query);
+
+            $filtersList = $filterObject->filterMap();
+
+            foreach ($collectOptions as $option) {
                 $filterFunction = $option['operator'];
-                if (array_key_exists($option['operator'], $filterObject->filterMap())) {
-                    $filterFunction = $filterObject->filterMap()[$option['operator']];
-                    foreach($option['columns'] as $column) {
-                        $filterObject->$filterFunction($column['filteredColumns'], $column['value'], $option['operator']);
-                    }
+
+                if (!array_key_exists($option['operator'], $filtersList)) continue;
+
+                $filterFunction = $filtersList[$option['operator']];
+
+                foreach ($option['columns'] as $column) {
+                    call_user_func_array([$filterObject, $filterFunction], [$column['filteredColumns'], $column['value'], $option['operator']]);
                 }
             }
         }
@@ -73,26 +80,42 @@ class FilterManager
      * @return array 
      */
     protected function getRequestedOptions()
-    { 
+    {
         $requestedOptions = [];
+
         foreach ($this->filterBy as $operator => $columns) {
             $options = [];
+
             $requestedColumns = [];
-            foreach((array)$columns as $key => $column) {
-                if (!is_string($key)) $key = $column;
+
+            foreach ((array) $columns as $key => $column) {
+                if (!is_string($key)) {
+                    $key = $column;
+                }
+
                 if (($value = Arr::get($this->options, $key, null)) !== null) {
                     $options['operator'] = $operator;
-                    $requestedColumns [] = [
+
+                    $requestedColumns[] = [
                         'filteredColumns' => (array) $column,
                         'value' => $value
                     ];
 
-                    if (!empty($columns)) $options['columns'] = $requestedColumns;
+                    if (!empty($columns)) {
+                        $options['columns'] = $requestedColumns;
+                    }
                 }
             }
-            if (!empty($requestedColumns)) $options['columns'] = $requestedColumns;
-            if (!empty($options)) $requestedOptions[] = $options;
+
+            if (!empty($requestedColumns)) {
+                $options['columns'] = $requestedColumns;
+            }
+
+            if (!empty($options)) {
+                $requestedOptions[] = $options;
+            }
         }
+
         return $requestedOptions;
     }
 }

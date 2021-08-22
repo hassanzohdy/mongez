@@ -67,22 +67,6 @@ trait Listable
     }
 
     /**
-     * Get list of data with its shared info only 
-     * 
-     * @param  string $repository
-     * @param array $ids
-     * @return array
-     */
-    protected function listSharedInfo(string $repository, $ids): array
-    {
-        return repo($repository)->listModels([
-            'id' => $ids,
-        ])->map(function ($item) {
-            return $item->sharedInfo();
-        })->toArray();
-    }
-
-    /**
      * Get current used resource class name
      * 
      * @return string
@@ -153,25 +137,10 @@ trait Listable
 
         $this->query = $this->getQuery();
 
-        $this->table = $this->columnTableName();
-
         $this->select();
 
-        if (static::USING_SOFT_DELETE === true) {
-            $retrieveMode = $this->option(static::RETRIEVAL_MODE, static::DEFAULT_RETRIEVAL_MODE);
-
-            if ($retrieveMode == static::RETRIEVE_ACTIVE_RECORDS) {
-                $deletedAtColumn = $this->column(static::DELETED_AT);
-
-                $this->query->whereNull($deletedAtColumn);
-            } elseif ($retrieveMode == static::RETRIEVE_DELETED_RECORDS) {
-                $deletedAtColumn = $this->column(static::DELETED_AT);
-                $this->query->whereNotNull($deletedAtColumn);
-            }
-        }
-
         $filterManger = new FilterManager($this->query, $options, static::FILTER_BY);
-        $filterManger->merge(array_merge(static::FILTERS, config('mongez.filters', [])));
+        $filterManger->filter(array_merge(static::FILTERS, config('mongez.filters', [])));
 
         $this->filter();
 
@@ -224,7 +193,7 @@ trait Listable
      */
     public function listPublished(array $options = [])
     {
-        $options['published'] = true;
+        $options[$this->getPublishedColumn()] = true;
 
         return $this->list($options);
     }
@@ -251,7 +220,7 @@ trait Listable
     public function publish($id, $publishState)
     {
         $this->getQuery()->where('id', (int) $id)->update([
-            'published' => (bool) $publishState
+            $this->getPublishedColumn() => (bool) $publishState
         ]);
     }
 
@@ -398,6 +367,23 @@ trait Listable
      */
     protected function option(string $key, $default = null)
     {
-        return Arr::get($this->options, $key, $default);
+        $value = Arr::get($this->options, $key, $default);
+
+        if ($value === 'false') {
+            $value = false;
+        }
+
+        return $value;
+    }
+
+    /**
+     * Get published column
+     * 
+     * @return string
+     */
+    protected function getPublishedColumn(): string
+    {
+        return defined('static::PUBLISHED_COLUMN') ? static::PUBLISHED_COLUMN : 
+               config('mongez.repository.publishedColumn', static::DEFAULT_PUBLISHED_COLUMN);
     }
 }

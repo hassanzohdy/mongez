@@ -72,7 +72,7 @@ class Markdown
         // replace base url
         $content = str_ireplace("baseUrl", url('/'), $content);
         
-        $content = str_ireplace("routeName", strtolower(str::plural($this->moduleName)), $content);
+        $content = str_ireplace("routeName", strtolower(Str::plural($this->moduleName)), $content);
         
         $data = '{'.PHP_EOL;
         

@@ -2,16 +2,11 @@
 
 namespace HZ\Illuminate\Mongez\Console\Commands;
 
-use File;
-use Illuminate\Support\Str;
-use Illuminate\Console\Command;
-use HZ\Illuminate\Mongez\Helpers\Mongez;
-use HZ\Illuminate\Mongez\Traits\Console\EngezTrait;
 use HZ\Illuminate\Mongez\Contracts\Console\EngezInterface;
+use HZ\Illuminate\Mongez\Managers\Console\EngezGeneratorCommand;
 
-class EngezRepository extends Command implements EngezInterface
+class EngezRepository extends EngezGeneratorCommand implements EngezInterface
 {
-    use EngezTrait;
     /**
      * The name and signature of the console command.
      *
@@ -21,14 +16,9 @@ class EngezRepository extends Command implements EngezInterface
                                                 {repository} 
                                                 {--module=}
                                                 {--model=}
-                                                {--data=}
-                                                {--uploads=}
-                                                {--int=}
-                                                {--bool=}
-                                                {--float=}
                                                 {--resource=}
-                                                {--parent=}
-                                                ';
+                                                {--filter=}
+                                                ' . EngezGeneratorCommand::DATA_TYPES_OPTIONS;
 
     /**
      * The console command description.
@@ -38,11 +28,25 @@ class EngezRepository extends Command implements EngezInterface
     protected $description = 'Make new repository to specific module';
 
     /**
-     * The module name
+     * Repository Name
      *
-     * @var array
+     * @var string
      */
-    protected $availableModules = [];
+    protected string $repositoryName;
+
+    /**
+     * Repository Class Name
+     *
+     * @var string
+     */
+    protected string $repositoryClassName;
+
+    /**
+     * Search filters list
+     *
+     * @var string
+     */
+    protected array $searchFilters = [];
 
     /**
      * Execute the console command.
@@ -52,39 +56,16 @@ class EngezRepository extends Command implements EngezInterface
     public function handle()
     {
         $this->init();
+
         $this->validateArguments();
-        
+
         $this->create();
 
         $this->info('Updating configurations...');
+
         $this->updateConfig();
 
         $this->info('Repository created successfully');
-    }
-
-    /**
-     * Validate The module name
-     *
-     * @return void
-     */
-    public function validateArguments()
-    {
-        $availableModules = Mongez::getStored('modules');
-
-        if (!$this->option('module')) {
-            return $this->missingRequiredOption('module option is required');
-        }
-
-        if (!in_array(strtolower($this->info['moduleName']), $availableModules)) {
-            return $this->missingRequiredOption('This module is not available');
-        }
-
-        if ($this->option('parent')) {
-            if (! in_array(strtolower($this->info['parent']), $availableModules)) {
-                Command::error('This parent module is not available');
-                die();
-            }    
-        }
     }
 
     /**
@@ -93,38 +74,14 @@ class EngezRepository extends Command implements EngezInterface
      * @return void
      */
     public function init()
-    {                
-        $this->info['repository'] = Str::studly($this->argument('repository'));
-        $this->info['repositoryName'] = Str::camel(basename(str_replace('\\', '/', $this->info['repository'])));
-        $this->info['moduleName'] = Str::studly($this->option('module'));
+    {
+        parent::init();
 
-        $this->info['modelName'] = Str::singular($this->option('model') ?: $this->option('module'));
+        $this->setModuleName($this->option('module'));
 
-        $this->info['resourceName'] = Str::singular($this->option('model') ?: $this->option('module'));
-        
-        if ($this->optionHasValue('parent')) {
-            $this->info['parent'] = $this->option('parent');
-        }
+        $this->repositoryName = $this->repositoryName($this->argument('repository'));
 
-        if ($this->optionHasValue('data')) {
-            $this->info['data'] = explode(",",$this->option('data'));
-        }
-
-        if ($this->optionHasValue('uploads')) {
-            $this->info['uploads'] = explode(",",$this->option('uploads'));
-        }
-
-        if ($this->optionHasValue('bool')) {
-            $this->info['bool'] = explode(",",$this->option('bool'));
-        }
-
-        if ($this->optionHasValue('float')) {
-            $this->info['float'] = explode(",",$this->option('float'));
-        }
-
-        if ($this->optionHasValue('int')) {
-            $this->info['int'] = explode(",",$this->option('int'));
-        }
+        $this->repositoryClassName = $this->getModule() . 'Repository';
     }
 
     /**
@@ -134,88 +91,101 @@ class EngezRepository extends Command implements EngezInterface
      */
     public function create()
     {
-        $repository = $this->info['repository'];
+        $moduleName = $this->getModule();
 
-        $repositoryName = basename(str_replace('\\', '/', $repository));
+        $replacements = [
+            // module name
+            '{{ ModuleName }}' => $moduleName,
+            // repository class
+            '{{ RepositoryClass }}' => $this->repositoryClassName,
+            // model class name
+            '{{ ModelName }}' => $this->modelClass($this->optionHasValue('model') ? $this->option('model') : $moduleName),
+            // filter class name
+            '{{ FilterName }}' => $this->filterClass($this->optionHasValue('filter') ? $this->option('filter') : $moduleName),
+            // resource class name
+            '{{ ResourceName }}' => $this->resourceClass($this->optionHasValue('resource') ? $this->option('resource') : $moduleName),
+            // Repository Short Name
+            '{{ repositoryName }}' => $this->repositoryName,
+        ];
 
-        $database = config('database.default');
+        $this->setSearchFilters('inInt', ['id']);
 
-        $content = File::get($this->path("Repositories/{$database}-repository.php"));
+        $publishedColumn = config('mongez.repository.publishedColumn');
 
-        // replace repository name
-        $content = str_ireplace("RepositoryName", Str::studly($repositoryName), $content); 
-        
-        // replace filter name 
-        $content = str_ireplace("FilterName", $this->info['modelName'], $content); 
-
-        $targetModule = $this->info['moduleName'];    
-        if (isset($this->info['parent'])) {
-            $targetModule = Str::studly($this->info['parent']);
+        if (!$this->optionHasValue('bool') && $publishedColumn) {
+            $this->input->setOption('bool', $publishedColumn);
         }
 
-        // replace module name
-        $content = str_ireplace("ModuleName", $targetModule, $content);
+        foreach (static::DATA_TYPES as $type) {
+            if (!$this->optionHasValue($type)) {
+                $data = '[]';
+            } else {
+                // replace data
+                $typeValue = $this->option($type);
 
-        // replace model path
-        $content = str_ireplace("ModelName", $this->info['modelName'], $content);
+                if ($type === 'bool') {
+                    if ($publishedColumn && !$this->contains($typeValue, $publishedColumn)) {
+                        $typeValue .= ',' . $publishedColumn;
+                    }
 
-        // replace resource path
-        $content = str_ireplace("ResourceName", $this->info['resourceName'], $content);
+                    $this->setSearchFilters('bool', explode(',', $typeValue));
+                } elseif ($type === 'string') {
+                    $searchFiltersLike = [];
 
-        $content = str_ireplace('repo-name', $this->adjustRepositoryName($this->info['repository']), $content);
+                    if ($this->contains($typeValue, 'name')) {
+                        $searchFiltersLike[] = 'name';
+                    } elseif ($this->contains($typeValue, 'title')) {
+                        $searchFiltersLike[] = 'title';
+                    }
 
-        $dataList = '';
-        
-        if (!empty($this->info['data'])) {
-            if (in_array('id', $this->info['data'])) {
-                $this->info['data'] = Arr::remove($this->info['data'], 'id');
+                    $this->setSearchFilters('like', $searchFiltersLike);
+                } elseif ($type === 'locale') {
+                    $searchFiltersLike = [];
+
+                    if ($this->contains($typeValue, 'name')) {
+                        $searchFiltersLike['name'] = 'name.text';
+                    } elseif ($this->contains($typeValue, 'title')) {
+                        $searchFiltersLike['title'] = 'name.text';
+                    }
+
+                    $this->setSearchFilters('like', $searchFiltersLike);
+                }
+
+                $data = $this->stubStringAsArray(explode(',', $typeValue));
             }
 
-            $dataList = "'" . implode("', '", $this->info['data']) . "'";
-        }
-        
-        // replace repository data
-        $content = str_ireplace("DATA_LIST", $dataList, $content);
-
-        // uploads data
-        $uploadsList = '';
-        if (!empty($this->info['uploads'])) {
-            $uploadsList = "'" . implode("', '", $this->info['uploads']) . "'";
+            $replacements["{{ $type }}"] = $data;
         }
 
-        // int data
-        $intList = '';
-        if (!empty($this->info['int'])) {
-            $intList = "'" . implode("', '", $this->info['int']) . "'";
-        }
-        
-        // float data
-        $floatList = '';
-        if (!empty($this->info['float'])) {
-            $floatList = "'" . implode("', '", $this->info['float']) . "'";
+        $filtersData = '';
+
+        foreach ($this->searchFilters as $filterName => $filterColumns) {
+            $filtersData .= $this->replaceStub('Repositories/search-filter', [
+                '{{ type }}' => $filterName,
+                '{{ data }}' => $this->stubStringAsArray($filterColumns),
+            ]);
         }
 
-        // bool data
-        $boolList = '';
-        if (!empty($this->info['bool'])) {
-            $boolList = "'" . implode("', '", $this->info['bool']) . "'";
-        }
-        // replace repository bool
-        $content = str_ireplace("BOOL_LIST", $boolList, $content);
-        // replace repository float
-        $content = str_ireplace("FLOAT_LIST", $floatList, $content);
-        // replace repository integer
-        $content = str_ireplace("INTEGER_LIST", $intList, $content);
+        $replacements['{{moreSearch}}'] = $filtersData;
 
+        $databaseRepository = $this->isMongoDB() ? 'mongodb-repository' : 'mysql-repository';
 
-        // replace repository Upload
-        $content = str_ireplace("UPLOADS_LIST", $uploadsList, $content);
+        $this->putFile("Repositories/{$this->repositoryClassName}.php", $this->replaceStub('Repositories/' . $databaseRepository, $replacements), 'Repository');
+    }
 
-        $repositoryDirectory = $this->modulePath("Repositories/");
+    /**
+     * Set search filters
+     * 
+     * @param  string $filterName
+     * @param  array $searchFilters
+     * @return void
+     */
+    protected function setSearchFilters(string $filterName, array $searchFilters)
+    {
+        if (empty($searchFilters)) return;
 
-        $this->checkDirectory($repositoryDirectory);
+        $existingSearchFilters = $this->searchFilters[$filterName] ?? [];
 
-        // create the file
-        $this->createFile("$repositoryDirectory/{$repositoryName}Repository.php", $content, 'Repository');
+        $this->searchFilters[$filterName] = array_merge($existingSearchFilters, $searchFilters);
     }
 }

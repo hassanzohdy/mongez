@@ -1,0 +1,25 @@
+<?php
+
+namespace App\Modules\{{ ModuleName }}\Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use HZ\Illuminate\Mongez\Traits\RepositoryTrait;
+
+class {{ ClassName }} extends Seeder
+{
+    /**
+     * This trait will allow you to use any repository directly from the seeder
+     * i.e $this->usersRepository->create([...])
+     */
+    use RepositoryTrait;
+
+    /**
+     * Run the database seeds.
+     *
+     * @return void
+     */
+    public function run()
+    {
+        //
+    }
+}

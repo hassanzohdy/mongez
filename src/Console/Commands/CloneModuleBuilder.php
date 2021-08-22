@@ -227,7 +227,7 @@ class CloneModuleBuilder extends Command
         $this->updateConfig();
         $this->updateRepositoriesConfig();
         if (!empty($this->subModule)) $this->removeUnNeededModules();
-        if ($this->checkDirectory('users')) $this->addModulePermissions;
+        if ($this->makeDirectory('users')) $this->addModulePermissions;
         $this->updateServiceProviderConfig();
         $this->info('Module cloned successfully');
     }
@@ -239,7 +239,7 @@ class CloneModuleBuilder extends Command
      */
     protected function validateArguments()
     {
-        if ($this->checkDirectory($this->modulePath)) {
+        if ($this->makeDirectory($this->modulePath)) {
             $message = $this->confirm($this->moduleName . ' exists, Do you want to override it?');
 
             if (!$message) return;
@@ -351,7 +351,7 @@ class CloneModuleBuilder extends Command
      * @param  string $directoryPath
      * @return  void
      */
-    public function checkDirectory(string $directoryPath)
+    public function makeDirectory(string $directoryPath)
     {
         return File::isDirectory($directoryPath);
     }

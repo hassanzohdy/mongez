@@ -36,6 +36,8 @@ return [
     | `format`: the date format that will be returned. 
     | `timestamp`: if set to true, the unix timestamp will be returned as integer.  
     | `human`: if set to true, a human time will be returned i.e 12 minutes ago.  
+    | `intl`: Display formatted date in locale text  
+    |
     |  Please note that if the timestamp and human time are set to true, the 
     |  date format will be returned as string, otherwise it will be returned as array`object`.   
     |
@@ -46,6 +48,7 @@ return [
             'format' => 'd-m-Y h:i:s a',
             'timestamp' => true,
             'humanTime' => true,
+            'intl' => true,
         ],
     ],
 
@@ -58,6 +61,20 @@ return [
     |
     */
     'serialize_precision' => -1,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Locale Codes List
+    |--------------------------------------------------------------------------
+    |
+    | This will determine all available locale codes in the application
+    | It will be used to generate translation files when generating new module
+    |
+    */
+    'localeCodes' => [
+        'en',
+        'ar',
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -109,7 +126,6 @@ return [
         ],
     ],
 
-
     /*
     |--------------------------------------------------------------------------
     | Repository Options
@@ -118,28 +134,37 @@ return [
     | List of repository options located here
     |
     |--------------------------------------------------------------------------
-    | Pagination configurations
+    | Uploads configurations
     |--------------------------------------------------------------------------
-    | Uploads Directory
     |
     | Setting the uploads directory will be useful when dealing with git repositories to be ignored.
-    | If sets to null, then it won't be used 
-    | 
-    | This directory will be created inside local directory path in the `config/filesystem.php`    
+    | If sets to null, then it won't be used
     |
-    | keepUploadsName
+    | This directory will be created inside local directory path in the `config/filesystem.php`
     |
+    | keepUploadsName:
     | If set to true, then all uploads names wil be kept as it is.
     | If set to false, a random generated hashed name will be used instead.
+    |
+    |--------------------------------------------------------------------------
+    | Cache configurations
+    |--------------------------------------------------------------------------
+    | When enabling caching in repositories, set the driver that will be used
+    | Available drivers are the available ones in Laravel config/cache.php drivers list
+    |
     |--------------------------------------------------------------------------
     | Pagination configurations
     |--------------------------------------------------------------------------
     | Pagination configurations work with `list` method in any repository.
-    |    
-    | Any value listed below will be applied on all repositories unless repository/method-call override.   
-    |    
+    |
+    | Any value listed below will be applied on all repositories unless repository/method-call override.
+    |
     */
     'repository' => [
+        'cache' => [
+            'driver' => '',
+        ],
+        'publishedColumn' => 'published',
         'uploads' => [
             'uploadsDirectory' => 'data',
             'keepUploadsName' => true,
@@ -219,16 +244,6 @@ return [
     |
     */
     'events' => [],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Cache driver
-    |--------------------------------------------------------------------------
-    |
-    | Set your cache driver one of available drivers in laravel   
-    |
-    */
-    'cache' => [],
 
     /*
     |--------------------------------------------------------------------------

@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\App;
 use HZ\Illuminate\Mongez\Helpers\Filters\MongoDB\Filter;
 use HZ\Illuminate\Mongez\Helpers\Database\MongoDB\Aggregation;
 use HZ\Illuminate\Mongez\Contracts\Repositories\RepositoryInterface;
-use HZ\Illuminate\Mongez\Managers\Database\MYSQL\RepositoryManager as BaseRepositoryManager;
+use HZ\Illuminate\Mongez\Managers\Database\RepositoryManager as BaseRepositoryManager;
 
 abstract class RepositoryManager extends BaseRepositoryManager implements RepositoryInterface
 {
@@ -130,6 +130,22 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     }
 
     /**
+     * Get shared info data for the given options
+     * 
+     * @param array $options
+     * @param string $sharedInfoMethod
+     * @return Collection
+     */
+    public function ListSharedInfo(array $options, string $sharedInfoMethod = 'sharedInfo')
+    {
+        $options['as-model'] = true;
+
+        return $this->list($options)->map(function ($model) use ($sharedInfoMethod) {
+            return $model->$sharedInfoMethod();
+        })->toArray();
+    }
+
+    /**
      * Get shared info for the given id
      * 
      * @param int $id
@@ -194,38 +210,28 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     }
 
     /**
-     * Get the table name that will be used in the rest of the query like select, where...etc
-     * 
-     * @return string
-     */
-    protected function columnTableName(): string
-    {
-        return static::TABLE;
-    }
-
-    /**
      * {@inheritDoc}
      */
-    protected function setAutoData($model, $request)
+    protected function setAutoData($model)
     {
-        parent::setAutoData($model, $request);
+        parent::setAutoData($model);
         // add the extra methods
-        $this->setDocumentData($model, $request);
-        $this->setMultiDocumentData($model, $request);
-        $this->setLocationData($model, $request);
+        $this->setDocumentData($model);
+        $this->setMultiDocumentData($model);
+        $this->setLocationData($model);
     }
 
     /**
      * Set location data
      * 
      * @param  Model $model
-     * @param  Request $request
      * @return void
      */
-    protected function setLocationData($model, $request)
+    protected function setLocationData($model)
     {
         foreach (static::LOCATION_DATA as $locationKey) {
-            $location = $request->$locationKey;
+            $location = $this->input($locationKey);
+
             if ($location) {
                 $model->$locationKey = [
                     'type' => 'Point',
@@ -237,24 +243,15 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     }
 
     /**
-     * {@inheritDoc} 
-     */
-    protected function column(string $column): string
-    {
-        return $column;
-    }
-
-    /**
      * Set document data to column
      *
      * @param  \Model $model
-     * @param  \Request $request
      * @return void     
      */
-    protected function setDocumentData($model, $request)
+    protected function setDocumentData($model)
     {
         foreach (static::DOCUMENT_DATA as $column => $documentModelClass) {
-            if ($this->isIgnorable($request, $column)) continue;
+            if ($this->isIgnorable($column)) continue;
 
             if (is_array($documentModelClass)) {
                 list($class, $method) = $documentModelClass;
@@ -263,7 +260,7 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
                 $method = 'sharedInfo';
             }
 
-            $documentModel = $documentModelClass::find((int) $request->$column);
+            $documentModel = $documentModelClass::find((int) $this->input($column));
 
             $model->$column = $documentModel ? $documentModel->{$method}() : null;
         }
@@ -280,7 +277,7 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     {
         $location = $this->option($column);
 
-        if (! $location) return;
+        if (!$location) return;
 
         $this->query->whereLocationNear($column, [(float) $location['lat'], (float) $location['lng']], $distance);
     }
@@ -289,20 +286,21 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
      * Set Multi documents data to column value.
      *
      * @param  \Model $model
-     * @param  \Request $request
      * @return void     
      */
-    protected function setMultiDocumentData($model, $request)
+    protected function setMultiDocumentData($model)
     {
         foreach (static::MULTI_DOCUMENTS_DATA as $column => $documentModelClass) {
-            if ($this->isIgnorable($request, $column)) continue;
+            if ($this->isIgnorable($column)) continue;
 
-            if (!$request->$column) {
+            $value = $this->input($column);
+
+            if (!$value) {
                 $model->$column = [];
                 continue;
             }
 
-            $ids = array_map('intVal', $request->$column);
+            $ids = array_map('intVal', $value);
             $records = $documentModelClass::whereIn('id', $ids)->get();
 
             $records = $records->map(function ($record) {
@@ -390,7 +388,7 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
 
                     if (!$parentId) continue;
 
-                    list($parentRepositoryClass, $childNameInParent) = $parentRepositoryWithChildColumnName;
+                    [$parentRepositoryClass, $childNameInParent] = $parentRepositoryWithChildColumnName;
 
                     $sharedInfoMethod = $parentRepositoryWithChildColumnName[2] ?? 'sharedInfo';
 
@@ -428,11 +426,15 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
         }
     }
 
+
     /**
-     * @inheritDoc
+     * Get column name appended by table|table alias
+     *
+     * @param  string $column
+     * @return string
      */
-    protected function filterBy($filter)
+    protected function column(string $column): string
     {
-        return $filter->merge(self::FILTER_CLASS);
+        return $column;
     }
 }

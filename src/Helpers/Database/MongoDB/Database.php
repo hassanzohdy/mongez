@@ -1,7 +1,8 @@
 <?php
+
 namespace HZ\Illuminate\Mongez\Helpers\Database\MongoDB;
 
-use DB;
+use Illuminate\Support\Facades\DB;
 
 class Database
 {
@@ -13,9 +14,9 @@ class Database
     public static function collectionsList(): array
     {
         $collections = [];
-    
+
         $collectionList = DB::connection()->getMongoDB()->listCollections();
-     
+
         foreach ($collectionList as $collection) {
             $collections[] = $collection->getName();
         }

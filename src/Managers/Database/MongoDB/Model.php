@@ -3,7 +3,6 @@
 namespace HZ\Illuminate\Mongez\Managers\Database\MongoDB;
 
 use DateTime;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use HZ\Illuminate\Mongez\Traits\ModelTrait;
 use HZ\Illuminate\Mongez\Traits\MongoDB\RecycleBin;
@@ -62,7 +61,6 @@ abstract class Model extends BaseModel
      */
     const DELETED_BY = 'deletedBy';
 
-
     /**
      * Shared info of the model
      * This is used for getting simple info 
@@ -70,6 +68,30 @@ abstract class Model extends BaseModel
      * @const array
      */
     const SHARED_INFO = [];
+
+    /**
+     * Define list of other models that will be affected
+     * as the current model is sub-document to it when it gets updated
+     *  
+     * @example ModelClass::class => columnName will be converted to ['columnName.id', 'columnName', 'sharedInfo']
+     * @example ModelClass::class => [searchingColumn, updatingColumn]
+     * @example ModelClass::class => [searchingColumn, updatingColumn, sharedInfoMethod]
+     * 
+     * @const array
+     */
+    const ON_MODEL_UPDATE = [];
+
+    /**
+     * Define list of other models that will be deleted
+     * when this model is deleted
+     * For example when a city is deleted, all related regions shall be deleted as well
+     *  
+     * @example ModelClass::class => searchingColumn: string
+     * @example ModelClass::class => [searchingColumn: string, pullFrom: string, pullingKey: string]
+     * 
+     * @const array
+     */
+    const ON_MODEL_DELETE = [];
 
     /**
      * Disable guarded fields
@@ -92,7 +114,60 @@ abstract class Model extends BaseModel
         static::creating(function ($model) {
             if (!$model->id) {
                 $model->id = static::nextId();
-                $model->_id = sha1(time() . Str::random(40));
+                // why am i generating this _id column ?!!
+                // $model->_id = sha1(time() . Str::random(40));
+            }
+        });
+
+        static::updating(function ($model) {
+            if (static::UPDATED_BY && ($user = user())) {
+                $model->updatedBy = user()->sharedInfo();
+            }
+        });
+
+        // When model update, detect whether there are any other models that
+        // shall be updated with it        
+        static::updated(function ($model) {
+            $otherModels = config('mongez.database.onModelUpdate.' . static::class);
+
+            if (empty(static::ON_MODEL_UPDATE) && empty($otherModels)) return;
+
+            $modelsList = array_merge((array) static::ON_MODEL_UPDATE, (array) $otherModels);
+
+            // the model options is can be an string or array
+            // the array can have up to 3 elements: search-column, updating field and shared info method
+            // if the model options is set to string, then it will be converted to
+            // $modelOptions.id, $modelOptions, sharedInfo 
+            foreach ($modelsList as $modelClass => $modelOptions) {
+                if (is_string($modelOptions)) {
+                    $modelOptions = [$modelOptions . '.id', $modelOptions, 'sharedInfo'];
+                } elseif (count($modelOptions) === 2) {
+                    $modelOptions[] = 'sharedInfo';
+                }
+
+                [$searchingColumn, $updatingColumn, $sharedInfoMethod] = $modelOptions;
+
+                $modelClass::query()->where($searchingColumn, $model->id)->update([
+                    $updatingColumn => $model->$sharedInfoMethod(),
+                ]);
+            }
+        });
+
+        // triggered when a model record is deleted from database
+        static::deleted(function ($model) {
+            if (empty(static::ON_MODEL_DELETE) && empty($otherModels = config('mongez.database.onModelDelete.' . static::class))) return;
+
+            $modelsList = array_merge((array) static::ON_MODEL_DELETE, (array) $otherModels);
+
+            foreach ($modelsList as $modelClass => $searchingColumn) {
+                if (is_string($searchingColumn)) {
+                    $modelClass::where($searchingColumn, $model->id)->delete();
+                } else {
+                    [$searchingColumn, $pullFrom, $pullingKey] = $searchingColumn;
+                    $modelClass::where($searchingColumn, $model->id)->pull($pullFrom, [
+                        $pullingKey => $model->id,
+                    ]);
+                }
             }
         });
     }
@@ -162,13 +237,26 @@ abstract class Model extends BaseModel
 
         unset($info['_id']);
 
+        $this->adjustDateInSharedInfo($info);
+
+        return $info;
+    }
+
+    /**
+     * Check if the given info data has date, then adjust it recursively
+     * 
+     * @param  array $info
+     * @return void
+     */
+    public function adjustDateInSharedInfo(&$info)
+    {
         foreach ($info as &$value) {
             if ($value instanceof DateTime) {
                 $value = $value->getTimestamp();
+            } elseif (is_array($value)) {
+                $this->adjustDateInSharedInfo($value);
             }
         }
-
-        return $info;
     }
 
     /**
@@ -239,9 +327,10 @@ abstract class Model extends BaseModel
      * 
      * @param   mixed $modelInfo
      * @param   string $column
+     * @param   string $searchingColumn
      * @return $this
      */
-    public function reassociate($modelInfo, $column)
+    public function reassociate($modelInfo, string $column, string $searchingColumn = 'id')
     {
         $documents = $this->$column ?? [];
 
@@ -258,7 +347,7 @@ abstract class Model extends BaseModel
                 break;
             } else {
                 $document = (array) $document;
-                if (isset($document['id']) && $document['id'] == $modelInfo['id']) {
+                if (isset($document[$searchingColumn]) && $document[$searchingColumn] == $modelInfo[$searchingColumn]) {
                     $documents[$key] = $modelInfo;
                     $found = true;
                     break;
