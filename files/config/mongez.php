@@ -22,6 +22,17 @@ return [
         ],
         'prefix' => '',
         'updatesLogModel' => HZ\Illuminate\Mongez\Models\UpdateLog::class,
+        'onModel' => [
+            'update' => [
+                // the UpdatedModel::class => update options
+            ],
+            'delete' => [
+                // the DeletedModel::class => searchingColumn
+            ],
+            'deletePull' => [
+                // the DeletedModel::class => searchingColumn
+            ],
+        ],
     ],
 
     /*
@@ -174,7 +185,6 @@ return [
             'itemsPerPage' => 15,
         ],
     ],
-
 
     /*
     |--------------------------------------------------------------------------

@@ -1,4 +1,5 @@
 <?php
+
 namespace HZ\Illuminate\Mongez\Traits\Repository;
 
 use Illuminate\Support\Facades\Cache;
@@ -58,8 +59,8 @@ trait Cacheable
      * @param  string $key
      * @return string
      */
-    protected function getCacheKey(string $key): string 
+    protected function getCacheKey(string $key): string
     {
-        return static::NAME . $key;;
+        return static::NAME . $key;
     }
 }

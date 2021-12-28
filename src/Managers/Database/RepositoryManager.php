@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace HZ\Illuminate\Mongez\Managers\Database;
 
 use Illuminate\Http\Request;
@@ -105,6 +107,13 @@ abstract class RepositoryManager implements RepositoryInterface
     const UPLOADS_KEEP_FILE_NAME = null;
 
     /**
+     * If set to true, the multiple uploads column paths will be json encoded while storing it in database.
+     *
+     * @const bool
+     */
+    const SERIALIZE_MULTIPLE_UPLOADS = true;
+
+    /**
      * Set if the current repository uses a soft delete method or not
      * This is mainly used in the where clause
      *
@@ -164,7 +173,7 @@ abstract class RepositoryManager implements RepositoryInterface
      *
      * It can be passed as well as an array of options, current options schema:
      * [
-     *    'key' => 'string', // the key that will be read from the request files
+     *    'input' => 'string', // the input that will be read from the request files
      *    'column' => 'string', // if not present, it will be same as $key value
      *    'clearable' => 'bool', // if set to true, the column value will be set to empty if there is no file to be uploaded
      *    'arrayable' => 'bool', // if set to true, it will be stored as an array, if set to null it auto determined
@@ -203,7 +212,7 @@ abstract class RepositoryManager implements RepositoryInterface
     const BOOLEAN_DATA = [];
 
     /**
-     * Add the column if and only if the value is passed in the request.
+     * Add the column if and only if the value is passed in the request, if set to true, it will ignore all changing all columns that is not in the request data.
      *
      * @cont array
      */
@@ -601,9 +610,7 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     protected function setModelData(Model $model, array $columns): void
     {
-        foreach ($columns as $column => $value) {
-            $model->$column = $value;
-        }
+        $model->fill($columns);
     }
 
     /**

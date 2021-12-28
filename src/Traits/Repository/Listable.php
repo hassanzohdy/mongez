@@ -59,7 +59,7 @@ trait Listable
      * @param  string $resourceClass
      * @return $this
      */
-    public function useResource(string $resourceClass): self 
+    public function useResource(string $resourceClass): self
     {
         $this->currentResource = $resourceClass;
 
@@ -75,10 +75,10 @@ trait Listable
     {
         if ($this->currentResource) return $this->currentResource;
 
-        if (! empty(static::APPS_RESOURCES)) {
+        if (!empty(static::APPS_RESOURCES)) {
             $appType = config('app.type');
 
-            if (! empty(static::APPS_RESOURCES[$appType])) return static::APPS_RESOURCES[$appType];
+            if (!empty(static::APPS_RESOURCES[$appType])) return static::APPS_RESOURCES[$appType];
         }
 
         return $this->currentResource ?: static::RESOURCE;
@@ -165,7 +165,7 @@ trait Listable
     {
         $model = $this->getModel($id);
 
-        if (!$model->published) return null;
+        if (!$model->{$this->getPublishedColumn()}) return null;
 
         return $model;
     }
@@ -178,9 +178,9 @@ trait Listable
      */
     public function getPublished($id)
     {
-        $item = $this->get($id);
+        $item = $this->get((int) $id);
 
-        if (!$item || !$item->published) return null;
+        if (!$item || !$item->{$this->getPublishedColumn()}) return null;
 
         return $item;
     }
@@ -383,7 +383,67 @@ trait Listable
      */
     protected function getPublishedColumn(): string
     {
-        return defined('static::PUBLISHED_COLUMN') ? static::PUBLISHED_COLUMN : 
-               config('mongez.repository.publishedColumn', static::DEFAULT_PUBLISHED_COLUMN);
+        return defined('static::PUBLISHED_COLUMN') ? static::PUBLISHED_COLUMN :
+            config('mongez.repository.publishedColumn', static::DEFAULT_PUBLISHED_COLUMN);
+    }
+
+    /**
+     * A shorthand method for filtering data if they are available
+     * 
+     * @param  string $column
+     * @param  string|null $option
+     * @return $this
+     */
+    protected function where(string $column, string $option = null): self
+    {
+        if (!$option) {
+            $option = $column;
+        }
+
+        if ($optionValue = $this->option($option)) {
+            $this->query->where($column, $optionValue);
+        }
+
+        return $this;
+    }
+
+    /**
+     * A shorthand method for filtering data if they are available
+     * 
+     * @param  string $column
+     * @param  string|null $option
+     * @return $this
+     */
+    protected function whereIn(string $column, string $option = null): self
+    {
+        if (!$option) {
+            $option = $column;
+        }
+
+        if ($optionValue = $this->option($option)) {
+            $this->query->whereIn($column, (array) $optionValue);
+        }
+
+        return $this;
+    }
+
+    /**
+     * A shorthand method for filtering data if they are available
+     * 
+     * @param  string $column
+     * @param  string|null $option
+     * @return $this
+     */
+    protected function whereInInt(string $column, string $option = null): self
+    {
+        if (!$option) {
+            $option = $column;
+        }
+
+        if ($optionValue = $this->option($option)) {
+            $this->query->whereInInt($column, array_map('intval', (array) $optionValue));
+        }
+
+        return $this;
     }
 }

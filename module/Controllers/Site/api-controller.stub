@@ -11,7 +11,7 @@ class {{ ControllerName }} extends ApiController
      * 
      * @var string
      */
-    protected const REPOSITORY_NAME = '{{ repositoryName }}';
+    public const REPOSITORY_NAME = '{{ repositoryName }}';
 
     /**
      * {@inheritDoc}

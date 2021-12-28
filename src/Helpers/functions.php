@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 use Illuminate\Support\Arr;
@@ -7,7 +8,21 @@ use Illuminate\Support\Facades\App;
 use HZ\Illuminate\Mongez\Exceptions\NotFoundRepositoryException;
 use HZ\Illuminate\Mongez\Contracts\Repositories\RepositoryInterface;
 
-if (! function_exists('user')) {
+if (!function_exists('is_json')) {
+    /**
+     * Determine whether the given string is json
+     * 
+     * @param string $string
+     * @return bool
+     */
+    function is_json(string $string): bool
+    {
+        json_decode($string);
+        return json_last_error() === JSON_ERROR_NONE;
+    }
+}
+
+if (!function_exists('user')) {
     /**
      * Get current user object
      * 
@@ -19,20 +34,20 @@ if (! function_exists('user')) {
     }
 }
 
-if (! function_exists('toJson')) {
+if (!function_exists('to_json')) {
     /**
      * Encode the given data into a json content with unescaped slashes, pretty print and unescape unicode
      * 
      * @param mixed $data
      * @return string
      */
-    function toJson($data): string
+    function to_json($data): string
     {
         return json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 }
 
-if (! function_exists('pre')) {
+if (!function_exists('pre')) {
     /**
      * print the given data
      * 
@@ -49,7 +64,7 @@ if (! function_exists('pre')) {
     }
 }
 
-if (! function_exists('pred')) {
+if (!function_exists('pred')) {
     /**
      * print the given dta then stop the script execution
      * 
@@ -63,7 +78,7 @@ if (! function_exists('pred')) {
     }
 }
 
-if (! function_exists('repo')) {
+if (!function_exists('repo')) {
     /**
      * Get repository object for the given repository name
      * 
@@ -74,24 +89,24 @@ if (! function_exists('repo')) {
     function repo(string $repository): RepositoryInterface
     {
         static $repos = [];
-        
-        if (! empty($repos[$repository])) {
+
+        if (!empty($repos[$repository])) {
             return $repos[$repository];
         }
-        
-        $repositoryClass = config('mongez.repositories.' . $repository); 
-        
-        if (! $repositoryClass) { 
-            throw new NotFoundRepositoryException(sprintf('Call to undefined repository: %s', $repository)); 
+
+        $repositoryClass = config('mongez.repositories.' . $repository);
+
+        if (!$repositoryClass) {
+            throw new NotFoundRepositoryException(sprintf('Call to undefined repository: %s', $repository));
         }
-       
+
         $repositoryClass = App::make($repositoryClass);
 
-        return $repos[$repository] = $repositoryClass; 
+        return $repos[$repository] = $repositoryClass;
     }
 }
 
-if (! function_exists('array_remove')) {
+if (!function_exists('array_remove')) {
     /**
      * Remove from array by the given value
      * 
@@ -106,7 +121,7 @@ if (! function_exists('array_remove')) {
     }
 }
 
-if (! function_exists('str_remove_first')) {
+if (!function_exists('str_remove_first')) {
     /**
      * Remove from the given object the first occurrence for the given needle
      * 

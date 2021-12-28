@@ -25,7 +25,7 @@ class {{ ModelName }} extends Model
      * when this model is deleted
      * For example when a city is deleted, all related regions shall be deleted as well
      *  
-     * @example ModelClass::class => searchingColumn: string
+     * @example ModelClass::class => searchingColumn: string will be converted into : [$searchingColumn.id]
      * @example ModelClass::class => [searchingColumn: string, pullFrom: string, pullingKey: string]
      * 
      * @const array

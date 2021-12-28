@@ -2,14 +2,12 @@
 
 namespace HZ\Illuminate\Mongez\Managers;
 
-use Illuminate\Http\Response;
-use Illuminate\Routing\Controller;
 use Illuminate\Support\MessageBag;
-use Illuminate\Support\Facades\App;
 use HZ\Illuminate\Mongez\Events\Events;
+use Symfony\Component\HttpFoundation\Response;
 use HZ\Illuminate\Mongez\Traits\RepositoryTrait;
 
-abstract class ApiController extends Controller
+abstract class ApiController
 {
     use RepositoryTrait;
 
@@ -68,9 +66,9 @@ abstract class ApiController extends Controller
      * Constructor
      *
      */
-    public function __construct()
+    public function __construct(Events $events)
     {
-        $this->events = App::make(Events::class);
+        $this->events = $events;
 
         if (static::REPOSITORY_NAME) {
             $this->repository = repo(static::REPOSITORY_NAME);
@@ -83,17 +81,36 @@ abstract class ApiController extends Controller
      * @param array $data
      * @return string
      */
-    protected function success($data = [])
+    protected function success($data = null)
     {
-        $data = $data ?: [
+        $data = $data ?: config('mongez.response.defaults.success', [
             'success' => true,
-        ];
+        ]);
 
         if (($eventResponse = $this->events->trigger('response.success', $data)) && is_array($eventResponse)) {
             $data = $eventResponse;
         }
 
         return $this->send($data, Response::HTTP_OK);
+    }
+
+    /**
+     * Send Success success data
+     *
+     * @param array $data
+     * @return string
+     */
+    protected function successCreate($data = null)
+    {
+        $data = $data ?: config('mongez.response.defaults.successCreate', [
+            'success' => true,
+        ]);
+
+        if (($eventResponse = $this->events->trigger('response.successCreate', $data)) && is_array($eventResponse)) {
+            $data = $eventResponse;
+        }
+
+        return $this->send($data, Response::HTTP_CREATED);
     }
 
     /**
@@ -121,18 +138,18 @@ abstract class ApiController extends Controller
      */
     protected function mapResponseError($data)
     {
-        $errorMaxArrayLength = config('mongez.response.errors.maxArrayLength', 1);
-        $errorReturn = config('mongez.response.errors.strategy', self::ERROR_AS_ARRAY);
-        $arrayKey = config('mongez.response.errors.arrayKey', self::ERROR_AS_ARRAY_KEY);
-        $arrayValue = config('mongez.response.errors.arrayValue', self::ERROR_AS_ARRAY_VALUE);
+        $errorMaxArrayLength = config('mongez.response.error.maxArrayLength', 1);
+        $errorStrategy = config('mongez.response.error.strategy', self::ERROR_AS_ARRAY);
+        $arrayKey = config('mongez.response.error.arrayKey', self::ERROR_AS_ARRAY_KEY);
+        $arrayValue = config('mongez.response.error.arrayValue', self::ERROR_AS_ARRAY_VALUE);
 
         if ($data instanceof MessageBag) {
             $errors = [];
 
             foreach ($data->messages() as $input => $messagesList) {
-                if ($errorReturn === self::ERROR_AS_OBJECT) {
+                if ($errorStrategy === self::ERROR_AS_OBJECT) {
                     $errors[$input] = $messagesList[0];
-                } elseif ($errorReturn === self::ERROR_AS_ARRAY) {
+                } elseif ($errorStrategy === self::ERROR_AS_ARRAY) {
                     $errors[] = [
                         $arrayKey => $input,
                         $arrayValue => $errorMaxArrayLength === 1 ? $messagesList[0] : array_slice($messagesList, 0, $errorMaxArrayLength),
@@ -140,16 +157,22 @@ abstract class ApiController extends Controller
                 }
             }
 
-            $data = ['errors' => $errors];
+            return ['errors' => $errors];
         } elseif (is_string($data)) {
-            $data = [
-                'errors' => [
+            if ($errorStrategy === self::ERROR_AS_OBJECT) {
+                $data = [
+                    'error' => $data,
+                ];
+            } elseif ($errorStrategy === self::ERROR_AS_ARRAY) {
+                $data = [
                     [
                         $arrayKey => 'error',
                         $arrayValue => $data,
                     ]
-                ],
-            ];
+                ];
+            }
+
+            return ['errors' => $data];
         }
 
         return $data;
@@ -164,7 +187,7 @@ abstract class ApiController extends Controller
     protected function notFound($data = null)
     {
         if ($data === null) {
-            $data = trans('response.notFound');
+            $data = config('mongez.response.defaults.notFound', trans('response.notFound'));
         }
 
         $data = $this->mapResponseError($data);
@@ -184,7 +207,7 @@ abstract class ApiController extends Controller
      */
     protected function unauthorized($data = null)
     {
-        $data = $this->mapResponseError($data ?: trans('response.unauthorized'));
+        $data = $this->mapResponseError($data ?: config('mongez.response.defaults.unauthorized', trans('response.unauthorized')));
 
         if (($eventResponse = $this->events->trigger('response.unauthorized', $data)) && is_array($eventResponse)) {
             $data = $eventResponse;

@@ -74,10 +74,14 @@ trait Fillers
      */
     protected function setStringData($model)
     {
-        foreach (static::STRING_DATA as $column) {
-            if ($this->isIgnorable($column)) continue;
+        foreach (static::STRING_DATA as $input => $column) {
+            if (is_numeric($input)) {
+                $input = $column;
+            }
 
-            if ($column === 'password') {
+            if ($this->isIgnorable($input)) continue;
+
+            if ($input === 'password') {
                 if ($password = $this->input('password')) {
                     $model->password = bcrypt($password);
                 }
@@ -85,7 +89,7 @@ trait Fillers
                 continue;
             }
 
-            $this->setToModel($model, $column, (string) $this->input($column));
+            $this->setToModel($model, $column, (string) $this->input($input));
         }
     }
 
@@ -98,8 +102,12 @@ trait Fillers
      */
     protected function setMainData($model)
     {
-        foreach (static::DATA as $column) {
-            if ($this->isIgnorable($column)) continue;
+        foreach (static::DATA as $input => $column) {
+            if (is_numeric($input)) {
+                $input = $column;
+            }
+
+            if ($this->isIgnorable($input)) continue;
 
             if ($column === 'password') {
                 if ($password = $this->input('password')) {
@@ -109,7 +117,7 @@ trait Fillers
                 continue;
             }
 
-            $this->setToModel($model, $column, $this->input($column));
+            $this->setToModel($model, $column, $this->input($input));
         }
     }
 
@@ -122,10 +130,14 @@ trait Fillers
      */
     protected function setLocalizedData($model)
     {
-        foreach (static::LOCALIZED_DATA as $column) {
-            if ($this->isIgnorable($column)) continue;
+        foreach (static::LOCALIZED_DATA as $input => $column) {
+            if (is_numeric($input)) {
+                $input = $column;
+            }
 
-            $this->setToModel($model, $column, $this->input($column));
+            if ($this->isIgnorable($input)) continue;
+
+            $this->setToModel($model, $column, $this->input($input));
         }
     }
 
@@ -138,10 +150,14 @@ trait Fillers
      */
     protected function setArraybleData($model)
     {
-        foreach (static::ARRAYBLE_DATA as $column) {
-            if ($this->isIgnorable($column)) continue;
+        foreach (static::ARRAYBLE_DATA as $input => $column) {
+            if (is_numeric($input)) {
+                $input = $column;
+            }
 
-            $value = array_filter((array) $this->input($column));
+            if ($this->isIgnorable($input)) continue;
+
+            $value = array_filter((array) $this->input($input));
 
             $value = $this->handleArrayableValue($value);
 
@@ -185,18 +201,18 @@ trait Fillers
                 $options = $column;
             } elseif (is_numeric($name)) {
                 $options['column'] = $column;
-                $options['key'] = $column;
+                $options['input'] = $column;
             } else {
-                $options['key'] = $name;
+                $options['input'] = $name;
                 $options['column'] = $column;
             }
 
-            $column = $options['column'] ?? $options['key'];
-            $name = $options['key'] ?? $options['column'];
+            $column = $options['column'] ?? $options['input'];
+            $input = $options['input'] ?? $options['column'];
             $clearable = $options['clearable'] ?? false;
             $arrayable = $options['arrayable'] ?? null;
 
-            $file = $this->request->file($name);
+            $file = $this->request->file($input);
 
             if (is_null($arrayable)) {
                 $arrayable = is_array($file);
@@ -204,7 +220,7 @@ trait Fillers
 
             if (!$file) {
                 if ($clearable) {
-                    $storedValue = $this->input($column . 'String', $arrayable ? [] : '');
+                    $storedValue = $this->input($input . 'String', $arrayable ? [] : '');
 
                     $this->setToModel($model, $column, $storedValue);
                 } else {
@@ -225,6 +241,13 @@ trait Fillers
                 }
 
                 $files = $this->mergeOldAndNewFiles($files, $column, $model);
+
+                // based on inherited manager, multiple uploads are stored differently
+                // if set to true, then encode the listed files
+
+                if (static::SERIALIZE_MULTIPLE_UPLOADS === true) {
+                    $files = json_encode($files);
+                }
 
                 $this->setToModel($model, $column, $files);
             } else {
@@ -378,10 +401,14 @@ trait Fillers
             $columns = static::DATE_DATA;
         }
 
-        foreach ((array) $columns as $column) {
-            if ($this->isIgnorable($column)) continue;
+        foreach ((array) $columns as $input => $column) {
+            if (is_numeric($input)) {
+                $input = $column;
+            }
 
-            $date = $this->input($column);
+            if ($this->isIgnorable($input)) continue;
+
+            $date = $this->input($input);
 
             if (!$date) continue;
 
@@ -397,10 +424,14 @@ trait Fillers
      */
     protected function setIntData($model)
     {
-        foreach (static::INTEGER_DATA as $column) {
-            if ($this->isIgnorable($column)) continue;
+        foreach (static::INTEGER_DATA as $input => $column) {
+            if (is_numeric($input)) {
+                $input = $column;
+            }
 
-            $this->setInt($model, $column, $this->input($column));
+            if ($this->isIgnorable($input)) continue;
+
+            $this->setInt($model, $column, $this->input($input));
         }
     }
 
@@ -412,10 +443,14 @@ trait Fillers
      */
     protected function setFloatData($model)
     {
-        foreach (static::FLOAT_DATA as $column) {
-            if ($this->isIgnorable($column)) continue;
+        foreach (static::FLOAT_DATA as $input => $column) {
+            if (is_numeric($input)) {
+                $input = $column;
+            }
 
-            $this->setFloat($model, $column, $this->input($column));
+            if ($this->isIgnorable($input)) continue;
+
+            $this->setFloat($model, $column, $this->input($input));
         }
     }
 
@@ -427,14 +462,19 @@ trait Fillers
      */
     protected function setBoolData($model)
     {
-        foreach (static::BOOLEAN_DATA as $column) {
-            if ($this->isIgnorable($column)) continue;
-
-            if (($inputValue = $this->input($column)) === 'false') {
-                $this->setToModel($model, $column, false);
+        foreach (static::BOOLEAN_DATA as $input => $column) {
+            if (is_numeric($input)) {
+                $input = $column;
             }
 
-            $this->setBool($model, $column, $inputValue);
+            if ($this->isIgnorable($input)) continue;
+
+
+            if (($inputValue = $this->input($input)) === 'false') {
+                $this->setToModel($model, $column, false);
+            } else {
+                $this->setBool($model, $column, $inputValue);
+            }
         }
     }
 
@@ -491,14 +531,14 @@ trait Fillers
     }
 
     /**
-     * Check if the given column is ignorable
+     * Check if the given input is ignorable
      *
-     * @param  string $column
+     * @param  string $input
      * @return bool
      */
-    protected function isIgnorable(string $column): bool
+    protected function isIgnorable(string $input): bool
     {
-        return (static::WHEN_AVAILABLE_DATA === true || in_array($column, static::WHEN_AVAILABLE_DATA)) && $this->input($column) === null;
+        return (static::WHEN_AVAILABLE_DATA === true || in_array($input, static::WHEN_AVAILABLE_DATA)) && $this->input($input) === null;
     }
 
     /**
@@ -510,8 +550,50 @@ trait Fillers
      */
     protected function input(string $key, $default = null)
     {
-        $value = $this->request->input($key) ?? $this->request->__get($key);
+        return $this->request->has($key) ? $this->request->input($key) : ($this->request->__get($key) ?: $default);
+    }
 
-        return $value ?: $default;
+    /**
+     * Get int input value
+     * 
+     * @param  string $key
+     * @param  mixed $default
+     * @return int
+     */
+    protected function intInput(string $key, $default = null): int
+    {
+        return (int) $this->input($key, $default);
+    }
+
+    /**
+     * Get float input value
+     * 
+     * @param  string $key
+     * @param  mixed $default
+     * @return float
+     */
+    protected function floatInput(string $key, $default = null): float
+    {
+        return (float) $this->input($key, $default);
+    }
+
+    /**
+     * Get a boolean value
+     * 
+     * @param  string $key
+     * @param  mixed $default
+     * @return bool
+     */
+    public function boolInput(string $key, $default = null): bool
+    {
+        $value = $this->input($key, $default);
+
+        if ($value === 'false') {
+            $value = false;
+        } elseif ($value === 'true') {
+            $value = true;
+        }
+
+        return (bool) $value;
     }
 }

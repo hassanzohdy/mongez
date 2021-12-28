@@ -4,16 +4,16 @@ declare(strict_types=1);
 namespace HZ\Illuminate\Mongez\Testing;
 
 use Illuminate\Support\Arr;
-use Illuminate\Testing\TestResponse;
+use Illuminate\Testing\TestResponse as BaseTestResponse;
 
-class apiRequest
+class TestResponse extends BaseTestResponse
 {
     /**
      * Response object
      * 
      * @var \Illuminate\Testing\TestResponse
      */
-    protected TestResponse $response;
+    protected $response;
 
     /**
      * Request Body
@@ -44,6 +44,13 @@ class apiRequest
     protected array $setResponseShape;
 
     /**
+     * Response body
+     * 
+     * @var object
+     */
+    protected $responseBody;
+
+    /**
      * Set response object
      * 
      * @param  \Illuminate\Testing\TestResponse $response
@@ -52,18 +59,7 @@ class apiRequest
     public function setResponse(TestResponse $response): self
     {
         $this->response = $response;
-        return $this;
-    }
-
-    /**
-     * Set response shape
-     * 
-     * @param  array $responseShape
-     * @return $this
-     */
-    public function setResponseShape(array $setResponseShape): self
-    {
-        $this->setResponseShape = $setResponseShape;
+        $this->responseBody = json_decode($this->response->getContent());
         return $this;
     }
 
@@ -101,16 +97,6 @@ class apiRequest
     {
         $this->requestBody = $requestBody;
         return $this;
-    }
-
-    /**
-     * Get response code
-     * 
-     * @return int
-     */
-    public function getStatusCode(): int
-    {
-        return $this->response->getStatusCode();
     }
 
     /**
@@ -160,7 +146,17 @@ class apiRequest
      */
     public function getResponseBody()
     {
-        return $this->response->getContent();
+        return $this->responseBody;
+    }
+
+    /**
+     * Get response body
+     * 
+     * @return mixed
+     */
+    public function body()
+    {
+        return $this->responseBody;
     }
 
     /**
@@ -170,7 +166,7 @@ class apiRequest
      */
     public function toArray(): array
     {
-        return json_decode($this->response->decodeResponseJson()->json, true);
+        return json_decode($this->response->getContent(), true);
     }
 
     /**
@@ -180,7 +176,7 @@ class apiRequest
      */
     public function toObject(): object
     {
-        return json_decode($this->response->decodeResponseJson()->json);
+        return $this->responseBody;
     }
 
     /**

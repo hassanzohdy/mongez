@@ -11,7 +11,7 @@ abstract class AdminApiTestCase extends ApiTestCase
      * 
      * @var bool
      */
-    protected $isAuthenticated = true;
+    protected bool $isAuthenticated = true;
 
     /**
      * Add Prefix to all routes
@@ -83,7 +83,10 @@ abstract class AdminApiTestCase extends ApiTestCase
      * 
      * @return array
      */
-    abstract protected function fullData(): array;
+    protected function fullData(): array
+    {
+        return [];
+    }
 
     /**
      * Define the record shape that will be returned
@@ -91,5 +94,5 @@ abstract class AdminApiTestCase extends ApiTestCase
      * 
      * @return array
      */
-    abstract protected function recordShape(): array;
+    // abstract protected function responseShape(): array;
 }
