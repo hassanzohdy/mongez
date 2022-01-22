@@ -158,8 +158,11 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
             $this->createServiceProvider();
         }
 
-        $this->info('Creating database files');
+        // $this->info('Creating database files');
         // $this->createDatabase();
+
+        $this->info('Planting seeds...');
+        $this->createSeeder();
 
         // $this->info('Generating Module Postman File');
         // $this->generatePostmanModule();
@@ -240,6 +243,24 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
 
         $this->call(
             'engez:repository',
+            $this->withDataTypes($repositoryOptions)
+        );
+    }
+
+    /**
+     * Create the Seeder file
+     *
+     * @return void
+     */
+    protected function createSeeder()
+    {
+        $repositoryOptions = [
+            'seeder' => $this->singularModule(),
+            '--module' => $this->topParentModule(),
+        ];
+
+        $this->call(
+            'engez:seeder',
             $this->withDataTypes($repositoryOptions)
         );
     }

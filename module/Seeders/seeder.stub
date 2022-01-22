@@ -4,22 +4,68 @@ namespace App\Modules\{{ ModuleName }}\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use HZ\Illuminate\Mongez\Traits\RepositoryTrait;
+use HZ\Illuminate\Mongez\Managers\Seeders\SeederManager;
 
-class {{ ClassName }} extends Seeder
+class {{ ClassName }} extends SeederManager
 {
     /**
-     * This trait will allow you to use any repository directly from the seeder
-     * i.e $this->usersRepository->create([...])
+     * Repository name
+     * 
+     * @var string
      */
-    use RepositoryTrait;
+    protected const REPOSITORY_NAME = '{{ repository }}';
 
     /**
-     * Run the database seeds.
-     *
-     * @return void
+     * Total of records will be generated
+     * 
+     * @var int
      */
-    public function run()
+    protected const TOTAL_RECORDS = 1;
+
+    /**
+     * name of seeds you need to generated with DOCUMENT_DATA from repository
+     * [columnName => demoSeeder::class]
+     * column Name must be the same name in the DOCUMENT_DATA
+     * 
+     * @var array
+     */
+    protected const DOCUMENT_SEEDER = [];
+
+    /**
+     * name of seeds you need to generated with MULTI_DOCUMENT_DATA from repository
+     * [columnName => demoSeeder::class]
+     * column Name must be the same name in the MULTI_DOCUMENT_DATA
+     * 
+     * @var array
+     */
+    protected const MULTI_DOCUMENT_SEEDER = [];
+
+    /**
+     * localization keys
+     * 
+     * @var array
+     */
+    protected const LOCALIZED_DATA = [];
+
+    /**
+     * The default password will be used when key name is password
+     * 
+     * @var string
+     */
+    protected const DEFAULT_PASSWORD = "123123123";
+
+    /**
+     * set default date format
+     * 
+     * @var string
+     */
+    protected const DATE_FORMAT = 'd-m-Y h:i:s A';
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setData()
     {
-        //
+
     }
 }
