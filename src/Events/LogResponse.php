@@ -2,6 +2,7 @@
 namespace HZ\Illuminate\Mongez\Events;
 
 use HZ\Illuminate\Mongez\Models\ResponseLog;
+use HZ\Illuminate\Mongez\Contracts\Users\UserAccountTypeContract;
 
 class LogResponse
 {
@@ -16,7 +17,9 @@ class LogResponse
 
         if ($user = user()) {
             $userInfo = $user->sharedInfo();
-            // $userInfo['accountType'] = $user->accountType();
+            if ($user instanceof UserAccountTypeContract) {
+                $userInfo['accountType'] = $user->getAccountType();
+            }
         }
 
         $response = json_decode(response($response)->getContent(), true);

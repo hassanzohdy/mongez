@@ -1,16 +1,12 @@
 <?php
+
 namespace HZ\Illuminate\Mongez\Console\Commands;
 
-use File;
-use Illuminate\Support\Str;
-use Illuminate\Console\Command;
-use HZ\Illuminate\Mongez\Helpers\Mongez;
-use HZ\Illuminate\Mongez\Traits\Console\EngezTrait;
 use HZ\Illuminate\Mongez\Contracts\Console\EngezInterface;
+use HZ\Illuminate\Mongez\Managers\Console\EngezGeneratorCommand;
 
-class EngezResource extends Command implements EngezInterface
+class EngezResource extends EngezGeneratorCommand implements EngezInterface
 {
-    use EngezTrait;
     /**
      * The name and signature of the console command.
      *
@@ -18,10 +14,8 @@ class EngezResource extends Command implements EngezInterface
      */
     protected $signature = 'engez:resource {resource} 
                                            {--module=} 
-                                           {--data=}
                                            {--assets=}
-                                           {--parent=}
-                                           ';
+                                           ' . EngezGeneratorCommand::DATA_TYPES_OPTIONS;
     /**
      * The console command description.
      *
@@ -30,12 +24,12 @@ class EngezResource extends Command implements EngezInterface
     protected $description = 'Make new resource to specific module';
 
     /**
-     * The module name
+     * Resource name
      *
-     * @var array
+     * @var string
      */
-    protected $availableModules = [];
-    
+    protected string $resourceName;
+
     /**
      * Execute the console command.
      *
@@ -44,34 +38,12 @@ class EngezResource extends Command implements EngezInterface
     public function handle()
     {
         $this->init();
-        $this->validateArguments();   
+
+        $this->validateArguments();
+
         $this->create();
-        $this->info('resource created successfully');
-    }
-    
-    /**
-     * Validate The module name
-     *
-     * @return void
-     */
-    public function validateArguments()
-    {
-        $availableModules = Mongez::getStored('modules');
 
-        if (! $this->optionHasValue('module')) {
-            return $this->missingRequiredOption('module option is required');
-        }
-        if (! in_array(strtolower($this->info['moduleName']), $availableModules)) {
-            return $this->missingRequiredOption('This module is not available');
-        }
-
-        if ($this->optionHasValue('parent')) {
-            if (! in_array(strtolower($this->info['parent']), $availableModules)) {
-                return Command::error('This parent module is not available');
-                die();
-            }    
-        }
-    
+        $this->info('resource has been created successfully');
     }
 
     /**
@@ -81,17 +53,13 @@ class EngezResource extends Command implements EngezInterface
      */
     public function init()
     {
-        $this->info['resource'] = Str::studly($this->argument('resource'));
-        $this->info['moduleName'] = Str::studly($this->option('module'));
+        parent::init();
 
-        $this->info['data'] = explode(",",$this->option('data')) ?: [];
-        $this->info['assets'] = explode(",",$this->option('assets')) ?: []; 
+        $this->setModuleName($this->option('module'));
 
-        if ($this->optionHasValue('parent')) {
-            $this->info['parent'] = $this->option('parent');
-        }
+        $this->resourceName = $this->resourceClass($this->argument('resource'));
     }
-    
+
     /**
      * Create the repository file
      * 
@@ -99,61 +67,50 @@ class EngezResource extends Command implements EngezInterface
      */
     public function create()
     {
-        $resource = $this->info['resource'];
+        $resourceName = $this->resourceName;
 
-        $resourceName = basename(str_replace('\\', '/', $resource));
+        $replacements = [
+            // replace model name
+            '{{ ResourceName }}' => $resourceName,
+            // replace module name
+            '{{ ModuleName }}' => $this->getModule(),
+        ];
 
-        $resourcePath = dirname($resource);
+        $publishedColumn = config('mongez.repository.publishedColumn');
 
-        $content = File::get($this->path("Resources/resource.php"));
-
-        // make it singular 
-        $resourceName = Str::singular($resourceName);
-
-        // share it
-        $this->info['resourceName'] = $resourceName;
-
-        // replace resource name
-        $content = str_ireplace("ResourceName", "{$resourceName}", $content);
-
-        $targetModule = $this->info['moduleName'];    
-        if (isset($this->info['parent'])) {
-            $targetModule = str::studly($this->info['parent']);
+        if (!$this->optionHasValue('bool') && $publishedColumn) {
+            $this->input->setOption('bool', $publishedColumn);
         }
 
-        // replace module name
-        $content = str_ireplace("ModuleName", $targetModule, $content);
+        if (!$this->optionHasValue('int') && $publishedColumn) {
+            $this->input->setOption('int', true); // just a placeholder to make the data in the loop
+        }
 
-        $dataList = '';
-        
-        if (!empty($this->info['data'])) {
-            // add the id to the list if not provided
-            if (!in_array('id', $this->info['data'])) {
-                array_unshift($this->info['data'], 'id');
+        foreach (static::DATA_TYPES as $type) {
+            if (!$this->optionHasValue($type)) {
+                $data = '[]';
+            } else {
+                $typeValue = $this->option($type);
+
+                if ($type === 'int') {
+                    if ($typeValue === true) {
+                        $typeValue = 'id';
+                    } else {
+                        $typeValue .= ',id';
+                    }
+                }
+
+                // replace data
+                $data = $this->stubStringAsArray(explode(',', $typeValue));
             }
 
-            $dataList = "'" . implode("', '", $this->info['data']) . "'";
+            if ($type === 'uploads') {
+                $type =  $type === 'uploads' ? 'assets' : $type;
+            }
+
+            $replacements["{{ $type }}"] = $data;
         }
-        
-        // replace resource data
-        $content = str_ireplace("DATA_LIST", $dataList, $content);
 
-        // check for assets 
-        
-        if (!empty($this->info['assets'])) {
-            $assetsList = "'" . implode("', '", $this->info['assets']) . "'";
-        }
-        
-        // replace resource data
-        $content = str_ireplace("ASSETS_LIST", ($assetsList) ? "" : $assetsList, $content);
-
-        $resourceDirectory = $this->modulePath("Resources");
-
-        $this->checkDirectory($resourceDirectory);
-
-        $this->info['resourcePath'] = $resourcePath . '\\' . $resourceName;
-
-        // create the file
-        $this->createFile("$resourceDirectory/{$resourceName}.php", $content, 'Resource');
+        $this->putFile("Resources/$resourceName.php", $this->replaceStub('Resources/resource', $replacements), 'Resource');
     }
 }

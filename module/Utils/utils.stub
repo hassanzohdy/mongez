@@ -1,0 +1,27 @@
+<?php
+
+namespace App\Modules\{{ ModuleName }}\Utils;
+
+use App\Modules\{{ ModuleName }}\Providers\{{ ModuleName }}ServiceProvider;
+
+class {{ ClassName }}
+{
+    /**
+     * Translate the given message.
+     *
+     * @param  string|null  $key
+     * @param  array  $replace
+     * @param  string|null  $locale
+     * @return \Illuminate\Contracts\Translation\Translator|string|array|null
+     */
+    public static function trans($key = null, $replace = [], $locale = null)
+    {
+        static $baseTranslationName;
+
+        if (! $baseTranslationName) {
+            $baseTranslationName = {{ ModuleName }}ServiceProvider::TRANSLATION_PREFIX;
+        }
+
+        return trans($baseTranslationName . '::' . $key, $replace, $locale);
+    }
+}

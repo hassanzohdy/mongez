@@ -5,7 +5,6 @@ namespace HZ\Illuminate\Mongez\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use HZ\Illuminate\Mongez\Helpers\Mongez;
-use HZ\Illuminate\Mongez\Traits\Console\EngezTrait;
 
 class EngezMigrate extends Command
 {
@@ -50,8 +49,17 @@ class EngezMigrate extends Command
             $this->paths[] = Mongez::packagePath('src/database/migrations/' . config('database.default'));
             $this->availableModules = Mongez::getStored('modules');
         }
+
         $this->generateModulesPaths();
+
         $this->makeMigrate();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function init()
+    {
     }
 
     /**

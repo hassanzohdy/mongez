@@ -2,17 +2,18 @@
 
 namespace HZ\Illuminate\Mongez\Providers;
 
-use File;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Artisan;
 use HZ\Illuminate\Mongez\Events\Events;
 use HZ\Illuminate\Mongez\Helpers\Mongez;
-use Illuminate\Database\Query\Builder as QueryBuilder;
 use HZ\Illuminate\Mongez\Console\Commands\EngezModel;
+use HZ\Illuminate\Mongez\Console\Commands\EngezSeeder;
+use HZ\Illuminate\Mongez\Console\Commands\EngezFilter;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use HZ\Illuminate\Mongez\Console\Commands\EngezRemove;
 use HZ\Illuminate\Mongez\Console\Commands\EngezMigrate;
 use HZ\Illuminate\Mongez\Console\Commands\DatabaseMaker;
@@ -21,9 +22,10 @@ use HZ\Illuminate\Mongez\Console\Commands\EngezResource;
 use HZ\Illuminate\Mongez\Console\Commands\EngezMigration;
 use HZ\Illuminate\Mongez\Console\Commands\EngezController;
 use HZ\Illuminate\Mongez\Console\Commands\EngezRepository;
+use HZ\Illuminate\Mongez\Console\Commands\EngezTranslation;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
-use HZ\Illuminate\Mongez\Console\Commands\CloneModuleBuilder;
 use HZ\Illuminate\Mongez\Console\Commands\PostmanCollection;
+use HZ\Illuminate\Mongez\Console\Commands\CloneModuleBuilder;
 
 class MongezServiceProvider extends ServiceProvider
 {
@@ -34,14 +36,17 @@ class MongezServiceProvider extends ServiceProvider
      */
     const COMMANDS_LIST = [
         EngezModel::class,
+        EngezSeeder::class,
         EngezRemove::class,
         EngezMigrate::class,
         ModuleBuilder::class,
         EngezResource::class,
         DatabaseMaker::class,
+        EngezFilter::class,
         EngezMigration::class,
         EngezController::class,
         EngezRepository::class,
+        EngezTranslation::class,
         CloneModuleBuilder::class,
         PostmanCollection::class
     ];
@@ -60,21 +65,10 @@ class MongezServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $request = request();
-
-        $localeCode = $request->header('LOCALE-CODE');
-
-        if (! $localeCode && ($request->localeCode || $request->langCode)) {
-            $localeCode = $request->localeCode ?: $request->langCode;
-        }
-
-        if ($localeCode) {
-            App::setLocale($localeCode);
-            Mongez::setRequestLocaleCode($localeCode);
-        }
+        $this->initializeLocalization();
 
         if (!$this->app->runningInConsole()) {
-            if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+            if ($this->app->request->method() == 'OPTIONS') {
                 die(json_encode([
                     'success' => true,
                     'mongez' => true,
@@ -92,6 +86,40 @@ class MongezServiceProvider extends ServiceProvider
 
         if (!Mongez::isInstalled()) {
             $this->prepareForFirstTime();
+        }
+    }
+
+    /**
+     * Initialize localization and prepare locale code
+     * 
+     * @return void
+     */
+    private function initializeLocalization()
+    {
+        $this->prepareLocaleCode();
+
+        // load the package translation files
+        $this->loadTranslationsFrom(__DIR__ . '/../lang', 'mongez');
+    }
+
+    /**
+     * Prepare locale code
+     * 
+     * @return void
+     */
+    private function prepareLocaleCode()
+    {
+        $request = $this->app->request;
+
+        $localeCode = $request->header('LOCALE-CODE');
+
+        if (!$localeCode && ($request->localeCode || $request->langCode)) {
+            $localeCode = $request->localeCode ?: $request->langCode;
+        }
+
+        if ($localeCode) {
+            $this->app->setLocale($localeCode);
+            Mongez::setRequestLocaleCode($localeCode);
         }
     }
 

@@ -1,0 +1,7 @@
+
+    /**
+     * Views Name Prefix
+     * 
+     * @const string
+     */
+    public const VIEW_PREFIX = '{{ viewName }}';

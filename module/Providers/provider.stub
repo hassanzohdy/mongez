@@ -1,0 +1,24 @@
+<?php
+namespace App\Modules\{{ ModuleName }}\Providers;
+
+use HZ\Illuminate\Mongez\Managers\Providers\ModuleServiceProvider;
+
+class {{ ModuleName }}ServiceProvider extends ModuleServiceProvider
+{
+    /**
+     * List of routes files
+     * 
+     * @const array
+     */
+    const ROUTES_TYPES = {{ routesTypes }};
+
+    /**
+     * Module build type
+     * Possible values: api|ui
+     *
+     * @const strong
+     */
+    const BUILD_MODE = '{{ buildMode }}';
+{{ viewable }}
+{{ translatable }}
+}

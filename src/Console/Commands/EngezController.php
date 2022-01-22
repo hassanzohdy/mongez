@@ -2,16 +2,37 @@
 
 namespace HZ\Illuminate\Mongez\Console\Commands;
 
-use File;
-use Illuminate\Support\Str;
-use Illuminate\Console\Command;
-use HZ\Illuminate\Mongez\Helpers\Mongez;
-use HZ\Illuminate\Mongez\Traits\Console\EngezTrait;
+use HZ\Illuminate\Mongez\Traits\Console\RoutesAdapter;
 use HZ\Illuminate\Mongez\Contracts\Console\EngezInterface;
+use HZ\Illuminate\Mongez\Managers\Console\EngezGeneratorCommand;
 
-class EngezController extends Command implements EngezInterface
+class EngezController extends EngezGeneratorCommand implements EngezInterface
 {
-    use EngezTrait;
+    /**
+     * The adapter creates or updates the routes file for the module
+     */
+    use RoutesAdapter;
+
+    /**
+     * Controller options
+     * 
+     * @const string
+     */
+    public const CONTROLLER_OPTIONS = '
+    {--build=}
+    {--auth=true}
+    {--route=}
+    {--type=all}
+    ';
+
+    /**
+     * Controller options list
+     * 
+     * @const array
+     */
+    public const CONTROLLER_OPTIONS_LIST = [
+        'build', 'auth', 'type', 'route',
+    ];
 
     /**
      * The controller types 
@@ -26,11 +47,8 @@ class EngezController extends Command implements EngezInterface
      * @var string
      */
     protected $signature = 'engez:controller  {controller} 
-                                               {--parent=}
                                                {--module=} 
-                                               {--build=} 
-                                               {--type=all}
-                                               {--repository=}';
+                                               {--repository=}' . EngezController::CONTROLLER_OPTIONS;
 
     /**
      * The console command description.
@@ -47,11 +65,26 @@ class EngezController extends Command implements EngezInterface
     protected $info = [];
 
     /**
-     * Module directory path
+     * Controller name
      * 
      * @var string
      */
-    protected $root;
+    protected string $controllerName;
+
+    /**
+     * Controller type
+     * Available Values: site|admin|all
+     * 
+     * @var string
+     */
+    protected string $controllerType;
+
+    /**
+     * The path of the generated controller
+     * 
+     * @var string
+     */
+    protected string $controllerPath;
 
     /**
      * Execute the console command.
@@ -61,43 +94,12 @@ class EngezController extends Command implements EngezInterface
     public function handle()
     {
         $this->init();
+
         $this->validateArguments();
+
         $this->create();
+
         $this->info('Controller has been created successfully.');
-    }
-
-    /**
-     * Validate The module name
-     *
-     * @return void
-     */
-    public function validateArguments()
-    {
-        $controllerName = basename(str_replace('\\', '/', $this->info['controllerName']));
-        if (File::exists($this->modulePath("Controllers/Admin/{$controllerName}Controller.php"))) {
-            Command::error('You already have this controller');
-            die();
-        }
-
-        $availableModules = Mongez::getStored('modules');
-        if (!$this->optionHasValue('module')) {
-            return $this->missingRequiredOption('Module option is required');
-        }
-
-        if (!in_array(strtolower($this->info['moduleName']), $availableModules)) {
-            return $this->missingRequiredOption('This module is not available');
-        }
-
-        if (!in_array($this->info['type'], static::CONTROLLER_TYPES)) {
-            return $this->missingRequiredOption('This controller type does not exits');
-        }
-
-        if ($this->optionHasValue('parent')) {
-            if (!in_array(strtolower($this->info['parent']), $availableModules)) {
-                Command::error('This parent module is not available');
-                die();
-            }
-        }
     }
 
     /**
@@ -107,21 +109,42 @@ class EngezController extends Command implements EngezInterface
      */
     public function init()
     {
-        $this->info['controllerName'] = Str::studly($this->argument('controller'));
-        $this->info['moduleName'] = Str::studly($this->option('module'));
-        $this->info['build'] = $this->option('build') ?: config('mongez.module-builder.build', 'api');
-        $this->info['type'] = $this->option('type');
+        parent::init();
 
-        $repositoryName = $this->info['controllerName'];
+        $this->setModuleName($this->option('module'));
 
-        if ($this->optionHasValue('repository')) {
-            $repositoryName = $this->option('repository');
+        $this->controllerName = $this->plural(
+            $this->studly(
+                str_replace('Controller', '', $this->argument('controller'))
+            )
+        ) . 'Controller';
+
+        $this->controllerType = $this->option('type');
+    }
+
+    /**
+     * Validate The module name
+     *
+     * @return void
+     */
+    public function validateArguments()
+    {
+        parent::validateArguments();
+
+        if ($this->isAdminController()) {
+            if ($this->files->exists($this->modulePath('Controllers/Admin/' . $this->controllerName . '.php'))) {
+                $this->terminate('You already have this controller');
+            }
         }
 
-        $this->info['repositoryName'] = $repositoryName;
+        if ($this->isSiteController()) {
+            if ($this->files->exists($this->modulePath('Controllers/Site/' . $this->controllerName . '.php'))) {
+                $this->terminate('You already have this controller');
+            }
+        }
 
-        if ($this->optionHasValue('parent')) {
-            $this->info['parent'] = $this->option('parent');
+        if (!in_array($this->option('type'), static::CONTROLLER_TYPES)) {
+            return $this->missingRequiredOption('This controller type does not exits, Did you mean? ' . implode(PHP_EOL, static::CONTROLLER_TYPES));
         }
     }
 
@@ -132,15 +155,17 @@ class EngezController extends Command implements EngezInterface
      */
     public function create()
     {
-        $controllerType = $this->info['type'];
-
-        if (in_array($controllerType, ['all', 'site'])) {
+        if ($this->isSiteController()) {
             $this->createController('site');
         }
 
-        if (in_array($controllerType, ['all', 'admin'])) {
+        if ($this->isAdminController()) {
             $this->createController('admin');
         }
+
+        $this->info('Generating routes files');
+
+        $this->createRoutes();
     }
 
     /**
@@ -151,72 +176,59 @@ class EngezController extends Command implements EngezInterface
      */
     private function createController(string $controllerType)
     {
-        $controller = $this->info['controllerName'];
+        $capitalizeControllerType = ucfirst($controllerType);
 
-        $controllerName = basename(str_replace('\\', '/', $controller));
-
-        $targetModule = $this->info['moduleName'];
-
-        if (isset($this->info['parent'])) {
-            $targetModule = str::studly($this->info['parent']);
-        }
+        $this->controllerPath = "Controllers/{$capitalizeControllerType}/{$this->controllerName}.php";
 
         // admin controller
         $this->info("Creating $controllerType controller...");
 
-        $bigControllerType = ucfirst($controllerType);
+        $moduleName = $this->getModule();
 
-        $content = File::get($this->path("Controllers/$bigControllerType/controller.php"));
+        $replaces = [
+            // replace the controller name 
+            '{{ ControllerName }}' => $this->controllerName,
+            // replace module name
+            '{{ ModuleName }}' => $moduleName,
+        ];
 
-        // replace base controller name
-        $baseController = null;
-        $view = '';
-
-        if ($controllerType === 'admin') {
-            $baseController = $this->info['build'] === 'api' ? 'AdminApiController' : 'AdminViewController';
-        } else {
-            $baseController = $this->info['build'] === 'api' ? 'ApiController' : 'ViewController';
+        if ($repository = $this->option('repository')) {
+            $replaces['{{ repositoryName }}'] = $this->repositoryName($repository);
         }
-
-        if ($this->info['build'] === 'view') {
-            $viewModule = Str::camel($targetModule);
-            if ($controllerType === 'site') {
-                $this->put($this->modulePath("views/site/list.blade.php"), '//');
-                $this->put($this->modulePath("views/site/show.blade.php"), '//');
-                $view =
-                    "   /**
-     * View path
-     * 
-     * @var string
-     */
-    protected const VIEW_PATH = '{$viewModule}::site';";
-            } else {
-                $this->put($this->modulePath("views/admin/list.blade.php"), '//');
-                $this->put($this->modulePath("views/admin/form.blade.php"), '//');
-                $view = "'view-path' => '{$viewModule}::admin',";
-            }
-        }
-
-        $content = str_ireplace("VIEW", $view, $content);
-        $content = str_ireplace("BaseController", $baseController, $content);
-
-        // replace controller name
-        $content = str_ireplace("ControllerName", "{$controllerName}Controller", $content);
-
-        // replace module name
-        $content = str_ireplace("ModuleName", $targetModule, $content);
-
-        // repository name  
-        $content = str_ireplace('repo-name', $this->repositoryShortcutName($this->info['repositoryName']), $content);
-
-        $controllerDirectory = $this->modulePath("Controllers/$bigControllerType");
-
-        $this->checkDirectory($controllerDirectory);
 
         // create the file
-        $filePath = "$controllerDirectory/{$controllerName}Controller.php";
 
-        $this->createFile($filePath, $content, "$bigControllerType Controller");
+        $controllerStub = 'Controllers/' . $capitalizeControllerType . '/';
+
+        if ($this->isApiMode()) {
+            $controllerStub .= 'api-controller';
+        } else {
+            $controllerStub .= 'ui-controller';
+        }
+
+        $this->putFile($this->controllerPath, $this->replaceStub($controllerStub, $replaces), 'Controller');
+    }
+
+    /**
+     * Determine if current generated controller is admin controller
+     * This is true when type is admin or all
+     * 
+     * @return bool
+     */
+    protected function isAdminController(): bool
+    {
+        return in_array($this->option('type'), ['all', 'admin']);
+    }
+
+    /**
+     * Determine if current generated controller is site controller
+     * This is true when type is site or all
+     * 
+     * @return bool
+     */
+    protected function isSiteController(): bool
+    {
+        return in_array($this->option('type'), ['all', 'site']);
     }
 
     /**
@@ -228,7 +240,7 @@ class EngezController extends Command implements EngezInterface
      */
     protected function put(string $path, string $content)
     {
-        $this->checkDirectory(dirname($path));
-        File::put($path, $content);
+        $this->makeDirectory(dirname($path));
+        $this->files->put($path, $content);
     }
 }

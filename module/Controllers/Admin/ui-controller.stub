@@ -1,0 +1,27 @@
+<?php
+namespace App\Modules\{{ ModuleName }}\Controllers\Admin;
+
+use HZ\Illuminate\Mongez\Managers\AdminUIController 
+
+class {{ ControllerName }} extends AdminUIController
+{
+    /**
+     * Controller info
+     *
+     * @var array
+     */
+    protected $controllerInfo = [
+        'viewPath' => '{{ viewPath }}',
+        'repository' => '{{ repositoryName }}',
+        'listOptions' => [
+            'select' => [],
+            'filterBy' => [],
+            'paginate' => null, // if set null, it will be automated based on repository configuration option
+        ],
+        'rules' => [
+            'all' => [],
+            'store' => [],
+            'update' => [],
+        ],
+    ];
+}

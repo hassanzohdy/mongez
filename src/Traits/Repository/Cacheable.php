@@ -1,4 +1,5 @@
 <?php
+
 namespace HZ\Illuminate\Mongez\Traits\Repository;
 
 use Illuminate\Support\Facades\Cache;
@@ -49,7 +50,7 @@ trait Cacheable
      */
     protected function driver(): CacheStorage
     {
-        return Cache::store(config('mongez.cache.driver'));
+        return Cache::store(config('mongez.repository.cache.driver'));
     }
 
     /**
@@ -58,8 +59,8 @@ trait Cacheable
      * @param  string $key
      * @return string
      */
-    protected function getCacheKey(string $key): string 
+    protected function getCacheKey(string $key): string
     {
-        return static::NAME . $key;;
+        return static::NAME . $key;
     }
 }

@@ -1,0 +1,14 @@
+<?php
+
+return [
+    /*
+    |--------------------------------------------------------------------------
+    | {{ ModuleName }} Translation File
+    |--------------------------------------------------------------------------
+    | You can access this file translation by trans('{{ moduleTranslationKey }}::{{ fileName }}.key')
+    | Or you can use the {{ TranslationUtilsClass }}::trans('key')
+    | Or you can use the {{ TranslationUtilsClass }}::trans('{{ fileName }}.key')
+    |
+    */
+    //
+];

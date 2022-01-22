@@ -3,15 +3,22 @@
 namespace HZ\Illuminate\Mongez\Traits\Repository;
 
 use Carbon\Carbon;
-use HZ\Illuminate\Mongez\Services\Images\ImageResize;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
+use HZ\Illuminate\Mongez\Services\Images\ImageResize;
 
 trait Fillers
 {
+    /**
+     * Storage directory path
+     * 
+     * @var string
+     */
+    protected string $storageDirectory;
+
     /**
      * Get request object with data
      *
@@ -20,11 +27,12 @@ trait Fillers
      */
     protected function getRequestWithData($data): Request
     {
+        // keep original request untouched, just clone it
         if (is_array($data)) {
-            $request = $this->request;
+            $request = clone $this->request;
             $request->merge($data);
         } else {
-            $request = $data;
+            $request = clone $data;
         }
 
         return $request;
@@ -34,24 +42,55 @@ trait Fillers
      * Set data automatically from the DATA array
      *
      * @param  \Model $model
+     * @return void
+     */
+    protected function setAutoData($model)
+    {
+        $this->setMainData($model);
+
+        $this->setLocalizedData($model);
+
+        $this->setArraybleData($model);
+
+        $this->upload($model, static::UPLOADS);
+
+        $this->setStringData($model);
+
+        $this->setIntData($model);
+
+        $this->setFloatData($model);
+
+        $this->setDateData($model);
+
+        $this->setBoolData($model);
+    }
+
+    /**
+     * Set string data automatically from the DATA array
+     *
+     * @param  \Model $model
      * @param  \Request $request
      * @return void
      */
-    protected function setAutoData($model, $request)
+    protected function setStringData($model)
     {
-        $this->setMainData($model, $request);
+        foreach (static::STRING_DATA as $input => $column) {
+            if (is_numeric($input)) {
+                $input = $column;
+            }
 
-        $this->setArraybleData($model, $request);
+            if ($this->isIgnorable($input)) continue;
 
-        $this->upload($model, $request);
+            if ($input === 'password') {
+                if ($password = $this->input('password')) {
+                    $model->password = bcrypt($password);
+                }
 
-        $this->setIntData($model, $request);
+                continue;
+            }
 
-        $this->setFloatData($model, $request);
-
-        $this->setDateData($model, $request);
-
-        $this->setBoolData($model, $request);
+            $this->setToModel($model, $column, (string) $this->input($input));
+        }
     }
 
     /**
@@ -61,20 +100,44 @@ trait Fillers
      * @param  \Request $request
      * @return void
      */
-    protected function setMainData($model, $request)
+    protected function setMainData($model)
     {
-        foreach (static::DATA as $column) {
-            if ($this->isIgnorable($request, $column)) continue;
+        foreach (static::DATA as $input => $column) {
+            if (is_numeric($input)) {
+                $input = $column;
+            }
+
+            if ($this->isIgnorable($input)) continue;
 
             if ($column === 'password') {
-                if ($request->password) {
-                    $model->password = bcrypt($request->password);
+                if ($password = $this->input('password')) {
+                    $model->password = bcrypt($password);
                 }
 
                 continue;
             }
 
-            $this->setToModel($model, $column, $this->input($column));
+            $this->setToModel($model, $column, $this->input($input));
+        }
+    }
+
+    /**
+     * Set localized data automatically from the LOCALIZED_DATA array
+     *
+     * @param  \Model $model
+     * @param  \Request $request
+     * @return void
+     */
+    protected function setLocalizedData($model)
+    {
+        foreach (static::LOCALIZED_DATA as $input => $column) {
+            if (is_numeric($input)) {
+                $input = $column;
+            }
+
+            if ($this->isIgnorable($input)) continue;
+
+            $this->setToModel($model, $column, $this->input($input));
         }
     }
 
@@ -85,12 +148,16 @@ trait Fillers
      * @param  \Request $request
      * @return void
      */
-    protected function setArraybleData($model, $request)
+    protected function setArraybleData($model)
     {
-        foreach (static::ARRAYBLE_DATA as $column) {
-            if ($this->isIgnorable($request, $column)) continue;
+        foreach (static::ARRAYBLE_DATA as $input => $column) {
+            if (is_numeric($input)) {
+                $input = $column;
+            }
 
-            $value = array_filter((array) $this->input($column));
+            if ($this->isIgnorable($input)) continue;
+
+            $value = array_filter((array) $this->input($input));
 
             $value = $this->handleArrayableValue($value);
 
@@ -113,52 +180,94 @@ trait Fillers
      * Set uploads data automatically from the DATA array
      *
      * @param  \Model $model
-     * @param  \Request $request
+     * @param  array|null $columns
      * @return void
      */
-    protected function upload($model, $request, $columns = null)
+    protected function upload($model, $columns = null)
     {
         if (!$columns) {
             $columns = static::UPLOADS;
         }
 
-        $storageDirectory = $this->getUploadsStorageDirectoryName();
+        $this->storageDirectory = $this->getUploadsStorageDirectoryName() . '/' . $model->getId();
 
-        $storageDirectory .= '/' . $model->getId();
+        foreach ((array) $columns as $name => $column) {
+            $options = [
+                'clearable' => false,
+                'arrayable' => null, // auto check
+            ];
 
-        foreach ((array) $columns as $column => $name) {
-            if (is_numeric($column)) {
-                $column = $name;
+            if (is_array($column)) {
+                $options = $column;
+            } elseif (is_numeric($name)) {
+                $options['column'] = $column;
+                $options['input'] = $column;
+            } else {
+                $options['input'] = $name;
+                $options['column'] = $column;
             }
 
-            $file = $request->file($name);
+            $column = $options['column'] ?? $options['input'];
+            $input = $options['input'] ?? $options['column'];
+            $clearable = $options['clearable'] ?? false;
+            $arrayable = $options['arrayable'] ?? null;
+
+            $file = $this->request->file($input);
+
+            if (is_null($arrayable)) {
+                $arrayable = is_array($file);
+            }
 
             if (!$file) {
-                $files = $this->mergeOldAndNewFiles([], $column, $request, $model);
-                $this->setToModel($model, $column, $files);
+                if ($clearable) {
+                    $storedValue = $this->input($input . 'String', $arrayable ? [] : '');
+
+                    $this->setToModel($model, $column, $storedValue);
+                } else {
+                    $files = $this->mergeOldAndNewFiles([], $column, $model);
+                    $this->setToModel($model, $column, $files);
+                }
 
                 continue;
             }
 
-            if (is_array($file)) {
+            if ($arrayable) {
                 $files = [];
 
                 foreach ($file as $index => $fileObject) {
                     if (!$fileObject->isValid()) continue;
 
-                    $files[$index] = $fileObject->storeAs($storageDirectory, $this->getFileName($fileObject));
+                    $files[$index] = $this->uploadFile($fileObject);
                 }
 
-                $files = $this->mergeOldAndNewFiles($files, $column, $request, $model);
+                $files = $this->mergeOldAndNewFiles($files, $column, $model);
+
+                // based on inherited manager, multiple uploads are stored differently
+                // if set to true, then encode the listed files
+
+                if (static::SERIALIZE_MULTIPLE_UPLOADS === true) {
+                    $files = json_encode($files);
+                }
 
                 $this->setToModel($model, $column, $files);
             } else {
                 if ($file instanceof UploadedFile && $file->isValid()) {
-                    $filePath = $file->storeAs($storageDirectory, $this->getFileName($file));
+                    $filePath = $this->uploadFile($file);
                     $this->setToModel($model, $column, $filePath);
                 }
             }
         }
+    }
+
+    /**
+     * Upload the given file and return the new path
+     * 
+     * @param  UploadedFile $file
+     * @return string
+     */
+    public function uploadFile($file)
+    {
+        return $file->storeAs($this->storageDirectory ?: $this->getUploadsStorageDirectoryName(), $this->getFileName($file));
     }
 
     /**
@@ -206,11 +315,11 @@ trait Fillers
      * @param  string $column
      * @return array
      */
-    private function mergeOldAndNewFiles(array $files, $column, $request, $model)
+    private function mergeOldAndNewFiles(array $files, $column, $model)
     {
         $filesFromRequest = array_map(function ($file) {
             return ltrim($file, '/');
-        }, (array) $request->{$column . 'String'});
+        }, (array) $this->input($column . 'String', []));
 
         $images = Arr::get($model, $column);
 
@@ -286,16 +395,20 @@ trait Fillers
      * @param  Request $request
      * @return void
      */
-    protected function setDateData($model, $request, $columns = null)
+    protected function setDateData($model, $columns = null)
     {
         if (!$columns) {
             $columns = static::DATE_DATA;
         }
 
-        foreach ((array) $columns as $column) {
-            if ($this->isIgnorable($request, $column)) continue;
+        foreach ((array) $columns as $input => $column) {
+            if (is_numeric($input)) {
+                $input = $column;
+            }
 
-            $date = $this->input($column);
+            if ($this->isIgnorable($input)) continue;
+
+            $date = $this->input($input);
 
             if (!$date) continue;
 
@@ -307,15 +420,18 @@ trait Fillers
      * Cast specific data automatically to int from the DATA array
      *
      * @param  \Model $model
-     * @param  \Request $request
      * @return void
      */
-    protected function setIntData($model, Request $request)
+    protected function setIntData($model)
     {
-        foreach (static::INTEGER_DATA as $column) {
-            if ($this->isIgnorable($request, $column)) continue;
+        foreach (static::INTEGER_DATA as $input => $column) {
+            if (is_numeric($input)) {
+                $input = $column;
+            }
 
-            $this->setInt($model, $column, $this->input($column));
+            if ($this->isIgnorable($input)) continue;
+
+            $this->setInt($model, $column, $this->input($input));
         }
     }
 
@@ -323,15 +439,18 @@ trait Fillers
      * Cast specific data automatically to float from the DATA array
      *
      * @param  \Model $model
-     * @param  \Request $request
      * @return void
      */
-    protected function setFloatData($model, Request $request)
+    protected function setFloatData($model)
     {
-        foreach (static::FLOAT_DATA as $column) {
-            if ($this->isIgnorable($request, $column)) continue;
+        foreach (static::FLOAT_DATA as $input => $column) {
+            if (is_numeric($input)) {
+                $input = $column;
+            }
 
-            $this->setFloat($model, $column, $this->input($column));
+            if ($this->isIgnorable($input)) continue;
+
+            $this->setFloat($model, $column, $this->input($input));
         }
     }
 
@@ -339,19 +458,23 @@ trait Fillers
      * Cast specific data automatically to bool from the DATA array
      *
      * @param  \Model $model
-     * @param  \Request $request
      * @return void
      */
-    protected function setBoolData($model, Request $request)
+    protected function setBoolData($model)
     {
-        foreach (static::BOOLEAN_DATA as $column) {
-            if ($this->isIgnorable($request, $column)) continue;
-
-            if (($inputValue = $this->input($column)) === 'false') {
-                $this->setToModel($model, $column, false);
+        foreach (static::BOOLEAN_DATA as $input => $column) {
+            if (is_numeric($input)) {
+                $input = $column;
             }
 
-            $this->setBool($model, $column, $inputValue);
+            if ($this->isIgnorable($input)) continue;
+
+
+            if (($inputValue = $this->input($input)) === 'false') {
+                $this->setToModel($model, $column, false);
+            } else {
+                $this->setBool($model, $column, $inputValue);
+            }
         }
     }
 
@@ -365,7 +488,7 @@ trait Fillers
      */
     protected function setToModel($model, string $key, $value)
     {
-        $model->$key = $value;
+        $model->setAttribute($key, $value);
     }
 
     /**
@@ -408,15 +531,14 @@ trait Fillers
     }
 
     /**
-     * Check if the given column is ignorable
+     * Check if the given input is ignorable
      *
-     * @param  Request $request
-     * @param  string $column
+     * @param  string $input
      * @return bool
      */
-    protected function isIgnorable(Request $request, string $column): bool
+    protected function isIgnorable(string $input): bool
     {
-        return (static::WHEN_AVAILABLE_DATA === true || in_array($column, static::WHEN_AVAILABLE_DATA)) && !$request->has($column);
+        return (static::WHEN_AVAILABLE_DATA === true || in_array($input, static::WHEN_AVAILABLE_DATA)) && $this->input($input) === null;
     }
 
     /**
@@ -428,8 +550,50 @@ trait Fillers
      */
     protected function input(string $key, $default = null)
     {
-        $value = $this->request->input($key) ?? $this->request->__get($key);
+        return $this->request->has($key) ? $this->request->input($key) : ($this->request->__get($key) ?: $default);
+    }
 
-        return $value ?: $default;
+    /**
+     * Get int input value
+     * 
+     * @param  string $key
+     * @param  mixed $default
+     * @return int
+     */
+    protected function intInput(string $key, $default = null): int
+    {
+        return (int) $this->input($key, $default);
+    }
+
+    /**
+     * Get float input value
+     * 
+     * @param  string $key
+     * @param  mixed $default
+     * @return float
+     */
+    protected function floatInput(string $key, $default = null): float
+    {
+        return (float) $this->input($key, $default);
+    }
+
+    /**
+     * Get a boolean value
+     * 
+     * @param  string $key
+     * @param  mixed $default
+     * @return bool
+     */
+    public function boolInput(string $key, $default = null): bool
+    {
+        $value = $this->input($key, $default);
+
+        if ($value === 'false') {
+            $value = false;
+        } elseif ($value === 'true') {
+            $value = true;
+        }
+
+        return (bool) $value;
     }
 }

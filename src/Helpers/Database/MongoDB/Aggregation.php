@@ -1,6 +1,8 @@
 <?php
+
 namespace HZ\Illuminate\Mongez\Helpers\Database\MongoDB;
 
+use \MongoDB\BSON\Regex;
 use Illuminate\Support\Str;
 
 class Aggregation
@@ -11,7 +13,7 @@ class Aggregation
     // TODO: Join
     // TODO: Unwind
     // TODO: GeoNear
-    
+
     /**
      * Query Builder
      */
@@ -45,7 +47,7 @@ class Aggregation
      * @param ...string $columns
      * @return Pipeline
      */
-    public function groupBy(...$columns): Pipeline 
+    public function groupBy(...$columns): Pipeline
     {
         $columnsList = [];
 
@@ -54,9 +56,9 @@ class Aggregation
         } else {
             foreach ($columns as $column) {
                 list($name) = explode('.', $column);
-    
+
                 $columnsList[$name] = "$$column";
-            }    
+            }
         }
 
         return $this->pipeline('group')->data('_id', $columnsList);
@@ -143,6 +145,31 @@ class Aggregation
     }
 
     /**
+     * Where like clause 
+     * 
+     * @param string $column 
+     * @param mixed $value
+     * @param string $likeOperator
+     * @return Pipeline 
+     */
+    public function whereLike(string $column, $value, string $likeOperator = '')
+    {
+        $regex = preg_replace('#(^|[^\\\])%#', '$1.*', preg_quote($value));
+
+        if ($likeOperator === 'start') {
+            $regex = '^' . $regex;
+        }
+
+        if ($likeOperator === 'end') {
+            $regex .= '$';
+        }
+
+        return $this->pipeline('match')->data([
+            $column => new Regex($regex, 'i'),
+        ]);
+    }
+
+    /**
      * Order returned records
      *
      * @param array $columns
@@ -153,7 +180,7 @@ class Aggregation
         $pipeline = $this->currentPipeline->name == 'sort' ? $this->currentPipeline : $this->pipeline('sort');
 
         $columnsList = [];
-        
+
         $columnsList[$column] = strtolower($order) == 'asc' ? 1 : -1;
 
         $pipeline->data($columnsList);
@@ -216,7 +243,7 @@ class Aggregation
             $this->offset($offset);
         }
 
-        return $this->pipeline('limit')->limit($number) ;
+        return $this->pipeline('limit')->limit($number);
     }
 
     /**
@@ -269,7 +296,7 @@ class Aggregation
      * @param  string $pipelineName
      * @return Pipeline
      */
-    public function pipeline(string $pipelineName): Pipeline 
+    public function pipeline(string $pipelineName): Pipeline
     {
         $this->currentPipeline = new Pipeline($this, $pipelineName);
 
@@ -292,15 +319,31 @@ class Aggregation
                 $pipeline->getName() => $pipeline->getData(),
             ];
         }
-        
-        // pre($pipelines);
 
         return iterator_to_array($this->query->raw(function ($query) use ($pipelines) {
             $options = [
                 'typeMap' => ['root' => 'array', 'document' => 'array'],
-            ];  
+            ];
             return $query->aggregate($pipelines, $options);
         }));
+    }
+
+    /**
+     * Log the query
+     * 
+     * @return array
+     */
+    public function getQueryLog()
+    {
+        $pipelines = [];
+
+        foreach ($this->pipelines as $pipeline) {
+            $pipelines[] = [
+                $pipeline->getName() => $pipeline->getData(),
+            ];
+        }
+
+        return $pipelines;
     }
 
     /**

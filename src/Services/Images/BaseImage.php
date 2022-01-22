@@ -1,10 +1,11 @@
 <?php
+
 namespace HZ\Illuminate\Mongez\Services\Images;
 
 use Image;
 
-class BaseImage {
-
+class BaseImage
+{
     /**
      * Image path
      *
@@ -45,10 +46,10 @@ class BaseImage {
      */
     public function __construct($imagePath)
     {
-        $this->imagePath = public_path() .'/' .$imagePath;
+        $this->imagePath = public_path() . '/' . $imagePath;
         $this->imageExtension = pathinfo($this->imagePath, PATHINFO_EXTENSION);
-        $this->imageName = str_replace('.' .$this->imageExtension, '', basename($imagePath));
-        $this->pathToImageFolder = str_replace(basename($imagePath), '' ,$imagePath);
+        $this->imageName = str_replace('.' . $this->imageExtension, '', basename($imagePath));
+        $this->pathToImageFolder = str_replace(basename($imagePath), '', $imagePath);
         $this->imageObject = $this->getImageObject($this->imagePath);
     }
 

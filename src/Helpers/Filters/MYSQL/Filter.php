@@ -5,14 +5,6 @@ namespace HZ\Illuminate\Mongez\Helpers\Filters\MYSQL;
 class Filter
 {
     /**
-     * Query Builder Object
-     * This property is set from the FilterManager 
-     *
-     * @var \Illuminate\Database\Query\Builder
-     */
-    public $query;
-
-    /**
      * available filters
      * 
      * @const array  
@@ -24,13 +16,32 @@ class Filter
         '>=' => 'basicFilter',
         '<=' => 'basicFilter',
         'like' => 'filterLike',
-        'in'   => 'filterIn',        
+        'in'   => 'filterIn',
         'notIn' => 'filterNotIn',
         'inInt' => 'filterInInt',
         'notInInt' => 'filterNotInInt',
         'null' => 'filterNull',
         'notNull' => 'filterNotNull',
     ];
+
+    /**
+     * Query Builder Object
+     * This property is set from the FilterManager 
+     *
+     * @var \Illuminate\Database\Query\Builder
+     */
+    protected $query;
+
+    /**
+     * Set the query builder object
+     * 
+     * @param  \Illuminate\Database\Query\Builder $query
+     * @return void
+     */
+    public function setQuery($query)
+    {
+        $this->query = $query;
+    }
 
     /**
      * Filter by columns 
@@ -56,14 +67,13 @@ class Filter
      */
     public function filterLike($columns, $value)
     {
-        $this->query->where(function () use ($columns, $value) {
-            $iterate = 0;
-            foreach ($columns as $key => $column) {
-                if ($iterate > 0) {
-                    $this->query->orWhereLike($column, $value);
+        $this->query->where(function ($query) use ($columns, $value) {
+            foreach ($columns as $index => $column) {
+                if ($index > 0) {
+                    $query->orWhereLike($column, $value);
                 }
-                $this->query->whereLike($column, $value);
-                $iterate++;
+
+                $query->whereLike($column, $value);
             }
         });
     }

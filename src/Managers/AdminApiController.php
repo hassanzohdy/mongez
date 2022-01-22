@@ -11,13 +11,6 @@ use Illuminate\Support\Facades\Validator;
 abstract class AdminApiController extends ApiController
 {
     /**
-     * Repository object
-     * 
-     * @var mixed
-     */
-    protected $repository;
-
-    /**
      * Controller repository
      *
      * @var mixed
@@ -65,18 +58,8 @@ abstract class AdminApiController extends ApiController
         if ($this->repository->getPaginateInfo()) {
             $json['paginationInfo'] = $this->repository->getPaginateInfo();
         }
-        return $this->success($json);
-    }
 
-    /**
-     * Get  options
-     *
-     * @param \Request $request
-     * @return array
-     */
-    protected function listOptions(Request $request): array
-    {
-        return array_merge($request->all(), $this->controllerInfo('listOptions'));
+        return $this->success($json);
     }
 
     /**
@@ -85,29 +68,17 @@ abstract class AdminApiController extends ApiController
      * @param  int $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id, Request $request)
+    public function show($id)
     {
         $id = (int) $id;
 
         if (!$this->repository->has($id)) {
-            return $this->notFound(trans('response.notFound'));
+            return $this->notFound();
         }
 
         return $this->success([
-            'success' => true,
             'record' => $this->repository->get($id),
         ]);
-    }
-
-    /**
-     * Get value from controller info
-     * 
-     * @param  string $key 
-     * @return mixed
-     */
-    protected function controllerInfo(string $key)
-    {
-        return Arr::get($this->controllerInfo, $key);
     }
 
     /**
@@ -119,18 +90,6 @@ abstract class AdminApiController extends ApiController
     public function store(Request $request)
     {
         $rules = array_merge($this->allValidation($request), $this->storeValidation($request));
-
-        // $databaseRules = ['unique', 'exists'];
-
-        // foreach ($rules as $name => & $rulesList) {
-        //     $rulesList = explode('|', $rulesList);
-
-        //     foreach ($rulesList as & $rule) {
-        //         if (in_array($rule, $databaseRules)) {
-        //             $rule = "$rule:" . $this->repository->getTableName();
-        //         }
-        //     }
-        // }
 
         $validator = Validator::make($request->all(), $rules);
 
@@ -157,61 +116,19 @@ abstract class AdminApiController extends ApiController
      * @param  int $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy($id, Request $request)
     {
         if (!$this->repository->has($id)) {
-            return $this->notFound(trans('response.notFound'));
+            return $this->notFound();
         }
 
-        if ($this->repository->deleteHasDependence()) {
-            $deletingValidationErrors = $this->validateBeforeDeleting($this->repository->getDeleteDependencies(), $id);
-            if (!empty($deletingValidationErrors)) {
-                return $this->badRequest($deletingValidationErrors);
-            }
+        if ($errors = $this->beforeDeleting($id, $request)) {
+            return $this->badRequest($errors);
         }
 
         $this->repository->delete((int) $id);
 
         return $this->success();
-    }
-
-    /**
-     * Validate if this model has depended on another these tables .
-     *
-     * @param  array $deleteDependenceTables
-     * @param  int   $modelId
-     * @return array $errors
-     */
-    public function validateBeforeDeleting($deleteDependenceTables, $modelId): array
-    {
-        $errors = [];
-
-        $isUsingSoftDelete = $this->repository->isUsingSoftDelete();
-
-        foreach ($deleteDependenceTables as $table) {
-            $rules = Rule::unique($table['tableName'], $table['key']);
-
-            if ($isUsingSoftDelete) {
-
-                $validationRules = $rules->where(function ($query) {
-
-                    $query->whereNull('deleted_at');
-                });
-            }
-            $validationRules['data'][$table['tableName'] . '_id'] = (int)$modelId;
-
-            $validationRules['rules'][$table['tableName'] . '_id'] = $rules;
-
-            $validationRules['messages']['unique.' . $table['tableName'] . '_id'] = $table['message'];
-        }
-
-        $validator = Validator::make($validationRules['data'], $validationRules['rules'], $validationRules['messages']);
-
-        if ($validator->fails()) {
-            $errors[] = $validator->errors();
-        }
-
-        return $errors;
     }
 
     /**
@@ -224,7 +141,7 @@ abstract class AdminApiController extends ApiController
     public function update(Request $request, $id)
     {
         if (!$this->repository->has($id)) {
-            return $this->notFound(trans('response.notFound'));
+            return $this->notFound();
         }
 
         $rules = array_merge($this->allValidation($request, $id), $this->updateValidation($id, $request));
@@ -263,6 +180,34 @@ abstract class AdminApiController extends ApiController
     }
 
     /**
+     * Get value from controller info
+     * 
+     * @param  string $key 
+     * @return mixed
+     */
+    protected function controllerInfo(string $key)
+    {
+        return Arr::get($this->controllerInfo, $key);
+    }
+
+    /**
+     * Get  options
+     *
+     * @param \Request $request
+     * @return array
+     */
+    protected function listOptions(Request $request): array
+    {
+        $requestData = $request->all();
+
+        if ($request->sortBy) {
+            $requestData['orderBy'] = [$request->sortBy, $request->sortDirection];
+        };
+
+        return array_merge($requestData, (array) $this->controllerInfo('listOptions'));
+    }
+
+    /**
      * Make custom validation for update
      *
      * @param  int $id
@@ -295,5 +240,19 @@ abstract class AdminApiController extends ApiController
     protected function allValidation($request, $id = null): array
     {
         return (array) $this->controllerInfo('rules.all');
+    }
+
+    /**
+     * Triggered before deleting a record
+     * Useful when needs to make a validation before deleting the record
+     * If it returns a value, it will be returned instead
+     *
+     * @param  int      $model
+     * @param  Request  $request
+     * @return array|null
+     */
+    protected function beforeDeleting($id, Request $request)
+    {
+        return null;
     }
 }

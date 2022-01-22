@@ -1,0 +1,7 @@
+	/** 
+	* Shared info of the model  
+	* This is used for storing only important fields into another model
+	* 
+	* @const array 
+	*/
+	const SHARED_INFO = {{ columns }};

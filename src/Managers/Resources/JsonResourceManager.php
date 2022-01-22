@@ -3,6 +3,7 @@
 namespace HZ\Illuminate\Mongez\Managers\Resources;
 
 use DateTime;
+use Carbon\Carbon;
 use IntlDateFormatter;
 use Illuminate\Support\Arr;
 use MongoDB\BSON\UTCDateTime;
@@ -10,58 +11,54 @@ use Illuminate\Support\Fluent;
 use Illuminate\Support\Facades\App;
 use Illuminate\Database\Eloquent\Model;
 use HZ\Illuminate\Mongez\Helpers\Mongez;
+use HZ\Illuminate\Mongez\Traits\RepositoryTrait;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 abstract class JsonResourceManager extends JsonResource
 {
+    use RepositoryTrait;
+
     /**
      * Data that must be returned
      *
      * @const array
      */
-    const DATA = [];
+    public const DATA = [];
 
     /**
      * String Data
      * 
      * @const array
      */
-    const STRING_DATA = [];
+    public const STRING_DATA = [];
 
     /**
      * Boolean Data
      * 
      * @const array
      */
-    const BOOLEAN_DATA = [];
+    public const BOOLEAN_DATA = [];
 
     /**
      * Integer Data
      * 
      * @const array
      */
-    const INTEGER_DATA = [];
+    public const INTEGER_DATA = [];
 
     /**
      * Float Data
      * 
      * @const array
      */
-    const FLOAT_DATA = [];
+    public const FLOAT_DATA = [];
 
     /**
      * Object Data
      * 
      * @const array
      */
-    const OBJECT_DATA = [];
-
-    /**
-     * Data that should be returned if exists
-     *
-     * @const array
-     */
-    const WHEN_AVAILABLE = [];
+    public const OBJECT_DATA = [];
 
     /**
      * Set that columns that will be formatted as dates
@@ -69,21 +66,21 @@ abstract class JsonResourceManager extends JsonResource
      *
      * @const array
      */
-    const DATES = [];
+    public const DATES = [];
 
     /**
      * Data that has multiple values based on locale codes
      *
      * @const array
      */
-    const LOCALIZED = [];
+    public const LOCALIZED = [];
 
     /**
      * List of assets that will have a full url if available
      *
      * @const array
      */
-    const ASSETS = [];
+    public const ASSETS = [];
 
     /**
      * Data that will be returned as a resources
@@ -92,7 +89,7 @@ abstract class JsonResourceManager extends JsonResource
      *
      * @const array
      */
-    const RESOURCES = [];
+    public const RESOURCES = [];
 
     /**
      * Data that will be returned as a collection of resources
@@ -101,7 +98,22 @@ abstract class JsonResourceManager extends JsonResource
      *
      * @const array
      */
-    const COLLECTABLE = [];
+    public const COLLECTABLE = [];
+
+    /**
+     * Data that should be returned if exists
+     *
+     * @const array
+     */
+    public const WHEN_AVAILABLE = [];
+
+    /**
+     * Set the float round value
+     * Defaults to 2
+     * 
+     * @const int
+     */
+    public const FLOAT_ROUND = 2;
 
     /**
      * Request object
@@ -139,28 +151,6 @@ abstract class JsonResourceManager extends JsonResource
     protected static $allowedKeys = [];
 
     /**
-     * Disable the given list of keys
-     *
-     * @param ...$keys
-     * @return void
-     */
-    public static function disable(...$keys)
-    {
-        static::$disabledKeys = array_merge(static::$disabledKeys, $keys);
-    }
-
-    /**
-     * Disable the given list of keys
-     *
-     * @param ...$keys
-     * @return void
-     */
-    public static function only(...$keys)
-    {
-        static::$allowedKeys = array_merge(static::$allowedKeys, $keys);
-    }
-
-    /**
      * Transform the resource into an array.
      *
      * @param   \Illuminate\Http\Request  $request
@@ -196,8 +186,6 @@ abstract class JsonResourceManager extends JsonResource
 
         $this->collectDates(static::DATES);
 
-        // $this->filterWhenAvailable(static::WHEN_AVAILABLE);
-
         $this->extend($request);
 
         // unset all data from the resource
@@ -225,6 +213,76 @@ abstract class JsonResourceManager extends JsonResource
     }
 
     /**
+     * Remove value from being sent to response
+     * 
+     * @param string $keys
+     * @return void
+     */
+    public function remove(...$keys)
+    {
+        foreach ($keys as $key) {
+            unset($this->data[$key]);
+        }
+    }
+
+    /**
+     * Get Resource info
+     *
+     * @return array
+     */
+    public function info()
+    {
+        return $this->toArray(request());
+    }
+
+    /**
+     * Set more data from outside the resource
+     *
+     * @param  string $key
+     * @param  mixed $value
+     * @return $this
+     */
+    public function set(string $key, $value)
+    {
+        Arr::set($this->data, $key, $value);
+
+        return $this;
+    }
+
+    /**
+     * Append the given key from the resource to the data array
+     *
+     * @param  string $key
+     * @return $this
+     */
+    public function append(string $key)
+    {
+        return $this->set($key, $this->$key);
+    }
+
+    /**
+     * Disable the given list of keys
+     *
+     * @param ...$keys
+     * @return void
+     */
+    public static function disable(...$keys)
+    {
+        static::$disabledKeys = array_merge(static::$disabledKeys, $keys);
+    }
+
+    /**
+     * Disable the given list of keys
+     *
+     * @param ...$keys
+     * @return void
+     */
+    public static function only(...$keys)
+    {
+        static::$allowedKeys = array_merge(static::$allowedKeys, $keys);
+    }
+
+    /**
      * Get assets function name
      *
      * @return string
@@ -246,27 +304,60 @@ abstract class JsonResourceManager extends JsonResource
     }
 
     /**
+     * Collect resources from array
+     *
+     * @param array $collection
+     * @return mixed
+     */
+    public static function collectArray($collection)
+    {
+        return static::collection(collect($collection)->map(function ($resource) {
+            return new Fluent($resource);
+        }));
+    }
+
+    /**
      * Collect mandatory data
      *
      * @param array $columns
      * @return JsonResourceManager
      */
-    public function collectData(array $columns): JsonResourceManager
+    protected function collectData(array $columns): JsonResourceManager
     {
-        foreach ($columns as $column) {
+        return $this->setData($columns);
+    }
+
+    /**
+     * Set the given columns data
+     * 
+     * @param array $columns
+     * @param callable $valueCallback
+     * @return $this
+     */
+    protected function setData(array $columns, callable $valueCallback = null): JsonResourceManager
+    {
+        foreach ($columns as $outputKey => $column) {
             if ($this->ignoreEmptyColumn($column)) continue;
 
-            $value = $this->value($column);
+            $outputKey = is_numeric($outputKey) ? $column : $outputKey;;
 
-            if (is_float($value)) {
-                $value = round($value, 2);
-            }
-
-            $this->set($column, $value);
+            $this->set($outputKey, $valueCallback ? $valueCallback($column) : $this->value($column));
         }
 
         return $this;
     }
+
+    /**
+     * if the output key is numeric, then we'll return the column instead
+     * 
+     * @param  int|string $outputKey
+     * @param string $column
+     * @return string
+     */
+    // protected function outputKey($outputKey, string $column): string
+    // {
+    //     return is_numeric($outputKey) ? $column : $outputKey;
+    // }
 
     /**
      * Collect String Data
@@ -274,15 +365,11 @@ abstract class JsonResourceManager extends JsonResource
      * @param array $columns
      * @return JsonResourceManager
      */
-    public function collectStringData(array $columns): JsonResourceManager
+    protected function collectStringData(array $columns): JsonResourceManager
     {
-        foreach ($columns as $column) {
-            if ($this->ignoreEmptyColumn($column)) continue;
-
-            $this->set($column, (string) $this->value($column, ''));
-        }
-
-        return $this;
+        return $this->setData($columns, function ($column) {
+            return (string) $this->value($column, '');
+        });
     }
 
     /**
@@ -291,15 +378,11 @@ abstract class JsonResourceManager extends JsonResource
      * @param array $columns
      * @return JsonResourceManager
      */
-    public function collectIntegerData(array $columns): JsonResourceManager
+    protected function collectIntegerData(array $columns): JsonResourceManager
     {
-        foreach ($columns as $column) {
-            if ($this->ignoreEmptyColumn($column)) continue;
-
-            $this->set($column, (int) $this->value($column, 0));
-        }
-
-        return $this;
+        return $this->setData($columns, function ($column) {
+            return (int) $this->value($column, 0);
+        });
     }
 
     /**
@@ -308,15 +391,14 @@ abstract class JsonResourceManager extends JsonResource
      * @param array $columns
      * @return JsonResourceManager
      */
-    public function collectFloatData(array $columns): JsonResourceManager
+    protected function collectFloatData(array $columns): JsonResourceManager
     {
-        foreach ($columns as $column) {
-            if ($this->ignoreEmptyColumn($column)) continue;
-
-            $this->set($column, (float) $this->value($column, 0));
-        }
-
-        return $this;
+        return $this->setData($columns, function ($column) {
+            return (float) round(
+                (float) $this->value($column, 0),
+                static::FLOAT_ROUND
+            );
+        });
     }
 
     /**
@@ -325,15 +407,11 @@ abstract class JsonResourceManager extends JsonResource
      * @param array $columns
      * @return JsonResourceManager
      */
-    public function collectBooleanData(array $columns): JsonResourceManager
+    protected function collectBooleanData(array $columns): JsonResourceManager
     {
-        foreach ($columns as $column) {
-            if ($this->ignoreEmptyColumn($column)) continue;
-
-            $this->set($column, (bool) $this->value($column, false));
-        }
-
-        return $this;
+        return $this->setData($columns, function ($column) {
+            return (bool) $this->value($column, false);
+        });
     }
 
     /**
@@ -342,15 +420,11 @@ abstract class JsonResourceManager extends JsonResource
      * @param array $columns
      * @return JsonResourceManager
      */
-    public function collectObjectData(array $columns): JsonResourceManager
+    protected function collectObjectData(array $columns): JsonResourceManager
     {
-        foreach ($columns as $column) {
-            if ($this->ignoreEmptyColumn($column)) continue;
-
-            $this->set($column, (object) $this->value($column, []));
-        }
-
-        return $this;
+        return $this->setData($columns, function ($column) {
+            return (object) $this->value($column, []);
+        });
     }
 
     /**
@@ -359,15 +433,11 @@ abstract class JsonResourceManager extends JsonResource
      * @param array $columns
      * @return JsonResourceManager
      */
-    public function collectLocalized(array $columns): JsonResourceManager
+    protected function collectLocalized(array $columns): JsonResourceManager
     {
-        foreach ($columns as $column) {
-            if ($this->ignoreEmptyColumn($column)) continue;
-
-            $this->set($column, $this->locale($column));
-        }
-
-        return $this;
+        return $this->setData($columns, function ($column) {
+            return $this->locale($column);
+        });
     }
 
     /**
@@ -376,7 +446,7 @@ abstract class JsonResourceManager extends JsonResource
      * @param array $columns
      * @return JsonResourceManager
      */
-    public function collectAssets(array $columns): JsonResourceManager
+    protected function collectAssets(array $columns): JsonResourceManager
     {
         if ($this->resource instanceof Model) {
             if (method_exists($this->resource, 'info')) {
@@ -390,11 +460,22 @@ abstract class JsonResourceManager extends JsonResource
             $resource = (array) $this->resource;
         }
 
-        foreach ($columns as $column) {
-            $asset = Arr::get($resource, $column, null);
+        foreach ($columns as $column => $outputName) {
+            if (is_numeric($column)) {
+                $column = $outputName;
+            }
+
+            if ($this->ignoreEmptyColumn($column)) continue;
+
+            $asset = Arr::get($resource, $column, '');
+
             if (!$asset) {
-                $this->set($column, null);
+                $this->set($column, '');
                 continue;
+            }
+
+            if (is_string($asset) && is_json($asset)) {
+                $asset = json_decode($asset);
             }
 
             if (is_array($asset)) {
@@ -406,9 +487,10 @@ abstract class JsonResourceManager extends JsonResource
                 foreach ($asset as $key => $assetPath) {
                     $assets[$key] = call_user_func($this->assetsUrlFunction, $assetPath);
                 }
-                $this->set($column, $assets);
+
+                $this->set($outputName, $assets);
             } else {
-                $this->set($column, call_user_func($this->assetsUrlFunction, $asset));
+                $this->set($outputName, call_user_func($this->assetsUrlFunction, $asset));
             }
         }
 
@@ -421,7 +503,7 @@ abstract class JsonResourceManager extends JsonResource
      * @param array $columns
      * @return JsonResourceManager
      */
-    public function collectCollectables(array $columns): JsonResourceManager
+    protected function collectCollectables(array $columns): JsonResourceManager
     {
         foreach ($columns as $column => $resource) {
             if ($this->ignoreEmptyColumn($column)) continue;
@@ -444,17 +526,44 @@ abstract class JsonResourceManager extends JsonResource
      * @param array $columns
      * @return JsonResourceManager
      */
-    public function collectResources(array $columns): JsonResourceManager
+    protected function collectResources(array $columns): JsonResourceManager
     {
         foreach ($columns as $column => $resource) {
             if ($this->ignoreEmptyColumn($column)) continue;
 
-            $resourceData = $this->value($column);
-
-            $this->set($column, $resourceData === null ? null : new $resource(new Fluent($resourceData)));
+            $this->setResource($column, $resource);
         }
 
         return $this;
+    }
+
+    /**
+     * Determine whether to ignore the empty data for the given column
+     * 
+     * @param string $column
+     * @return bool
+     */
+    protected function ignoreEmptyColumn(string $column): bool
+    {
+        $value = $this->value($column);
+
+        if (in_array($value, [0, false], true)) return false;
+
+        return empty($value) && in_array($column, static::WHEN_AVAILABLE);
+    }
+
+    /**
+     * Set resource value
+     * 
+     * @param  string $column
+     * @param  string $resourceClassName
+     * @return $this
+     */
+    protected function setResource($column, string $resourceClassName): JsonResourceManager
+    {
+        $resourceData = $this->value($column);
+
+        return $this->set($column, $resourceData === null ? null : new $resourceClassName(new Fluent($resourceData)));
     }
 
     /**
@@ -491,21 +600,6 @@ abstract class JsonResourceManager extends JsonResource
         }
 
         return $this;
-    }
-
-    /**
-     * Determine whether to ignore the empty data for the given column
-     * 
-     * @param string $column
-     * @return bool
-     */
-    protected function ignoreEmptyColumn(string $column): bool
-    {
-        $value = $this->value($column);
-
-        if (in_array($value, [0, false], true)) return false;
-
-        return empty($value) && in_array($column, static::WHEN_AVAILABLE);
     }
 
     /**
@@ -561,12 +655,12 @@ abstract class JsonResourceManager extends JsonResource
                 $values['timestamp'] = $value->getTimestamp();
             }
 
-            if ($options['intl']) {
-                $values['text'] = $this->getLocalizedDate($value);
+            if ($options['humanTime']) {
+                $values['humanTime'] = Carbon::createFromTimeStamp($value->getTimestamp())->diffForHumans();
             }
 
-            if ($options['humanTime']) {
-                $values['humanTime'] = \Carbon\Carbon::createFromTimeStamp($value->getTimestamp())->diffForHumans();
+            if ($options['intl']) {
+                $values['text'] = $this->getLocalizedDate($value);
             }
 
             $this->set($column, $values);
@@ -579,8 +673,10 @@ abstract class JsonResourceManager extends JsonResource
      * @param  DateTime $date
      * @return string
      */
-    protected function getLocalizedDate($date)
+    protected function getLocalizedDate($date): string
     {
+        if (!class_exists(IntlDateFormatter::class)) return '';
+
         $formatter = new IntlDateFormatter(
             Mongez::getRequestLocaleCode() ?: App::getLocale(),
             IntlDateFormatter::FULL,
@@ -588,32 +684,6 @@ abstract class JsonResourceManager extends JsonResource
         );
 
         return $formatter->format($date);
-    }
-
-    /**
-     * Filter when available data
-     *
-     * @param array $columns
-     * @return JsonResourceManager
-     */
-    public function filterWhenAvailable(array $columns): JsonResourceManager
-    {
-        foreach ($columns as $column) {
-            $value = $this->value($column);
-            $dataValue = $this->data[$column] ?? null;
-
-            if (
-                !$this->isEmptyValue($value) ||
-                !is_subclass_of($dataValue, self::class) &&
-                !$this->isEmptyValue($dataValue)
-            ) {
-                $this->set($column, $dataValue ?? $value);
-            } else {
-                unset($this->data[$column]);
-            }
-        }
-
-        return $this;
     }
 
     /**
@@ -671,9 +741,6 @@ abstract class JsonResourceManager extends JsonResource
                             case 'assets':
                                 $resource->collectAssets($columns);
                                 break;
-                                // case 'whenAvailable':
-                                //     // $resource->filterWhenAvailable($columns);
-                                //     break;
                         }
                     }
                 }
@@ -683,16 +750,6 @@ abstract class JsonResourceManager extends JsonResource
         }
 
         $this->set($column, $resources);
-    }
-
-    /**
-     * Extend data
-     *
-     * @param  \Request $request
-     * @return array
-     */
-    protected function extend($request)
-    {
     }
 
     /**
@@ -743,51 +800,14 @@ abstract class JsonResourceManager extends JsonResource
         return $value;
     }
 
-    /**
-     * Get Resource info
-     *
-     * @return array
-     */
-    public function info()
-    {
-        return $this->toArray(request());
-    }
 
     /**
-     * Set more data from outside the resource
+     * Extend data with more complex returned values
      *
-     * @param  string $key
-     * @param  mixed $value
-     * @return $this
+     * @param  \Request $request
+     * @return void
      */
-    public function set(string $key, $value)
+    protected function extend($request)
     {
-        Arr::set($this->data, $key, $value);
-
-        return $this;
-    }
-
-    /**
-     * Append the given key from the resource to the data array
-     *
-     * @param  string $key
-     * @return $this
-     */
-    public function append(string $key)
-    {
-        return $this->set($key, $this->$key);
-    }
-
-    /**
-     * Collect resources from array
-     *
-     * @param array $collection
-     * @return mixed
-     */
-    public static function collectArray($collection)
-    {
-        return static::collection(collect($collection)->map(function ($resource) {
-            return new Fluent($resource);
-        }));
     }
 }

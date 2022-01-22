@@ -59,7 +59,7 @@ class EngezRemove extends Command
      * 
      * @return void
      */
-    protected function init()
+    public function init()
     {
         $this->moduleName = $this->info['moduleName'] = Str::studly($this->argument('module')); 
     }

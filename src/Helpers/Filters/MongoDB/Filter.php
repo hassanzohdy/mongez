@@ -6,14 +6,6 @@ use HZ\Illuminate\Mongez\Helpers\Filters\MYSQL\Filter as MYSQLFilter;
 class Filter extends MYSQLFilter
 {
     /**
-     * Query Builder Object
-     * This property is set from the FilterManager 
-     *
-     * @var \Illuminate\Database\Query\Builder
-     */
-    public $query;
-
-    /**
      * {@inheritDoc}
      */
     const NO_SQL_FILTER_MAP = [

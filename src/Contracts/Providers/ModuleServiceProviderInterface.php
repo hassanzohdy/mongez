@@ -11,18 +11,9 @@ interface ModuleServiceProviderInterface
     public function boot();
     
     /**
-     * Define the routes for the application.
+     * Define the routes for the module.
      *
      * @return void
      */
-    public function map();
-    
-    /**
-     * Define the "api" routes for the application.
-     *
-     * These routes are typically stateless.
-     *
-     * @return void
-     */
-    public function mapApiRoutes();
+    public function mapRoutes();
 }
