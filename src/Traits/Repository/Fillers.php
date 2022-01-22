@@ -31,6 +31,13 @@ trait Fillers
         if (is_array($data)) {
             $request = clone $this->request;
             $request->merge($data);
+            // Merge files
+            foreach($data as $key => $file) {
+                if($file instanceof UploadedFile) {
+                    $request->addFile($key, $file);
+                }
+            }
+
         } else {
             $request = clone $data;
         }

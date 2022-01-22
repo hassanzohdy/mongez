@@ -42,57 +42,7 @@ class Builder
             return $this->where($column, 'LIKE', "%$value%");
         };
     }
-    
-    /**
-     * where like clause in concatenate columns 
-     *
-     * @param  array $columns
-     * @param  mixed $value
-     * @return $this
-     */
-    public function concatWhereLike()
-    {
-        return function (array $columns, $value) {
-            $columns = array_map(function ($column) {
-                return "this.$column";
-            },$columns);
 
-            $columns = implode(' + " " + ', $columns);
-
-            return $this->whereRaw([
-                '$where' => "($columns).match(/$value/)"
-            ]);
-        };
-    }
-    
-    /**
-     * where like clause in concatenate columns
-     *
-     * @param  array $columns
-     * @param  mixed $value
-     * @return $this
-     */
-    public function concatWhereLike()
-    {
-        return function (array $columns, $value) {
-            $columns = array_map(function ($column) {
-                return "this.$column";
-            },$columns);
-
-            $columns = implode(' + " " + ', $columns);
-
-            return $this->whereRaw([
-                '$where' => "($columns).match(/$value/)"
-            ]);
-        };
-    }
-
-            return $this->whereRaw([
-                '$where' => "($columns).match(/$value/)"
-            ]);
-        };
-    }
-    
     /**
      * A shorthand method for the `or where like ` clause
      *

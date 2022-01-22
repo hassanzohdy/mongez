@@ -87,7 +87,6 @@ class EngezModel extends EngezGeneratorCommand implements EngezInterface
         $this->createModel();
         $this->info('Creating Migration File');
         $this->createMigration();
-        $this->createSeeds();
     }
 
     /**
@@ -151,22 +150,6 @@ class EngezModel extends EngezGeneratorCommand implements EngezInterface
         ];
 
         Artisan::call('engez:migration', $this->withDataTypes($migrationsOptions, EngezGeneratorCommand::TABLE_INDEXES));
-    }
-
-    /**
-     * Create database seed 
-     *
-     * @param string $dataFileName
-     * @return void 
-     */
-    protected function createSeeds()
-    {
-        $migrationsOptions = [
-            '--module' => $this->option('module'),
-            'seeder' => $this->modelName,
-        ];
-
-        Artisan::call('engez:seeder', $migrationsOptions);
     }
 
     /**
