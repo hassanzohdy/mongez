@@ -55,7 +55,6 @@ abstract class SeederManager extends Seeder
      */
     protected const LOCALIZED_DATA = [];
 
-
     /**
      * The default password will be used when key name is password
      * 
@@ -69,7 +68,6 @@ abstract class SeederManager extends Seeder
      * @var string
      */
     protected const DATE_FORMAT = 'd-m-Y h:i:s A';
-
 
     /**
      * Constructor
@@ -116,7 +114,12 @@ abstract class SeederManager extends Seeder
         return $this->repo->create((array) $this->data);
     }
 
-    abstract function setData();
+    /**
+     * Set data to data object
+     *
+     * @return void
+     */
+    abstract protected function setData();
 
     /**
     * set automatically data from repository
@@ -280,8 +283,7 @@ abstract class SeederManager extends Seeder
                     ];
                 } else {
                     $this->dataLocal[$localeCode] = $this->faker($fakerLocale)->text(20);
-                }
-                
+                }   
             }
 
             $this->data->$column = $this->dataLocal;
@@ -310,8 +312,6 @@ abstract class SeederManager extends Seeder
             $fileName = $this->faker->image($directory, 640, 480, null, false);
 
             $this->data->$column = $this->pathToUploadedFile(public_path($storageDirectory . '/' .$fileName));
-
-            // dd($this->data->$column);
         }
     }
 

@@ -63,7 +63,7 @@ class EngezSeeder extends EngezGeneratorCommand implements EngezInterface
     public function validateArguments()
     {
         parent::validateArguments();
-// dd($this->modulePath("database/Seeders/{$this->seederClass}.php"));
+
         if ($this->files->exists($this->modulePath("database/Seeders/{$this->seederClass}.php"))) {
             $this->terminate('Seed File Already Exists');
         }
