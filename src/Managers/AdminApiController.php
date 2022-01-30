@@ -180,6 +180,46 @@ abstract class AdminApiController extends ApiController
     }
 
     /**
+     * Edit the specified fields of the specified resource
+     * 
+     * @param  \Request  $request
+     * @param  int $id
+     * @return \Illuminate\Http\Response
+     */
+    public function patch(Request $request, $id)
+    {
+        if (!$this->repository->has($id)) {
+            return $this->notFound();
+        }
+
+        $rules = array_merge($this->allValidation($request, $id), $this->updateValidation($id, $request));
+
+        foreach ($rules as $column => $rulesList) {
+            if (!in_array($column, array_keys($request->all()))) {
+                unset($rules[$column]);
+            }
+        }
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return $this->badRequest($validator->errors());
+        }
+
+        $this->repository->patch($id, $request);
+
+        $returnOnUpdate = $this->controllerInfo['returnOn']['update'] ?? config('mongez.admin.returnOn.update', 'single-record');
+
+        if ($returnOnUpdate == 'single-record') {
+            return $this->show($id, $request);
+        } elseif ($returnOnUpdate == 'all-records') {
+            return $this->index($request);
+        } else {
+            return $this->success();
+        }
+    }
+
+    /**
      * Get value from controller info
      * 
      * @param  string $key 

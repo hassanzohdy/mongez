@@ -537,6 +537,32 @@ abstract class RepositoryManager implements RepositoryInterface
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public function patch(int $id, $data)
+    {
+        $model = (static::MODEL)::find($id);
+
+        if (!$model) return null;
+
+        $oldModel = clone $model;
+
+        $this->oldModel = $oldModel;
+
+        $this->request = $this->getRequestWithData($data);
+         
+        $this->forceIgnore = true;
+        
+        $this->setAutoData($model);
+
+        $this->setData($model, $this->request);
+
+        $this->save($model, $oldModel);
+
+        return $model;
+    }
+
+    /**
      * Update the record and wrap it into resource
      * 
      * @param  int $id

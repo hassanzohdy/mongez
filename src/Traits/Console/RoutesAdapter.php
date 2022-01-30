@@ -44,6 +44,7 @@ trait RoutesAdapter
             '{{ ControllerClass }}' => $this->controllerName,
             '{{ route-path }}' => $route,
             '{{ moduleName }}' => $this->getModule(),
+            '{{ methodName }}' => 'restfulApi',
         ];
 
         if ($this->option('auth') || $this->moduleExists('users')) {

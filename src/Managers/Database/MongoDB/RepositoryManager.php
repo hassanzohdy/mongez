@@ -122,11 +122,15 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     /**
      * Get model for the given id
      * 
-     * @param  int|array $id
+     * @param  int|array|Model $id
      * @return mixed
      */
     public function getModel($id)
     {
+        if ($id instanceof Model) {
+            return $id;
+        }
+
         if (is_array($id)) {
             $id = array_map('intval', $id);
         } else {

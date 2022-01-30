@@ -19,5 +19,5 @@ Route::group([
 ], function () {
     // Sub API CRUD routes
     // Main API CRUD routes 
-    Route::apiResource('{{ route-path }}', {{ ControllerClass }}::class);
+    Route::{{ methodName }}('{{ route-path }}', {{ ControllerClass }}::class);
 });
