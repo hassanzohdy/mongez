@@ -15,11 +15,12 @@ class Router
     {
         return function ($name, $controller, array $options = []) {
 
-            $this->apiResource($name, $controller, $options);
-            
             if (config('mongez.admin.patchable', false)) {
-                $this->patch($name, 'patch');
+                $this->patch($name . '/{id}', [$controller , 'patch']);
             }
+
+            $this->apiResource($name, $controller, $options);
+        
         };
     }
 

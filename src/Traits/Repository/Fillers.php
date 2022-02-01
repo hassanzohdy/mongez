@@ -135,7 +135,7 @@ trait Fillers
             if (is_numeric($input)) {
                 $input = $column;
             }
-
+            
             if ($this->isIgnorable($input)) continue;
 
             if ($column === 'password') {

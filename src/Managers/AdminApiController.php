@@ -2,6 +2,7 @@
 
 namespace HZ\Illuminate\Mongez\Managers;
 
+use HZ\Illuminate\Mongez\Events\Events;
 use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
@@ -36,9 +37,9 @@ abstract class AdminApiController extends ApiController
      * Constructor
      *
      */
-    public function __construct()
+    public function __construct(Events $events)
     {
-        parent::__construct();
+        parent::__construct($events);
 
         if (!empty($this->controllerInfo['repository'])) {
             $this->repository = repo($this->controllerInfo['repository']);
@@ -140,6 +141,7 @@ abstract class AdminApiController extends ApiController
      */
     public function update(Request $request, $id)
     {
+        dd('update it is');
         if (!$this->repository->has($id)) {
             return $this->notFound();
         }
@@ -188,6 +190,7 @@ abstract class AdminApiController extends ApiController
      */
     public function patch(Request $request, $id)
     {
+        // dd('patch it is');
         if (!$this->repository->has($id)) {
             return $this->notFound();
         }
