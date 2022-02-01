@@ -1,5 +1,5 @@
 <?php
-namespace HZ\Illuminate\Mongez\Macros\Console;
+namespace HZ\Illuminate\Mongez\Macros\Routing;
 
 class Router
 {
@@ -11,11 +11,11 @@ class Router
      * @param  array  $options
      * @return \Illuminate\Routing\PendingResourceRegistration
      */
-    public function restfulApi($name, $controller, array $options = [])
+    public function restfulApi()
     {
         return function ($name, $controller, array $options = []) {
 
-            $this->apiResource($name, $controller, $options = []);
+            $this->apiResource($name, $controller, $options);
             
             if (config('mongez.admin.patchable', false)) {
                 $this->patch($name, 'patch');
