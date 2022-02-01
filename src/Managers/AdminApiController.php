@@ -141,7 +141,6 @@ abstract class AdminApiController extends ApiController
      */
     public function update(Request $request, $id)
     {
-        dd('update it is');
         if (!$this->repository->has($id)) {
             return $this->notFound();
         }
@@ -190,7 +189,6 @@ abstract class AdminApiController extends ApiController
      */
     public function patch(Request $request, $id)
     {
-        // dd('patch it is');
         if (!$this->repository->has($id)) {
             return $this->notFound();
         }
