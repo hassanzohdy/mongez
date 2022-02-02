@@ -537,11 +537,15 @@ abstract class RepositoryManager implements RepositoryInterface
     }
 
     /**
-     * {@inheritDoc}
+     * PATCH request handler
+     * 
+     * @param int|Model $id
+     * @param array $data
+     * @return Model $model
      */
-    public function patch(int $id, $data)
+    public function patch($id, $data)
     {
-        $model = (static::MODEL)::find($id);
+        $model = $this->getModel($id);
 
         if (!$model) return null;
 

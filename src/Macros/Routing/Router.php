@@ -14,13 +14,9 @@ class Router
     public function restfulApi()
     {
         return function ($name, $controller, array $options = []) {
-
-            if (config('mongez.admin.patchable', false)) {
-                $this->patch($name . '/{id}', [$controller , 'patch']);
-            }
+            $this->patch($name . '/{id}', [$controller , 'patch']);
 
             $this->apiResource($name, $controller, $options);
-        
         };
     }
 

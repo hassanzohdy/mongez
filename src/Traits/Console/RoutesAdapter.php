@@ -44,13 +44,17 @@ trait RoutesAdapter
             '{{ ControllerClass }}' => $this->controllerName,
             '{{ route-path }}' => $route,
             '{{ moduleName }}' => $this->getModule(),
-            '{{ methodName }}' => 'restfulApi',
+            '{{ methodName }}' => 'apiResource',
         ];
 
         if ($this->option('auth') || $this->moduleExists('users')) {
             $replacements['{{ authMiddleware }}'] = $this->tabWith(
                 "'middleware' => ['authorized'],"
             );
+        }
+
+        if (\config('mongez.admin.patchable', false)) {
+            $replacements['{{ methodName }}'] = 'restfulApi';
         }
 
         $stub = $this->stubInstance('routes/admin');
