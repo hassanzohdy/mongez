@@ -20,9 +20,9 @@ class EngezController extends EngezGeneratorCommand implements EngezInterface
      */
     public const CONTROLLER_OPTIONS = '
     {--build=}
-    {--auth=}
+    {--auth=true}
     {--route=}
-    {--type=}
+    {--type=all}
     ';
 
     /**
@@ -119,7 +119,7 @@ class EngezController extends EngezGeneratorCommand implements EngezInterface
             )
         ) . 'Controller';
 
-        $this->controllerType = $this->getControllerType();
+        $this->controllerType = $this->option('type');
     }
 
     /**
@@ -143,7 +143,7 @@ class EngezController extends EngezGeneratorCommand implements EngezInterface
             }
         }
 
-        if (!in_array($this->getControllerType(), static::CONTROLLER_TYPES)) {
+        if (!in_array($this->option('type'), static::CONTROLLER_TYPES)) {
             return $this->missingRequiredOption('This controller type does not exits, Did you mean? ' . implode(PHP_EOL, static::CONTROLLER_TYPES));
         }
     }
@@ -217,7 +217,7 @@ class EngezController extends EngezGeneratorCommand implements EngezInterface
      */
     protected function isAdminController(): bool
     {
-        return in_array($this->getControllerType(), ['all', 'admin']);
+        return in_array($this->option('type'), ['all', 'admin']);
     }
 
     /**
@@ -228,7 +228,7 @@ class EngezController extends EngezGeneratorCommand implements EngezInterface
      */
     protected function isSiteController(): bool
     {
-        return in_array($this->getControllerType(), ['all', 'site']);
+        return in_array($this->option('type'), ['all', 'site']);
     }
 
     /**
@@ -242,15 +242,5 @@ class EngezController extends EngezGeneratorCommand implements EngezInterface
     {
         $this->makeDirectory(dirname($path));
         $this->files->put($path, $content);
-    }
-
-    /**
-     * Get controller type
-     * 
-     * @return string
-     */
-    protected function getControllerType(): string
-    {
-        return $this->option('type') ?: $this->config('controller.type', 'all');
     }
 }

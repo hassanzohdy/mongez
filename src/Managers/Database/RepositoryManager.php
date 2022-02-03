@@ -212,7 +212,8 @@ abstract class RepositoryManager implements RepositoryInterface
     const BOOLEAN_DATA = [];
 
     /**
-     * Add the column if and only if the value is passed in the request, if set to true, it will ignore all changing all columns that is not in the request data.
+     * Update the column if and only if its value is passed in the request, if set to true, 
+     * then all columns that is not in the request data will be not updated in the model and kept untouched.
      *
      * @cont array
      */

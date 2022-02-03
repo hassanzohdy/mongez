@@ -81,8 +81,6 @@ class EngezSeeder extends EngezGeneratorCommand implements EngezInterface
             '{{ ModuleName }}' => $this->getModule(),
             // seeder class name
             '{{ ClassName }}' => $this->seederClass,
-            // Repository name
-            '{{ repository }}' => $this->repositoryName($this->getModule())
         ];
 
         $this->putFile("database/Seeders/{$this->seederClass}.php", $this->replaceStub('Seeders/seeder', $replacements), 'Seeder');        
