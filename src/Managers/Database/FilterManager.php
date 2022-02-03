@@ -71,9 +71,9 @@ class FilterManager
             foreach ($columns as $index => $column) {
                 if ($index > 0) {
                     $query->orWhereLike($column, $value);
+                } else {
+                    $query->whereLike($column, $value);
                 }
-
-                $query->whereLike($column, $value);
             }
         });
     }

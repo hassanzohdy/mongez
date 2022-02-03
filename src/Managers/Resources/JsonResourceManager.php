@@ -3,6 +3,7 @@
 namespace HZ\Illuminate\Mongez\Managers\Resources;
 
 use DateTime;
+use Carbon\Carbon;
 use IntlDateFormatter;
 use Illuminate\Support\Arr;
 use MongoDB\BSON\UTCDateTime;
@@ -464,11 +465,17 @@ abstract class JsonResourceManager extends JsonResource
                 $column = $outputName;
             }
 
+            if ($this->ignoreEmptyColumn($column)) continue;
+
             $asset = Arr::get($resource, $column, '');
 
             if (!$asset) {
                 $this->set($column, '');
                 continue;
+            }
+
+            if (is_string($asset) && is_json($asset)) {
+                $asset = json_decode($asset);
             }
 
             if (is_array($asset)) {
@@ -480,6 +487,7 @@ abstract class JsonResourceManager extends JsonResource
                 foreach ($asset as $key => $assetPath) {
                     $assets[$key] = call_user_func($this->assetsUrlFunction, $assetPath);
                 }
+
                 $this->set($outputName, $assets);
             } else {
                 $this->set($outputName, call_user_func($this->assetsUrlFunction, $asset));
@@ -648,7 +656,7 @@ abstract class JsonResourceManager extends JsonResource
             }
 
             if ($options['humanTime']) {
-                $values['humanTime'] = \Carbon\Carbon::createFromTimeStamp($value->getTimestamp())->diffForHumans();
+                $values['humanTime'] = Carbon::createFromTimeStamp($value->getTimestamp())->diffForHumans();
             }
 
             if ($options['intl']) {
@@ -665,8 +673,10 @@ abstract class JsonResourceManager extends JsonResource
      * @param  DateTime $date
      * @return string
      */
-    protected function getLocalizedDate($date)
+    protected function getLocalizedDate($date): string
     {
+        if (!class_exists(IntlDateFormatter::class)) return '';
+
         $formatter = new IntlDateFormatter(
             Mongez::getRequestLocaleCode() ?: App::getLocale(),
             IntlDateFormatter::FULL,

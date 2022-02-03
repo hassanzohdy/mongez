@@ -19,6 +19,13 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     const FILTER_CLASS = Filter::class;
 
     /**
+     * If set to true, the multiple uploads column paths will be json encoded while storing it in database.
+     *
+     * @const bool
+     */
+    const SERIALIZE_MULTIPLE_UPLOADS = false;
+
+    /**
      * Set the columns will be filled with single record of collection data
      * i.e [country => CountryModel::class]
      * 
@@ -283,6 +290,26 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
     }
 
     /**
+     * A shorthand method for filtering data if they are available
+     * 
+     * @param  string $column
+     * @param  string|null $option
+     * @return $this
+     */
+    protected function whereBool(string $column, string $option = null): self
+    {
+        if (!$option) {
+            $option = $column;
+        }
+
+        if (($optionValue = $this->option($option)) !== null) {
+            $this->query->where($column, (bool) $optionValue);
+        }
+
+        return $this;
+    }
+
+    /**
      * Set Multi documents data to column value.
      *
      * @param  \Model $model
@@ -408,7 +435,7 @@ abstract class RepositoryManager extends BaseRepositoryManager implements Reposi
      * Update Parent and trigger save event
      * 
      * @param  int $parentId
-     * @param  RepositoryInterface $parentRepository
+     * @param  RepositoryManager $parentRepository
      * @param  Model $childModel
      * @param  string $sharedInfoMethod
      * @param  string $childNameInParent

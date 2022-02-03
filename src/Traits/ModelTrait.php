@@ -42,7 +42,7 @@ trait ModelTrait
     {
         return (new static)->getTable();
     }
-    
+
     /**
      * An alias method to `getAttributes` method
      * 
@@ -60,13 +60,16 @@ trait ModelTrait
     {
         $table = parent::getTable();
         $prefix = '';
+
         if ($this->prefix !== null) {
             $prefix = $this->prefix;
         } elseif (config('mongez.database.prefix')) {
             $prefix = config('mongez.database.prefix');
         }
 
-        $table = $prefix . $table;
+        if ($prefix && strpos($table, $prefix) !== 0) {
+            $table = $prefix . $table;
+        }
 
         return $table;
     }
@@ -95,7 +98,7 @@ trait ModelTrait
 
         return $this->only($columns);
     }
-    
+
     /**
      * Get all attributes except the given columns
      * 

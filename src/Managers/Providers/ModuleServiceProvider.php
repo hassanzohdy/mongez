@@ -62,10 +62,10 @@ abstract class ModuleServiceProvider extends ServiceProvider implements ModuleSe
      * {@inheritDoc}
      */
     public function boot()
-    {        
+    {
         $classInfo = new ReflectionClass($this);
 
-        $this->moduleBaseDirectory = realpath(dirname($classInfo->getFileName()) . './../');
+        $this->moduleBaseDirectory = realpath(dirname($classInfo->getFileName()) . '/./../');
 
         $this->mapRoutes();
 
@@ -101,6 +101,7 @@ abstract class ModuleServiceProvider extends ServiceProvider implements ModuleSe
             $appPath = $routeType == 'admin' ? '/admin' : '';
 
             $routeFilePath = 'routes/' . $routeType . '.php';
+
             $routeFilePath = $this->moduleBaseDirectory . '/' . $routeFilePath;
 
             $prefix = '';

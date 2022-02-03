@@ -2,7 +2,7 @@
 
 namespace HZ\Illuminate\Mongez\Events;
 
-use App;
+use Illuminate\Support\Facades\App;
 use HZ\Illuminate\Mongez\Contracts\Events\EventsInterface;
 
 class Events implements EventsInterface

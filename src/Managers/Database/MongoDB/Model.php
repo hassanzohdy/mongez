@@ -82,16 +82,45 @@ abstract class Model extends BaseModel
     const ON_MODEL_UPDATE = [];
 
     /**
+     * Define list of other models that will be affected as the current object is part of array
+     * as the current model is sub-document to it when it gets updated
+     *  
+     * @example ModelClass::class => columnName will be converted to ['columnName.id', 'columnName', 'sharedInfo']
+     * @example ModelClass::class => [searchingColumn, updatingColumn]
+     * @example ModelClass::class => [searchingColumn, updatingColumn, sharedInfoMethod]
+     * 
+     * @const array
+     */
+    const ON_MODEL_UPDATE_ARRAY = [];
+
+    /**
      * Define list of other models that will be deleted
      * when this model is deleted
      * For example when a city is deleted, all related regions shall be deleted as well
      *  
      * @example ModelClass::class => searchingColumn: string
-     * @example ModelClass::class => [searchingColumn: string, pullFrom: string, pullingKey: string]
      * 
      * @const array
      */
     const ON_MODEL_DELETE = [];
+
+    /**
+     * Define list of other models that will pull the data from it
+     *  
+     * @example ModelClass::class => searchingColumn: string
+     * 
+     * @const array
+     */
+    const ON_MODEL_DELETE_PULL = [];
+
+    /**
+     * Define list of other models that will clear the column from its records
+     *  
+     * @example ModelClass::class => searchingColumn: string
+     *
+     * @const array
+     */
+    const ON_MODEL_DELETE_UNSET = [];
 
     /**
      * Disable guarded fields
@@ -128,45 +157,106 @@ abstract class Model extends BaseModel
         // When model update, detect whether there are any other models that
         // shall be updated with it        
         static::updated(function ($model) {
-            $otherModels = config('mongez.database.onModelUpdate.' . static::class);
+            $otherModels = config('mongez.database.onModel.update.' . static::class);
 
-            if (empty(static::ON_MODEL_UPDATE) && empty($otherModels)) return;
+            if (!empty(static::ON_MODEL_UPDATE) || !empty($otherModels)) {
+                $modelsList = array_merge((array) static::ON_MODEL_UPDATE, (array) $otherModels);
 
-            $modelsList = array_merge((array) static::ON_MODEL_UPDATE, (array) $otherModels);
+                // the model options is can be an string or array
+                // the array can have up to 3 elements: search-column, updating field and shared info method
+                // if the model options is set to string, then it will be converted to
+                // $modelOptions.id, $modelOptions, sharedInfo 
+                foreach ($modelsList as $modelClass => $modelOptions) {
+                    if (is_string($modelOptions)) {
+                        $modelOptions = [$modelOptions . '.id', $modelOptions, 'sharedInfo'];
+                    } elseif (count($modelOptions) === 2) {
+                        $modelOptions[] = 'sharedInfo';
+                    }
 
-            // the model options is can be an string or array
-            // the array can have up to 3 elements: search-column, updating field and shared info method
-            // if the model options is set to string, then it will be converted to
-            // $modelOptions.id, $modelOptions, sharedInfo 
-            foreach ($modelsList as $modelClass => $modelOptions) {
-                if (is_string($modelOptions)) {
-                    $modelOptions = [$modelOptions . '.id', $modelOptions, 'sharedInfo'];
-                } elseif (count($modelOptions) === 2) {
-                    $modelOptions[] = 'sharedInfo';
+                    [$searchingColumn, $updatingColumn, $sharedInfoMethod] = $modelOptions;
+
+                    $records = $modelClass::query()->where($searchingColumn, $model->id);
+
+                    foreach ($records as $record) {
+                        $record->$updatingColumn = $model->$sharedInfoMethod();
+
+                        $record->save();
+                    }
                 }
+            }
 
-                [$searchingColumn, $updatingColumn, $sharedInfoMethod] = $modelOptions;
+            $otherModels = config('mongez.database.onModel.updateArray.' . static::class);
 
-                $modelClass::query()->where($searchingColumn, $model->id)->update([
-                    $updatingColumn => $model->$sharedInfoMethod(),
-                ]);
+            if (!empty(static::ON_MODEL_UPDATE_ARRAY) || !empty($otherModels)) {
+                $modelsList = array_merge((array) static::ON_MODEL_UPDATE_ARRAY, (array) $otherModels);
+
+                // the model options is can be an string or array
+                // the array can have up to 3 elements: search-column, updating field and shared info method
+                // if the model options is set to string, then it will be converted to
+                // $modelOptions.id, $modelOptions, sharedInfo 
+                foreach ($modelsList as $modelClass => $modelOptions) {
+                    if (is_string($modelOptions)) {
+                        $modelOptions = [$modelOptions . '.id', $modelOptions, 'sharedInfo'];
+                    } elseif (count($modelOptions) === 2) {
+                        $modelOptions[] = 'sharedInfo';
+                    }
+
+                    [$searchingColumn, $updatingColumn, $sharedInfoMethod] = $modelOptions;
+
+                    $records = $modelClass::query()->where($searchingColumn, $model->id);
+
+                    foreach ($records as $record) {
+                        $record->reassociate($model->$sharedInfoMethod(), $updatingColumn)->save();
+                    }
+                }
             }
         });
 
         // triggered when a model record is deleted from database
         static::deleted(function ($model) {
-            if (empty(static::ON_MODEL_DELETE) && empty($otherModels = config('mongez.database.onModelDelete.' . static::class))) return;
+            if (!empty(static::ON_MODEL_DELETE) || !empty($otherModels = config('mongez.database.onModel.delete.' . static::class))) {
+                $modelsList = array_merge((array) static::ON_MODEL_DELETE, (array) $otherModels);
 
-            $modelsList = array_merge((array) static::ON_MODEL_DELETE, (array) $otherModels);
+                foreach ($modelsList as $modelClass => $searchingColumn) {
+                    if (is_string($searchingColumn)) {
+                        $records = $modelClass::where($searchingColumn . '.id', $model->id)->get();
 
-            foreach ($modelsList as $modelClass => $searchingColumn) {
-                if (is_string($searchingColumn)) {
-                    $modelClass::where($searchingColumn, $model->id)->delete();
-                } else {
-                    [$searchingColumn, $pullFrom, $pullingKey] = $searchingColumn;
-                    $modelClass::where($searchingColumn, $model->id)->pull($pullFrom, [
-                        $pullingKey => $model->id,
-                    ]);
+                        foreach ($records as $record) {
+                            $record->delete();
+                        }
+                    }
+                }
+            }
+
+            if (!empty(static::ON_MODEL_DELETE_PULL) || !empty($otherModels = config('mongez.database.onModel.deletePull.' . static::class))) {
+                $modelsList = array_merge((array) static::ON_MODEL_DELETE_PULL, (array) $otherModels);
+
+                foreach ($modelsList as $modelClass => $searchingColumn) {
+                    if (is_string($searchingColumn)) {
+                        $records = $modelClass::where($searchingColumn . '.id', $model->id)->get();
+
+                        foreach ($records as $record) {
+                            $record->disassociate($model, $searchingColumn)->save();
+                        }
+                    }
+                }
+            }
+            if (!empty(static::ON_MODEL_DELETE_UNSET) || !empty($otherModels = config('mongez.database.onModel.deleteUnset.' . static::class))) {
+                $modelsList = array_merge((array) static::ON_MODEL_DELETE_UNSET, (array) $otherModels);
+
+                foreach ($modelsList as $modelClass => $unsetOptions) {
+                    if (is_string($unsetOptions)) {
+                        $unsetOptions = [$unsetOptions, $unsetOptions];
+                    }
+
+                    [$searchingColumn, $clearingColumn] = $unsetOptions;
+
+                    $records = $modelClass::where($searchingColumn . '.id', $model->id)->get();
+
+                    foreach ($records as $record) {
+                        unset($record, $clearingColumn);
+                        $record->save();
+                    }
                 }
             }
         });
@@ -223,6 +313,27 @@ abstract class Model extends BaseModel
         $info = $ids->where('collection', (new static)->getTable())->first();
 
         return $info ? $info['id'] : 0;
+    }
+
+    /**
+     * Truncate the entire records and reset the auto increment 
+     * 
+     * @return void
+     */
+    public static function truncate()
+    {
+        static::where('id', '!=', -1)->delete();
+        static::resetAutoIncrement();
+    }
+
+    /**
+     * Reset auto increment
+     * 
+     * @return void
+     */
+    public static function resetAutoIncrement()
+    {
+        DB::collection('ids')->where('collection', (new static)->getTable())->delete();
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace HZ\Illuminate\Mongez\Macros\Http;
 
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 
 class Request
@@ -61,6 +62,21 @@ class Request
             }
 
             return explode(' ', $authorization);
+        };
+    }
+
+    /**
+     * Add files to request
+     * 
+     * @param string $fileName
+     * @param UploadedFile $file
+     * 
+     * @return void
+     */
+    public function addFile()
+    {
+        return function (string $fileName, UploadedFile $file) {
+            $this->convertedFiles[$fileName] = $file;
         };
     }
 

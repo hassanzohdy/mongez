@@ -60,11 +60,6 @@ class EngezModel extends EngezGeneratorCommand implements EngezInterface
         $this->validateArguments();
         $this->create();
 
-        // this is deprecated, use normal migration for data mapping instead
-        // if ($this->isMongoDB()) {
-        // $this->createSchema();
-        // }
-
         $this->info('Model created successfully');
     }
 
@@ -139,7 +134,7 @@ class EngezModel extends EngezGeneratorCommand implements EngezInterface
     }
 
     /**
-     * Create migration file of table in mysql 
+     * Create migration file of table 
      *
      * @param string $dataFileName
      * @return void 
