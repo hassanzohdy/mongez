@@ -538,6 +538,36 @@ abstract class RepositoryManager implements RepositoryInterface
     }
 
     /**
+     * PATCH request handler
+     * 
+     * @param int|Model $id
+     * @param array $data
+     * @return Model $model
+     */
+    public function patch($id, $data)
+    {
+        $model = $this->getModel($id);
+
+        if (!$model) return null;
+
+        $oldModel = clone $model;
+
+        $this->oldModel = $oldModel;
+
+        $this->request = $this->getRequestWithData($data);
+         
+        $this->forceIgnore = true;
+        
+        $this->setAutoData($model);
+
+        $this->setData($model, $this->request);
+
+        $this->save($model, $oldModel);
+
+        return $model;
+    }
+
+    /**
      * Update the record and wrap it into resource
      * 
      * @param  int $id

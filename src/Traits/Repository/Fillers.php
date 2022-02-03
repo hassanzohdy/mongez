@@ -20,6 +20,13 @@ trait Fillers
     protected string $storageDirectory;
 
     /**
+     * Force ignore any column that was not sent in request
+     * 
+     * @var bool
+     */
+    public bool $forceIgnore = false;
+
+    /**
      * Get request object with data
      *
      * @param  Request|array $data
@@ -73,6 +80,21 @@ trait Fillers
     }
 
     /**
+     * Check if all request inputs are in patchable array
+     * 
+     * @param  \Request $request
+     * @return bool
+     */
+    protected function checkPatchable($request): bool
+    {
+        foreach ($request as $column => $input) {
+            if (!in_array($column, static::PATCHABLE_DATA)) return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Set string data automatically from the DATA array
      *
      * @param  \Model $model
@@ -113,7 +135,7 @@ trait Fillers
             if (is_numeric($input)) {
                 $input = $column;
             }
-
+            
             if ($this->isIgnorable($input)) continue;
 
             if ($column === 'password') {
@@ -545,7 +567,8 @@ trait Fillers
      */
     protected function isIgnorable(string $input): bool
     {
-        return (static::WHEN_AVAILABLE_DATA === true || in_array($input, static::WHEN_AVAILABLE_DATA)) && $this->input($input) === null;
+        return ($this->forceIgnore && !in_array($input, static::PATCHABLE_DATA)) || 
+        ((static::WHEN_AVAILABLE_DATA === true || in_array($input, static::WHEN_AVAILABLE_DATA)) && $this->input($input) === null);
     }
 
     /**

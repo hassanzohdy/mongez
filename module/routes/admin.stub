@@ -11,7 +11,10 @@ use Illuminate\Support\Facades\Route;
 | Please note that this file is auto imported in the main routes file, so it will inherit the main "prefix"
 | and "namespace", so don't edit it to add for example "admin" as a prefix. 
 | 
-| Also, all routes have `admin.` as route name prefix so it prevents the duplicate routes conflict 
+| Also, all routes have `admin.` as route name prefix so it prevents the duplicate routes conflict.
+|
+| If route method is set to restfulApi() then api resource is patchable and therfore a PATCH handler
+| method is added automatically to AdminApiController.
 */
 
 Route::group([
@@ -19,5 +22,5 @@ Route::group([
 ], function () {
     // Sub API CRUD routes
     // Main API CRUD routes 
-    Route::apiResource('{{ route-path }}', {{ ControllerClass }}::class);
+    Route::{{ methodName }}('{{ route-path }}', {{ ControllerClass }}::class);
 });

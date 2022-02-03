@@ -106,10 +106,14 @@ return [
     |
     | The following options are applied on any request related to the AdminApiController or the /admin requests in general
     | 
+    | patchable options: if set to true, then a PATCH request handler method
+    | will be invoked from AdminApiController and the main repository manager
+    |
     | returnOn options: single-record | all-records | none
     | 
     */
     'admin' => [
+        'patchable' => true,
         'returnOn' => [
             'store' => 'single-record',
             'update' => 'single-record',
@@ -253,6 +257,7 @@ return [
         Illuminate\Database\Query\Builder::class => HZ\Illuminate\Mongez\Macros\Database\Query\Builder::class,
         Illuminate\Database\Schema\Blueprint::class => HZ\Illuminate\Mongez\Macros\Database\Schema\Blueprint::class,
         Illuminate\Console\Command::class => HZ\Illuminate\Mongez\Macros\Console\Command::class,
+        Illuminate\Routing\Router::class => HZ\Illuminate\Mongez\Macros\Routing\Router::class,
     ],
     /*
     |--------------------------------------------------------------------------

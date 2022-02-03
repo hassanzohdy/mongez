@@ -44,6 +44,7 @@ trait RoutesAdapter
             '{{ ControllerClass }}' => $this->controllerName,
             '{{ route-path }}' => $route,
             '{{ moduleName }}' => $this->getModule(),
+            '{{ methodName }}' => 'apiResource',
         ];
 
         $authIsEnabled = $this->optionHasValue('auth') ? $this->option('auth') :$this->config('controller.auth.enabled', true);
@@ -54,6 +55,10 @@ trait RoutesAdapter
             $replacements['{{ authMiddleware }}'] = $this->tabWith(
                 "'middleware' => ['$authMiddlewareName'],"
             );
+        }
+
+        if (\config('mongez.admin.patchable', false)) {
+            $replacements['{{ methodName }}'] = 'restfulApi';
         }
 
         $stub = $this->stubInstance('routes/admin');

@@ -2,6 +2,7 @@
 
 namespace HZ\Illuminate\Mongez\Managers;
 
+use HZ\Illuminate\Mongez\Events\Events;
 use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
@@ -36,9 +37,9 @@ abstract class AdminApiController extends ApiController
      * Constructor
      *
      */
-    public function __construct()
+    public function __construct(Events $events)
     {
-        parent::__construct();
+        parent::__construct($events);
 
         if (!empty($this->controllerInfo['repository'])) {
             $this->repository = repo($this->controllerInfo['repository']);
@@ -167,6 +168,46 @@ abstract class AdminApiController extends ApiController
         }
 
         $this->repository->update($id, $request);
+
+        $returnOnUpdate = $this->controllerInfo['returnOn']['update'] ?? config('mongez.admin.returnOn.update', 'single-record');
+
+        if ($returnOnUpdate == 'single-record') {
+            return $this->show($id, $request);
+        } elseif ($returnOnUpdate == 'all-records') {
+            return $this->index($request);
+        } else {
+            return $this->success();
+        }
+    }
+
+    /**
+     * Edit the specified fields of the specified resource
+     * 
+     * @param  \Request  $request
+     * @param  int $id
+     * @return \Illuminate\Http\Response
+     */
+    public function patch(Request $request, $id)
+    {
+        if (!$this->repository->has($id)) {
+            return $this->notFound();
+        }
+
+        $rules = array_merge($this->allValidation($request, $id), $this->updateValidation($id, $request));
+
+        foreach ($rules as $column => $rulesList) {
+            if (!in_array($column, array_keys($request->all()))) {
+                unset($rules[$column]);
+            }
+        }
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return $this->badRequest($validator->errors());
+        }
+
+        $this->repository->patch($id, $request);
 
         $returnOnUpdate = $this->controllerInfo['returnOn']['update'] ?? config('mongez.admin.returnOn.update', 'single-record');
 
