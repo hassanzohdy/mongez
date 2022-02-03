@@ -189,4 +189,16 @@ abstract class EngezGeneratorCommand extends Command implements EngezInterface
             $this->putFile($utilsClassFilePath, $this->replaceStub('Utils/utils', $utilsReplacements), 'Utils');
         }
     }
+
+    /**
+     * Get value from config
+     * 
+     * @param string $key
+     * @param  mixed $default
+     * @return mixed
+     */
+    protected function config($key, $default = null)
+    {
+        return config('mongez.console.builder.' . $key, $default);
+    }
 }

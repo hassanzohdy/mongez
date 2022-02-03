@@ -1,33 +1,38 @@
 {
-    "name": "hassanzohdy/mongez",
-    "description": "A Robust application handler for building neat laravel application(s).",
-    "keywords": ["laravel","mongez", "module", "builder"],
-    "license": "MIT",
-    "version": "2.0.0",
-    "require": {
-        "php": ">=7",        
-        "cocur/slugify": "^4.0",
-        "illuminate/support": "5.6.x|5.7.x|5.8.x|6.x.x|7.x.x|8.x.x"
-    },
-    "authors": [
-        {
-            "name": "Hasan Zohdy",
-            "email": "hassanzohdy@gmail.com"
-        }
-    ],
-    "autoload": {
-        "psr-4": {
-            "HZ\\Illuminate\\Mongez\\": "src/"
-        },
-        "files": [
-            "src/Helpers/functions.php"
-        ]
-    },
-    "extra": {
-        "laravel": {
-            "providers": [
-                "HZ\\Illuminate\\Mongez\\Providers\\MongezServiceProvider"
-            ]
-        }
+  "name": "hassanzohdy/mongez",
+  "description": "A Robust application handler for building neat laravel application(s).",
+  "keywords": [
+    "laravel",
+    "mongez",
+    "module",
+    "builder"
+  ],
+  "license": "MIT",
+  "version": "2.0.2",
+  "require": {
+    "php": ">=7",
+    "cocur/slugify": "^4.0",
+    "illuminate/support": "5.6.x|5.7.x|5.8.x|6.x.x|7.x.x|8.x.x"
+  },
+  "authors": [
+    {
+      "name": "Hasan Zohdy",
+      "email": "hassanzohdy@gmail.com"
     }
+  ],
+  "autoload": {
+    "psr-4": {
+      "HZ\\Illuminate\\Mongez\\": "src/"
+    },
+    "files": [
+      "src/Helpers/functions.php"
+    ]
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "HZ\\Illuminate\\Mongez\\Providers\\MongezServiceProvider"
+      ]
+    }
+  }
 }

@@ -46,9 +46,13 @@ trait RoutesAdapter
             '{{ moduleName }}' => $this->getModule(),
         ];
 
-        if ($this->option('auth') || $this->moduleExists('users')) {
+        $authIsEnabled = $this->optionHasValue('auth') ? $this->option('auth') :$this->config('controller.auth.enabled', true);
+
+        if ($authIsEnabled) {
+            $authMiddlewareName = $this->config('controller.auth.middleware', 'authorized');
+
             $replacements['{{ authMiddleware }}'] = $this->tabWith(
-                "'middleware' => ['authorized'],"
+                "'middleware' => ['$authMiddlewareName'],"
             );
         }
 
@@ -56,7 +60,7 @@ trait RoutesAdapter
 
         $stub->replace($replacements);
 
-        if (!$this->option('auth')) {
+        if ($authIsEnabled === false) {
             $stub->removeLine('{{ authMiddleware }}');
         }
 

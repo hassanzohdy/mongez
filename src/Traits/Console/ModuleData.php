@@ -41,7 +41,7 @@ trait ModuleData
      */
     protected function prepareData()
     {
-        $this->buildMode = $this->optionHasValue('build') ? $this->option('value') : config('mongez.module-builder.build', 'api');
+        $this->buildMode = $this->optionHasValue('build') ? $this->option('value') : $this->config('build', 'api');
     }
 
     /**

@@ -1,9 +1,9 @@
 <?php
 namespace HZ\Illuminate\Mongez\Helpers\Filters\MongoDB;
 
-use HZ\Illuminate\Mongez\Helpers\Filters\MYSQL\Filter as MYSQLFilter;
+use HZ\Illuminate\Mongez\Managers\Database\FilterManager;
 
-class Filter extends MYSQLFilter
+class Filter extends FilterManager
 {
     /**
      * {@inheritDoc}

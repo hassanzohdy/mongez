@@ -90,27 +90,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Module builder
-    |--------------------------------------------------------------------------
-    |
-    | Based on the settings that is provided here, the module builder will adjust its settings accordingly.
-    | Put your configurations based on your application flow
-    | 
-    | has-admin: if set to false, then Laravel Mongez will treat the application as a single application with no admin panel 
-    | 
-    | build: this will determine if the module will be created 
-    | to be served with the admin api controller + api controller or
-    | to be served with the admin view controller + view controller
-    | available values: view|api, defaults to api
-    | 
-    */
-    'module-builder' => [
-        'has-admin' => true,
-        'build' => 'api',
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
     | Admin options
     |--------------------------------------------------------------------------
     |
@@ -213,6 +192,36 @@ return [
         // add your repositories here  
         // 'repo-short-name' => RepositoryClassPath::class,
         // Auto generated repositories here: DO NOT remove this line.   
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Console Options
+    |--------------------------------------------------------------------------
+    |
+    | List of all console options that may be used when using command line
+    |
+    | All module builder configurations can be overridden when using the command line 
+    |
+    | build: this will determine if the module will be created 
+    | to be served with the admin api controller + api controller or
+    | to be served with the admin view controller + view controller
+    | available values: view|api, defaults to api
+    */
+    'console' => [
+        'builder' => [
+            'build' => 'api',
+            'controller' => [
+                // available options are: all | site | admin
+                'type' => 'all',
+                'auth' => [
+                    // auto add auth middleware when generating admin routes
+                    'enabled' => true,
+                    // middleware name that will be used for authorized requests
+                    'middleware' => 'authorized',
+                ]
+            ],
+        ]
     ],
 
     /*
