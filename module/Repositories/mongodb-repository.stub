@@ -146,7 +146,7 @@ class {{ RepositoryClass }} extends MongoDBRepositoryManager implements Reposito
 
     /**
      * Only the columns added in this array will be affected by PATCH request if they were sent.
-     * Note : patch handler should be activated in config/mongez.php admin.patchable
+     * Note: patch handler should be activated in config/mongez.php admin.patchable
      *
      * @const array  
      */

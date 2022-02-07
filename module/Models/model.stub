@@ -67,5 +67,4 @@ class {{ ModelName }} extends Model
      * @const array
      */
     const ON_MODEL_DELETE = [];
-
 }
