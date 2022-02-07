@@ -93,19 +93,22 @@ abstract class Model extends BaseModel
     const ON_MODEL_UPDATE_ARRAY = [];
 
     /**
-     * Define list of other models that will be deleted
-     * when this model is deleted
-     * For example when a city is deleted, all related regions shall be deleted as well
+     * Define list of other models that will clear the column from its records
+     * A 1-1 relation
      *  
-     * @example ModelClass::class => searchingColumn: string
+     * Do not add the id, it will be appended automatically
      * 
+     * @example ModelClass::class => searchingColumn: string
+     *
      * @const array
      */
-    const ON_MODEL_DELETE = [];
+    const ON_MODEL_DELETE_UNSET = [];
 
     /**
-     * Define list of other models that will pull the data from it
-     *  
+     * Define list of the models that have the current model as embedded document and pull it from the array
+     *  A 1-n relation
+     * Do not add the id, it will be appended automatically
+     * 
      * @example ModelClass::class => searchingColumn: string
      * 
      * @const array
@@ -113,13 +116,18 @@ abstract class Model extends BaseModel
     const ON_MODEL_DELETE_PULL = [];
 
     /**
-     * Define list of other models that will clear the column from its records
-     *  
+     * Define list of other models that will be deleted
+     * when this model is deleted
+     * For example when a city is deleted, all related regions shall be deleted as well
+     * 
+     * Do not add the id, it will be appended automatically
+     * 
+     * @example Region::class => 'city'
      * @example ModelClass::class => searchingColumn: string
-     *
+     * 
      * @const array
      */
-    const ON_MODEL_DELETE_UNSET = [];
+    const ON_MODEL_DELETE = [];
 
     /**
      * Disable guarded fields
@@ -174,7 +182,7 @@ abstract class Model extends BaseModel
 
                     [$searchingColumn, $updatingColumn, $sharedInfoMethod] = $modelOptions;
 
-                    $records = $modelClass::query()->where($searchingColumn, $model->id);
+                    $records = $modelClass::query()->where($searchingColumn, $model->id)->get();
 
                     foreach ($records as $record) {
                         $record->$updatingColumn = $model->$sharedInfoMethod();
@@ -202,7 +210,7 @@ abstract class Model extends BaseModel
 
                     [$searchingColumn, $updatingColumn, $sharedInfoMethod] = $modelOptions;
 
-                    $records = $modelClass::query()->where($searchingColumn, $model->id);
+                    $records = $modelClass::query()->where($searchingColumn, $model->id)->get();
 
                     foreach ($records as $record) {
                         $record->reassociate($model->$sharedInfoMethod(), $updatingColumn)->save();

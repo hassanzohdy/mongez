@@ -47,20 +47,6 @@ abstract class MongoDBRepositoryManager extends RepositoryManager implements Rep
     const LOCATION_DATA = [];
 
     /**
-     * Set of the parents repositories of current repo
-     * 
-     * @const array
-     */
-    const CHILD_OF = [];
-
-    /**
-     * Set of the children repositories of current repo
-     * 
-     * @const array
-     */
-    const PARENT_OF = [];
-
-    /**
      * Get the table name that will be used in the query 
      * 
      * @return string
@@ -147,9 +133,7 @@ abstract class MongoDBRepositoryManager extends RepositoryManager implements Rep
      */
     public function ListSharedInfo(array $options, string $sharedInfoMethod = 'sharedInfo')
     {
-        $options['as-model'] = true;
-
-        return $this->list($options)->map(function ($model) use ($sharedInfoMethod) {
+        return $this->listModels($options)->map(function ($model) use ($sharedInfoMethod) {
             return $model->$sharedInfoMethod();
         })->toArray();
     }
@@ -380,81 +364,7 @@ abstract class MongoDBRepositoryManager extends RepositoryManager implements Rep
      */
     protected function boot()
     {
-        if (!empty(static::PARENT_OF)) {
-            $this->events->subscribe($this->eventName . '.delete', function ($model, $id) {
-                foreach (static::PARENT_OF as $childColumnName => $childRepository) {
-                    $childrenList = $model->$childColumnName ?? [];
-
-                    $childRepository = App::make($childRepository);
-
-                    foreach ($childrenList as $child) {
-                        $childRepository->delete($child['id']);
-                    }
-                }
-            });
-        }
-
-        if (!empty(static::CHILD_OF)) {
-            $this->events->subscribe($this->eventName . '.delete', function ($model, $id) {
-                foreach (static::CHILD_OF as $parentColumnName => $parentRepositoryWithChildColumnName) {
-                    $parentId = $model->$parentColumnName['id'] ?? null;
-                    if (!$parentId) continue;
-
-                    [$parentRepositoryClass, $childNameInParent] = $parentRepositoryWithChildColumnName;
-
-                    // as the third value in the array is optional, we'll separate it from the list function
-                    $sharedInfoMethod = $parentRepositoryWithChildColumnName[2] ?? 'sharedInfo';
-
-                    $parentRepository = App::make($parentRepositoryClass);
-
-                    $this->updateParentForChild($parentId, $parentRepository, $model, $sharedInfoMethod, $childNameInParent, 'disassociate');
-                }
-            });
-
-            $this->events->subscribe($this->eventName . '.save', function ($model, $request, $oldModel = null) {
-                foreach (static::CHILD_OF as $parentColumnName => $parentRepositoryWithChildColumnName) {
-                    $parentId = $model->$parentColumnName['id'] ?? null;
-
-                    if (!$parentId) continue;
-
-                    [$parentRepositoryClass, $childNameInParent] = $parentRepositoryWithChildColumnName;
-
-                    $sharedInfoMethod = $parentRepositoryWithChildColumnName[2] ?? 'sharedInfo';
-
-                    $parentRepository = App::make($parentRepositoryClass);
-
-                    $this->updateParentForChild($parentId, $parentRepository, $model, $sharedInfoMethod, $childNameInParent, 'reassociate');
-
-                    if ($oldModel && ($oldModel->$parentColumnName['id'] ?? null) != $parentId) {
-                        $this->updateParentForChild($oldModel->$parentColumnName['id'], $parentRepository, $oldModel, $sharedInfoMethod, $childNameInParent, 'disassociate');
-                    }
-                }
-            });
-        }
     }
-
-    /**
-     * Update Parent and trigger save event
-     * 
-     * @param  int $parentId
-     * @param  RepositoryManager $parentRepository
-     * @param  Model $childModel
-     * @param  string $sharedInfoMethod
-     * @param  string $childNameInParent
-     * @param  string $associateMode reassociate|disassociate
-     * @return void
-     */
-    protected function updateParentForChild($parentId, $parentRepository, $childModel, $sharedInfoMethod, $childNameInParent, $associateMode)
-    {
-        $parentModel = $parentRepository->getModel($parentId);
-
-        if ($parentModel) {
-            $parentModel->$associateMode($childModel->$sharedInfoMethod(), $childNameInParent)->save();
-
-            $parentRepository->trigger('save', $parentModel, $this->request, $parentModel);
-        }
-    }
-
 
     /**
      * Get column name appended by table|table alias

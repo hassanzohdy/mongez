@@ -109,13 +109,13 @@ abstract class RestfulApiController extends ApiController
         $returnOnStore = $this->controllerInfo['returnOn']['store'] ?? config('mongez.admin.returnOn.store', 'single-record');
 
         if ($returnOnStore === 'single-record') {
-            return $this->success([
+            return $this->successCreate([
                 'record' => $this->repository->wrap($model)
             ]);
         } elseif ($returnOnStore === 'all-records') {
             return $this->index($request);
         } else {
-            return $this->success();
+            return $this->successCreate();
         }
     }
 
