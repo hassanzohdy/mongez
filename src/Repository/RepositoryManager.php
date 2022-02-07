@@ -215,9 +215,17 @@ abstract class RepositoryManager implements RepositoryInterface
      * Update the column if and only if its value is passed in the request, if set to true, 
      * then all columns that is not in the request data will be not updated in the model and kept untouched.
      *
-     * @cont array
+     * @const array
      */
     const WHEN_AVAILABLE_DATA = [];
+
+    /**
+     * Only the columns added in this array will be affected by PATCH request if sent.
+     * Note : patch handler should be activated in config/mongez.php admin.patchable
+     *
+     * @const array  
+     */
+    const PATCHABLE_DATA = [];
 
     /**
      * Filter class.
