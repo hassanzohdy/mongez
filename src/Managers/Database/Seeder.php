@@ -3,7 +3,7 @@
 namespace HZ\Illuminate\Mongez\Managers\Database;
 
 use Illuminate\Database\Seeder as BaseSeeder;
-use HZ\Illuminate\Mongez\Traits\RepositoryTrait;
+use HZ\Illuminate\Mongez\Repository\Concerns\RepositoryTrait;
 
 abstract class Seeder extends BaseSeeder
 {

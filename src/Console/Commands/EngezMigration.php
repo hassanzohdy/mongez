@@ -2,9 +2,9 @@
 
 namespace HZ\Illuminate\Mongez\Console\Commands;
 
+use HZ\Illuminate\Mongez\Console\EngezInterface;
 use Illuminate\Database\Console\Migrations\TableGuesser;
-use HZ\Illuminate\Mongez\Contracts\Console\EngezInterface;
-use HZ\Illuminate\Mongez\Managers\Console\EngezGeneratorCommand;
+use HZ\Illuminate\Mongez\Console\EngezGeneratorCommand;
 
 class EngezMigration extends EngezGeneratorCommand implements EngezInterface
 {
@@ -16,7 +16,7 @@ class EngezMigration extends EngezGeneratorCommand implements EngezInterface
     protected $signature = 'engez:migration {migrationName}
                                             {--module}
                                             ' . EngezGeneratorCommand::DATA_TYPES_OPTIONS
-                                              . EngezGeneratorCommand::TABLE_INDEXES_OPTIONS;
+        . EngezGeneratorCommand::TABLE_INDEXES_OPTIONS;
 
     /**
      * The console command description.

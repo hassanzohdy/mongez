@@ -13,8 +13,8 @@ use Illuminate\Support\Facades\Route;
 | 
 | Also, all routes have `admin.` as route name prefix so it prevents the duplicate routes conflict.
 |
-| If route method is set to restfulApi() then api resource is patchable and therfore a PATCH handler
-| method is added automatically to AdminApiController.
+| If route method is set to restfulApi() then api resource is patchable therefore a PATCH handler
+| method is added automatically to RestfulApiController, the addiotnal route will be Route::patch('/module', [ControllerClass::class, 'patch'])
 */
 
 Route::group([

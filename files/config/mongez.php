@@ -104,10 +104,10 @@ return [
     | Admin options
     |--------------------------------------------------------------------------
     |
-    | The following options are applied on any request related to the AdminApiController or the /admin requests in general
+    | The following options are applied on any request related to the RestfulApiController or the /admin requests in general
     | 
     | patchable options: if set to true, then a PATCH request handler method
-    | will be invoked from AdminApiController and the main repository manager
+    | will be invoked from RestfulApiController and the main repository manager
     |
     | returnOn options: single-record | all-records | none
     | 
@@ -117,6 +117,7 @@ return [
         'returnOn' => [
             'store' => 'single-record',
             'update' => 'single-record',
+            'patch' => 'single-record',
         ],
     ],
 
@@ -181,15 +182,15 @@ return [
     | 
     | Available Options: `array` | `object`, defaults to `array`
     |
-    | The arrayKey will set the name of object key that will hold the input name, defaults to `key`
-    | The arrayValue will set the name of object key that will hold the error message itself, defaults to `value`
+    | The `key` will set the name of object key that will hold the input name, defaults to `key`
+    | The `value` will set the name of object key that will hold the error message itself, defaults to `value`
     |
     */
     'response' => [
         'errors' => [
             'strategy' => 'array',
-            'arrayKey' => 'key',
-            'arrayValue' => 'value',
+            'key' => 'key',
+            'value' => 'value',
         ],
     ],
 
@@ -276,7 +277,7 @@ return [
     |
     */
     'filters' => [
-        HZ\Illuminate\Mongez\Helpers\Filters\MYSQL\Filter::class,
-        HZ\Illuminate\Mongez\Helpers\Filters\MongoDB\Filter::class,
+        HZ\Illuminate\Mongez\Database\Filters\MYSQLFilter::class,
+        HZ\Illuminate\Mongez\Database\Filters\MongoDBFilter::class,
     ]
 ];

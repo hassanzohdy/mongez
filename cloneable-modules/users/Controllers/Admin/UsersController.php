@@ -1,10 +1,11 @@
 <?php
+
 namespace App\Modules\Users\Controllers\Admin;
 
 use Illuminate\Validation\Rule;
-use HZ\Illuminate\Mongez\Managers\AdminApiController;
+use HZ\Illuminate\Mongez\Managers\RestfulApiController;
 
-class UsersController extends AdminApiController
+class UsersController extends RestfulApiController
 {
     /**
      * Controller info
@@ -14,7 +15,7 @@ class UsersController extends AdminApiController
     protected $controllerInfo = [
         'repository' => 'users',
         'listOptions' => [
-            'select' => ['id','name','group','email'],
+            'select' => ['id', 'name', 'group', 'email'],
             'filterBy' => [],
             'paginate' => null, // if set null, it will be automated based on repository configuration option
         ],
@@ -59,7 +60,7 @@ class UsersController extends AdminApiController
         return [
             'email' => [
                 'required',
-                    Rule::unique('users', 'email')->where(function ($query) use ($id) {
+                Rule::unique('users', 'email')->where(function ($query) use ($id) {
                     $query->whereNull('deleted_at');
                     $query->where('id', '!=', (int) $id);
                 }),

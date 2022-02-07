@@ -1,4 +1,5 @@
 <?php
+
 namespace HZ\Illuminate\Mongez\Events;
 
 use HZ\Illuminate\Mongez\Models\ResponseLog;

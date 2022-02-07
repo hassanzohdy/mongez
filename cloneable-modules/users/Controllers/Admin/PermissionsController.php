@@ -1,9 +1,10 @@
 <?php
+
 namespace App\Modules\Users\Controllers\Admin;
 
-use HZ\Illuminate\Mongez\Managers\AdminApiController; 
+use HZ\Illuminate\Mongez\Managers\RestfulApiController;
 
-class PermissionsController extends AdminApiController
+class PermissionsController extends RestfulApiController
 {
     /**
      * Controller info
@@ -13,7 +14,7 @@ class PermissionsController extends AdminApiController
     protected $controllerInfo = [
         'repository' => 'permissions',
         'listOptions' => [
-            'select' => ['id','name','route','key','type'],
+            'select' => ['id', 'name', 'route', 'key', 'type'],
             'filterBy' => [],
             'paginate' => null, // if set null, it will be automated based on repository configuration option
         ],

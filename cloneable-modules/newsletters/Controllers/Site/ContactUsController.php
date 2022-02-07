@@ -1,9 +1,10 @@
 <?php
+
 namespace App\Modules\NewsLetters\Controllers\Site;
 
-use HZ\Illuminate\Mongez\Managers\AdminApiController; 
+use HZ\Illuminate\Mongez\Managers\RestfulApiController;
 
-class ContactUsController extends AdminApiController
+class ContactUsController extends RestfulApiController
 {
     /**
      * Controller info

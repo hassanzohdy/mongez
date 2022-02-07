@@ -1,9 +1,9 @@
 <?php
 namespace App\Modules\{{ ModuleName }}\Controllers\Admin;
 
-use HZ\Illuminate\Mongez\Managers\AdminApiController;
+use HZ\Illuminate\Mongez\Http\RestfulApiController;
 
-class {{ ControllerName }} extends AdminApiController
+class {{ ControllerName }} extends RestfulApiController
 {
     /**
      * Controller info
@@ -14,13 +14,13 @@ class {{ ControllerName }} extends AdminApiController
         'repository' => '{{ repositoryName }}',
         'listOptions' => [
             'select' => [],
-            'filterBy' => [],
-            'paginate' => null, // if set null, it will be automated based on repository configuration option
+            'paginate' => null, // inherit by default
         ],
         'rules' => [
             'all' => [],
             'store' => [],
             'update' => [],
+            'patch' => [],
         ],
     ];
 }

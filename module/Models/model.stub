@@ -1,8 +1,7 @@
 <?php
-
 namespace App\Modules\{{ ModuleName }}\Models;
 
-use HZ\Illuminate\Mongez\Managers\Database\{{ DatabaseName }}\Model;
+use HZ\Illuminate\Mongez\Database\Eloquent\{{ DatabaseName }}\Model;
 
 class {{ ModelName }} extends Model 
 {
@@ -19,6 +18,18 @@ class {{ ModelName }} extends Model
      * @const array
      */
     const ON_MODEL_UPDATE = [];
+    
+    /**
+     * Define list of other models that will be affected as the current object is part of array
+     * as the current model is sub-document to it when it gets updated
+     *  
+     * @example ModelClass::class => columnName will be converted to ['columnName.id', 'columnName', 'sharedInfo']
+     * @example ModelClass::class => [searchingColumn, updatingColumn]
+     * @example ModelClass::class => [searchingColumn, updatingColumn, sharedInfoMethod]
+     * 
+     * @const array
+     */
+    const ON_MODEL_UPDATE_ARRAY = [];
 
     /**
      * Define list of other models that will be deleted
@@ -31,4 +42,22 @@ class {{ ModelName }} extends Model
      * @const array
      */
     const ON_MODEL_DELETE = [];
+
+    /**
+     * Define list of other models that will pull the data from it
+     *  
+     * @example ModelClass::class => searchingColumn: string
+     * 
+     * @const array
+     */
+    const ON_MODEL_DELETE_PULL = [];
+
+    /**
+     * Define list of other models that will clear the column from its records
+     *  
+     * @example ModelClass::class => searchingColumn: string
+     *
+     * @const array
+     */
+    const ON_MODEL_DELETE_UNSET = [];
 }

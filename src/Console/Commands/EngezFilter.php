@@ -2,8 +2,8 @@
 
 namespace HZ\Illuminate\Mongez\Console\Commands;
 
-use HZ\Illuminate\Mongez\Contracts\Console\EngezInterface;
-use HZ\Illuminate\Mongez\Managers\Console\EngezGeneratorCommand;
+use HZ\Illuminate\Mongez\Console\EngezInterface;
+use HZ\Illuminate\Mongez\Console\EngezGeneratorCommand;
 
 class EngezFilter extends EngezGeneratorCommand implements EngezInterface
 {

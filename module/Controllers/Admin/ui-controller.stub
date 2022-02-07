@@ -1,7 +1,7 @@
 <?php
 namespace App\Modules\{{ ModuleName }}\Controllers\Admin;
 
-use HZ\Illuminate\Mongez\Managers\AdminUIController 
+use HZ\Illuminate\Mongez\Managers\Http\AdminUIController 
 
 class {{ ControllerName }} extends AdminUIController
 {

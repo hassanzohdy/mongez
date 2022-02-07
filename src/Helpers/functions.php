@@ -5,8 +5,9 @@ declare(strict_types=1);
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\App;
-use HZ\Illuminate\Mongez\Exceptions\NotFoundRepositoryException;
-use HZ\Illuminate\Mongez\Contracts\Repositories\RepositoryInterface;
+use HZ\Illuminate\Mongez\Events\Events;
+use HZ\Illuminate\Mongez\Repository\RepositoryInterface;
+use HZ\Illuminate\Mongez\Repository\NotFoundRepositoryException;
 
 if (!function_exists('is_json')) {
     /**
@@ -64,6 +65,23 @@ if (!function_exists('pre')) {
     }
 }
 
+if (!function_exists('events')) {
+    /**
+     * Get an events instance
+     * 
+     * @return \HZ\Illuminate\Mongez\Events\Events
+     */
+    function events(): Events
+    {
+        static $events;
+        if (!$events) {
+            $events = app()->make(Events::class);
+        }
+
+        return $events;
+    }
+}
+
 if (!function_exists('pred')) {
     /**
      * print the given dta then stop the script execution
@@ -83,8 +101,8 @@ if (!function_exists('repo')) {
      * Get repository object for the given repository name
      * 
      * @param string $repository
-     * @return \HZ\Illuminate\Mongez\Contracts\RepositoryInterface
-     * @throws \HZ\Illuminate\Mongez\Exceptions\NotFoundRepositoryException
+     * @return \HZ\Illuminate\Mongez\Repository\RepositoryInterface
+     * @throws \HZ\Illuminate\Mongez\Repository\NotFoundRepositoryException
      */
     function repo(string $repository): RepositoryInterface
     {

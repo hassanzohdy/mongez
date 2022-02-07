@@ -2,9 +2,9 @@
 
 namespace HZ\Illuminate\Mongez\Console\Commands;
 
-use HZ\Illuminate\Mongez\Contracts\Console\EngezInterface;
-use HZ\Illuminate\Mongez\Managers\Console\EngezGeneratorCommand;
 use Illuminate\Support\Facades\Artisan;
+use HZ\Illuminate\Mongez\Console\EngezInterface;
+use HZ\Illuminate\Mongez\Console\EngezGeneratorCommand;
 
 class EngezModel extends EngezGeneratorCommand implements EngezInterface
 {
@@ -32,8 +32,8 @@ class EngezModel extends EngezGeneratorCommand implements EngezInterface
     protected $signature = 'engez:model {model} 
                                         {--module=} 
                                         ' . EngezGeneratorCommand::DATA_TYPES_OPTIONS
-                                          . EngezGeneratorCommand::TABLE_INDEXES_OPTIONS
-                                          . EngezModel::MODEL_OPTIONS;
+        . EngezGeneratorCommand::TABLE_INDEXES_OPTIONS
+        . EngezModel::MODEL_OPTIONS;
 
     /**
      * The console command description.

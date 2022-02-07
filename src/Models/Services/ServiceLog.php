@@ -1,8 +1,9 @@
 <?php
+
 namespace HZ\Illuminate\Mongez\Models\Services;
 
 use Illuminate\Support\Str;
-use HZ\Illuminate\Mongez\Managers\Database\MongoDB\Model;
+use HZ\Illuminate\Mongez\Database\Eloquent\MongoDB\Model;
 
 class ServiceLog extends Model
 {

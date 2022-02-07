@@ -2,9 +2,7 @@
 
 namespace App\Modules\{{ ModuleName }}\Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use HZ\Illuminate\Mongez\Traits\RepositoryTrait;
-use HZ\Illuminate\Mongez\Managers\Seeders\SeederManager;
+use HZ\Illuminate\Mongez\Database\Seeders\SeederManager;
 
 class {{ ClassName }} extends SeederManager
 {
@@ -14,13 +12,6 @@ class {{ ClassName }} extends SeederManager
      * @var string
      */
     protected const REPOSITORY_NAME = '{{ repository }}';
-
-    /**
-     * Total of records will be generated
-     * 
-     * @var int
-     */
-    protected const TOTAL_RECORDS = 1;
 
     /**
      * name of seeds you need to generated with DOCUMENT_DATA from repository
@@ -46,20 +37,6 @@ class {{ ClassName }} extends SeederManager
      * @var array
      */
     protected const LOCALIZED_DATA = [];
-
-    /**
-     * The default password will be used when key name is password
-     * 
-     * @var string
-     */
-    protected const DEFAULT_PASSWORD = "123123123";
-
-    /**
-     * set default date format
-     * 
-     * @var string
-     */
-    protected const DATE_FORMAT = 'd-m-Y h:i:s A';
 
     /**
      * {@inheritDoc}

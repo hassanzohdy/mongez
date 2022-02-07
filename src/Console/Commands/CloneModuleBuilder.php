@@ -2,11 +2,11 @@
 
 namespace HZ\Illuminate\Mongez\Console\Commands;
 
-use File;
 use Illuminate\Support\Str;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\File;
 use HZ\Illuminate\Mongez\Helpers\Mongez;
-use HZ\Illuminate\Mongez\Traits\Console\EngezTrait;
+use HZ\Illuminate\Mongez\Console\Traits\EngezTrait;
 
 class CloneModuleBuilder extends Command
 {

@@ -2,12 +2,12 @@
 
 namespace HZ\Illuminate\Mongez\Console\Commands;
 
-use HZ\Illuminate\Mongez\Contracts\Console\EngezInterface;
 use Illuminate\Support\Str;
 use HZ\Illuminate\Mongez\Helpers\Mongez;
-use HZ\Illuminate\Mongez\Helpers\Console\Postman;
-use HZ\Illuminate\Mongez\Helpers\Console\Markdown;
-use HZ\Illuminate\Mongez\Managers\Console\EngezGeneratorCommand;
+use HZ\Illuminate\Mongez\Console\Postman;
+use HZ\Illuminate\Mongez\Console\Markdown;
+use HZ\Illuminate\Mongez\Console\EngezInterface;
+use HZ\Illuminate\Mongez\Console\EngezGeneratorCommand;
 
 // class ModuleBuilder extends EngezGeneratorCommand
 class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
@@ -257,11 +257,13 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
         $repositoryOptions = [
             'seeder' => $this->singularModule(),
             '--module' => $this->topParentModule(),
+            '--repository' => $this->repositoryName($this->getModule()),
         ];
 
         $this->call(
             'engez:seeder',
-            $this->withDataTypes($repositoryOptions)
+            $repositoryOptions
+            // $this->withDataTypes($repositoryOptions)
         );
     }
 

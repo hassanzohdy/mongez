@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Modules\ModuleName\Repositories;
 
 use App\Modules\ModuleName\{
@@ -7,12 +8,12 @@ use App\Modules\ModuleName\{
     Filters\FilterName as Filter
 };
 
-use HZ\Illuminate\Mongez\{
-    Contracts\Repositories\RepositoryInterface,
-    Managers\Database\MYSQL\RepositoryManager
+use HZ\Illuminate\Mongez\Repository\{
+    RepositoryInterface,
+    MYSQLRepositoryManager
 };
 
-class RepositoryNameRepository extends RepositoryManager implements RepositoryInterface
+class RepositoryNameRepository extends MYSQLRepositoryManager implements RepositoryInterface
 {
     /**
      * Repository Name
@@ -20,7 +21,7 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
      * @const string
      */
     const NAME = 'repo-name';
-    
+
     /**
      * Model class name
      *
@@ -40,8 +41,8 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
      * 
      * @const array
      */
-    const DATA = [DATA_LIST];       
-    
+    const DATA = [DATA_LIST];
+
     /**
      * Auto save uploads in this list
      * If it's an indexed array, in that case the request key will be as database column name
@@ -49,8 +50,8 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
      * 
      * @const array
      */
-    const UPLOADS = [UPLOADS_LIST];       
-    
+    const UPLOADS = [UPLOADS_LIST];
+
     /**
      * Auto fill the following columns as arrays directly from the request
      * It will encoded and stored as `JSON` format, 
@@ -80,14 +81,14 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
      * @cont array  
      */
     const BOOLEAN_DATA = [BOOL_LIST];
-    
+
     /**
      * Set columns list of date values.
      * 
      * @cont array  
      */
     const DATE_DATA = [];
-    
+
     /**
      * Add the column if and only if the value is passed in the request.
      * 
@@ -110,7 +111,7 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
     const FILTERS = [
         Filter::class
     ];
-    
+
     /**
      * Determine wether to use pagination in the `list` method
      * if set null, it will depend on pagination configurations
@@ -136,12 +137,12 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
      * @param   \Illuminate\Http\Request $request
      * @return  void
      */
-    protected function setData($model, $request) 
+    protected function setData($model, $request)
     {
         // 
     }
 
-    
+
     /**
      * Manage Selected Columns
      *
@@ -151,13 +152,13 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
     {
         //
     }
-    
+
     /**
      * Do any extra filtration here
      * 
      * @return  void
      */
-    protected function filter() 
+    protected function filter()
     {
         // 
     }
@@ -168,7 +169,7 @@ class RepositoryNameRepository extends RepositoryManager implements RepositoryIn
      * @param  int id
      * @return mixed
      */
-    public function get(int $id) 
+    public function get(int $id)
     {
         //
     }

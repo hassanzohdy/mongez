@@ -3,17 +3,17 @@
 namespace App\Modules\{{ ModuleName }}\Repositories;
 
 use App\Modules\{{ ModuleName }}\{
-    Models\{{ ModelName }} as Model,
-    Resources\{{ ResourceName }} as Resource,
-    Filters\{{ FilterName }} as Filter
+    Models\{{ ModelName }},
+    Resources\{{ ResourceName }},
+    Filters\{{ FilterName }}
 };
 
-use HZ\Illuminate\Mongez\{
-    Contracts\Repositories\RepositoryInterface,
-    Managers\Database\MongoDB\RepositoryManager
+use HZ\Illuminate\Mongez\Repository\{
+    RepositoryInterface,
+    MongoDBRepositoryManager
 };
 
-class {{ RepositoryClass }} extends RepositoryManager implements RepositoryInterface
+class {{ RepositoryClass }} extends MongoDBRepositoryManager implements RepositoryInterface
 {
     /**
      * Repository Name
@@ -27,14 +27,14 @@ class {{ RepositoryClass }} extends RepositoryManager implements RepositoryInter
      *
      * @const string
      */
-    const MODEL = Model::class;
+    const MODEL = {{ ModelName }}::class;
 
     /**
      * Resource class name
      *
      * @const string
      */
-    const RESOURCE = Resource::class;
+    const RESOURCE = {{ ResourceName }}::class;
 
     /**
      * Set the columns of the data that will be auto filled in the model
@@ -180,7 +180,7 @@ class {{ RepositoryClass }} extends RepositoryManager implements RepositoryInter
      * @const array 
      */
     const FILTERS = [
-        Filter::class
+        {{ FilterName }}::class
     ];
 
     /**
