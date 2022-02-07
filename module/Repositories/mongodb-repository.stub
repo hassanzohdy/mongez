@@ -144,6 +144,14 @@ class {{ RepositoryClass }} extends RepositoryManager implements RepositoryInter
     const WHEN_AVAILABLE_DATA = [];
 
     /**
+     * Only the columns added in this array will be affected by PATCH request if sent.
+     * Note : patch handler should be activated in config/mongez.php admin.patchable
+     *
+     * @const array  
+     */
+    const PATCHABLE_DATA = [];
+
+    /**
      * Set of the parents repositories of current repo
      *
      * @const array
