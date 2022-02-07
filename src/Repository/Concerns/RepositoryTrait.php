@@ -26,7 +26,8 @@ trait RepositoryTrait
             return repo($repository);
         }
 
-        if (method_exists(parent::class, '__get')) {
+        // check if the trait in a sub-class and the parent has __get method 
+        if (class_parents($this) && method_exists(parent::class, '__get')) {
             return parent::__get($key);
         }
     }
