@@ -1,9 +1,10 @@
 <?php
+
 namespace App\Modules\Localization\Controllers\Admin;
 
-use HZ\Illuminate\Mongez\Managers\AdminApiController; 
+use use HZ\Illuminate\Mongez\Http\RestfulApiController;;
 
-class RegionsController extends AdminApiController
+class RegionsController extends RestfulApiController
 {
     /**
      * Controller info

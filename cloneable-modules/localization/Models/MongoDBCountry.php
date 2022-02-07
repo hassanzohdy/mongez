@@ -1,9 +1,10 @@
 <?php
+
 namespace App\Modules\Localization\Models;
 
-use HZ\Illuminate\Mongez\Managers\Database\MongoDB\Model;
+use HZ\Illuminate\Mongez\Database\Eloquent\MongoDB\Model;
 
-class Country extends Model 
+class Country extends Model
 {
     /**
      * {@inheritDoc}

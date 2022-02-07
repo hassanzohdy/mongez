@@ -3,17 +3,17 @@
 namespace App\Modules\{{ ModuleName }}\Repositories;
 
 use App\Modules\{{ ModuleName }}\{
-    Models\{{ ModelName }} as Model,
-    Resources\{{ ResourceName }} as Resource,
-    Filters\{{ FilterName }} as Filter
+    Models\{{ ModelName }},
+    Resources\{{ ResourceName }},
+    Filters\{{ FilterName }}
 };
 
-use HZ\Illuminate\Mongez\{
-    Contracts\Repositories\RepositoryInterface,
-    Managers\Database\MongoDB\RepositoryManager
+use HZ\Illuminate\Mongez\Repository\{
+    RepositoryInterface,
+    MongoDBRepositoryManager
 };
 
-class {{ RepositoryClass }} extends RepositoryManager implements RepositoryInterface
+class {{ RepositoryClass }} extends MongoDBRepositoryManager implements RepositoryInterface
 {
     /**
      * Repository Name
@@ -27,14 +27,14 @@ class {{ RepositoryClass }} extends RepositoryManager implements RepositoryInter
      *
      * @const string
      */
-    const MODEL = Model::class;
+    const MODEL = {{ ModelName }}::class;
 
     /**
      * Resource class name
      *
      * @const string
      */
-    const RESOURCE = Resource::class;
+    const RESOURCE = {{ ResourceName }}::class;
 
     /**
      * Set the columns of the data that will be auto filled in the model
@@ -137,7 +137,8 @@ class {{ RepositoryClass }} extends RepositoryManager implements RepositoryInter
     const ARRAYBLE_DATA = [];
 
     /**
-     * Add the column if and only if the value is passed in the request, if set to true, it will ignore all changing all columns that is not in the request data.
+     * Update the column if and only if its value is passed in the request, if set to true, 
+     * then all columns that is not in the request data will be not updated in the model and kept untouched.
      * 
      * @cont array  
      */
@@ -187,7 +188,7 @@ class {{ RepositoryClass }} extends RepositoryManager implements RepositoryInter
      * @const array 
      */
     const FILTERS = [
-        Filter::class
+        {{ FilterName }}::class
     ];
 
     /**

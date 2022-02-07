@@ -3,7 +3,6 @@
 namespace HZ\Illuminate\Mongez\Events;
 
 use Illuminate\Support\Facades\App;
-use HZ\Illuminate\Mongez\Contracts\Events\EventsInterface;
 
 class Events implements EventsInterface
 {

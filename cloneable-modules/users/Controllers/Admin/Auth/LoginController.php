@@ -1,11 +1,12 @@
 <?php
+
 namespace App\Modules\Users\Controllers\Admin\Auth;
 
 use Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use HZ\Illuminate\Mongez\Managers\ApiController;
+use HZ\Illuminate\Mongez\Http\ApiController;
 
 class LoginController extends ApiController
 {
@@ -17,10 +18,10 @@ class LoginController extends ApiController
     public function index(Request $request)
     {
         $validator = $this->scan($request);
-        if ($validator->passes()) {        
-            $repository = repo(config('app.users-repo'));            
+        if ($validator->passes()) {
+            $repository = repo(config('app.users-repo'));
             $user = $repository->getByModel('email', $request->email);
-            if (! $user || ! Hash::check($request->password, $user->password)) {
+            if (!$user || !Hash::check($request->password, $user->password)) {
                 return $this->unauthorized(trans('auth.invalidData'));
             } else {
                 Auth::login($user);
@@ -54,7 +55,7 @@ class LoginController extends ApiController
             'password' => 'required|min:8',
         ]);
     }
-    
+
     /**
      * Login the user
      *

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Modules\Localization\Repositories;
 
 use App\Modules\Localization\{
@@ -7,10 +8,7 @@ use App\Modules\Localization\{
     Filters\City as Filter
 };
 use App\Modules\Localization\Models\Country;
-use HZ\Illuminate\Mongez\{
-    Contracts\Repositories\RepositoryInterface,
-    Managers\Database\MongoDB\RepositoryManager
-};
+use HZ\Illuminate\Mongez\Repository\RepositoryInterface;
 
 class citiesRepository extends RepositoryManager implements RepositoryInterface
 {
@@ -18,7 +16,7 @@ class citiesRepository extends RepositoryManager implements RepositoryInterface
      * {@inheritDoc}
      */
     const NAME = 'cities';
-    
+
     /**
      * {@inheritDoc}
      */
@@ -35,9 +33,9 @@ class citiesRepository extends RepositoryManager implements RepositoryInterface
      * @const array
      */
     const DATA = [
-        'name', 
-    ];       
-    
+        'name',
+    ];
+
     /**
      * Auto save uploads in this list
      * If it's an indexed array, in that case the request key will be as database column name
@@ -45,8 +43,8 @@ class citiesRepository extends RepositoryManager implements RepositoryInterface
      * 
      * @const array
      */
-    const UPLOADS = [];       
-    
+    const UPLOADS = [];
+
     /**
      * Auto fill the following columns as arrays directly from the request
      * It will encoded and stored as `JSON` format, 
@@ -76,7 +74,7 @@ class citiesRepository extends RepositoryManager implements RepositoryInterface
      * @cont array  
      */
     const BOOLEAN_DATA = [];
-    
+
     /**
      * Set the columns will be filled with single record of collection data
      * i.e [country => CountryModel::class]
@@ -142,17 +140,17 @@ class citiesRepository extends RepositoryManager implements RepositoryInterface
      * @param   \Illuminate\Http\Request $request
      * @return  void
      */
-    protected function setData($model, $request) 
+    protected function setData($model, $request)
     {
         // 
     }
-    
+
     /**
      * Do any extra filtration here
      * 
      * @return  void
      */
-    protected function filter() 
+    protected function filter()
     {
         // 
     }

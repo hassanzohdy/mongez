@@ -1,9 +1,10 @@
 <?php
+
 namespace App\Modules\Users\Controllers\Admin\Auth;
 
 use Validator;
 use Illuminate\Http\Request;
-use HZ\Illuminate\Mongez\Managers\ApiController;
+use HZ\Illuminate\Mongez\Http\ApiController;
 
 class RegisterController extends ApiController
 {
@@ -13,10 +14,10 @@ class RegisterController extends ApiController
      * @return mixed
      */
     public function index(Request $request)
-    {                
+    {
         $validator = $this->scan($request);
 
-        if ($validator->passes()) {            
+        if ($validator->passes()) {
             $usersRepository = $this->{config('app.users-repo')};
             $user = $usersRepository->create($request);
             $userInfo = $usersRepository->wrap($user)->toArray($request);

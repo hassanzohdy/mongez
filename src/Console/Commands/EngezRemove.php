@@ -2,11 +2,11 @@
 
 namespace HZ\Illuminate\Mongez\Console\Commands;
 
-use File;
 use Illuminate\Support\Str;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\File;
 use HZ\Illuminate\Mongez\Helpers\Mongez;
-use HZ\Illuminate\Mongez\Traits\Console\EngezTrait;
+use HZ\Illuminate\Mongez\Console\Traits\EngezTrait;
 
 class EngezRemove extends Command
 {
@@ -61,7 +61,7 @@ class EngezRemove extends Command
      */
     public function init()
     {
-        $this->moduleName = $this->info['moduleName'] = Str::studly($this->argument('module')); 
+        $this->moduleName = $this->info['moduleName'] = Str::studly($this->argument('module'));
     }
 
     /**
@@ -72,7 +72,7 @@ class EngezRemove extends Command
     protected function validateArguments()
     {
         $availableModules = Mongez::getStored('modules');
-        if (! in_array(strtolower($this->info['moduleName']), $availableModules)) {
+        if (!in_array(strtolower($this->info['moduleName']), $availableModules)) {
             Command::error('This module is not available');
             die();
         }
@@ -83,7 +83,7 @@ class EngezRemove extends Command
      *  
      * @return void
      */
-    protected function removeModuleDirectory() 
+    protected function removeModuleDirectory()
     {
         $targetModule = $this->modulePath("");
         File::deleteDirectory($targetModule);

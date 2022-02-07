@@ -1,10 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace HZ\Illuminate\Mongez\Helpers;
 
-use File;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\File;
 
 class Mongez
 {
@@ -62,7 +63,7 @@ class Mongez
      */
     public static function init()
     {
-        static::$mongezFilePath = static::getMongezStorageDirectory() . '/' . static::MONGEZ_STORAGE_FILE_NAME;           
+        static::$mongezFilePath = static::getMongezStorageDirectory() . '/' . static::MONGEZ_STORAGE_FILE_NAME;
     }
 
     /**
@@ -115,7 +116,7 @@ class Mongez
     {
         File::MakeDirectory(static::getMongezStorageDirectory(), 0777);
 
-        File::put(static::getMongezStorageFilePath(), json_encode(static::MONGEZ_STORAGE_FILE_DEfAULT_CONTENT, JSON_PRETTY_PRINT));             
+        File::put(static::getMongezStorageFilePath(), json_encode(static::MONGEZ_STORAGE_FILE_DEfAULT_CONTENT, JSON_PRETTY_PRINT));
     }
 
     /**
@@ -155,7 +156,7 @@ class Mongez
      */
     public static function getStored($key)
     {
-        if (! static::$mongezContent) {
+        if (!static::$mongezContent) {
             static::$mongezContent = static::getStorageFileContent();
         }
 
@@ -195,7 +196,7 @@ class Mongez
     {
         $list = static::getStored($key);
 
-        if (! $list) {
+        if (!$list) {
             $list = [];
         }
 
@@ -222,7 +223,7 @@ class Mongez
      * @param string $path 
      * @return string
      */
-    public static function packagePath($path='')
+    public static function packagePath($path = '')
     {
         return dirname(__DIR__, 2) . '/' . ltrim($path, '/');
     }
@@ -239,8 +240,18 @@ class Mongez
         $valueIndex = array_search($value, $list);
 
         unset($list[$valueIndex]);
-        
+
         static::setStored($key, $list);
         static::updateStorageFile();
+    }
+
+    /**
+     * Get current app type
+     * 
+     * @return string
+     */
+    public static function appType(): string
+    {
+        return config('app.type');
     }
 }

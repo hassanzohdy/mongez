@@ -1,7 +1,8 @@
 <?php
+
 namespace App\Modules\Settings\Controllers\Admin;
 
-use HZ\Illuminate\Mongez\Managers\ApiController;
+use HZ\Illuminate\Mongez\Http\ApiController;
 use Illuminate\Http\Request;
 
 class SettingsController extends ApiController
@@ -25,7 +26,7 @@ class SettingsController extends ApiController
      * @inheritdoc
      */
     public function update(Request $request)
-    {        
+    {
         foreach (($request->settings ?: []) as $group => $groupData) {
             foreach ($groupData as $settingName => $settingInfo) {
                 $this->repository->set([

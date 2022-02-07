@@ -1,11 +1,12 @@
 <?php
+
 namespace App\Modules\NewsLetters\Models;
 
-use HZ\Illuminate\Mongez\Managers\Database\MongoDB\Model;
+use HZ\Illuminate\Mongez\Database\Eloquent\MongoDB\Model;
 
-class ContactUs extends Model 
+class ContactUs extends Model
 {
-        
+
     /**
      * Get shared info for the user that will be stored as a sub document of another collection
      * 

@@ -1,8 +1,9 @@
 <?php
+
 namespace App\Modules\Users\Controllers\Site;
 
 use Illuminate\Http\Request;
-use HZ\Illuminate\Mongez\Managers\ApiController;
+use HZ\Illuminate\Mongez\Http\ApiController;
 
 class DeviceTokensController extends ApiController
 {

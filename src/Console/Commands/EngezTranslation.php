@@ -2,8 +2,8 @@
 
 namespace HZ\Illuminate\Mongez\Console\Commands;
 
-use HZ\Illuminate\Mongez\Contracts\Console\EngezInterface;
-use HZ\Illuminate\Mongez\Managers\Console\EngezGeneratorCommand;
+use HZ\Illuminate\Mongez\Console\EngezInterface;
+use HZ\Illuminate\Mongez\Console\EngezGeneratorCommand;
 
 class EngezTranslation extends EngezGeneratorCommand implements EngezInterface
 {
@@ -82,7 +82,7 @@ class EngezTranslation extends EngezGeneratorCommand implements EngezInterface
         foreach ($localeCodes as $localeCode) {
             $this->putFile("lang/{$localeCode}/{$this->fileName}.php", $this->replaceStub('lang/file', $replacements), 'Translation');
         }
-        
+
         // check the utils class
         $this->buildUtilsClass();
     }

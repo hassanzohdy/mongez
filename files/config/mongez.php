@@ -101,34 +101,13 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Module builder
-    |--------------------------------------------------------------------------
-    |
-    | Based on the settings that is provided here, the module builder will adjust its settings accordingly.
-    | Put your configurations based on your application flow
-    | 
-    | has-admin: if set to false, then Laravel Mongez will treat the application as a single application with no admin panel 
-    | 
-    | build: this will determine if the module will be created 
-    | to be served with the admin api controller + api controller or
-    | to be served with the admin view controller + view controller
-    | available values: view|api, defaults to api
-    | 
-    */
-    'module-builder' => [
-        'has-admin' => true,
-        'build' => 'api',
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
     | Admin options
     |--------------------------------------------------------------------------
     |
-    | The following options are applied on any request related to the AdminApiController or the /admin requests in general
+    | The following options are applied on any request related to the RestfulApiController or the /admin requests in general
     | 
     | patchable options: if set to true, then a PATCH request handler method
-    | will be invoked from AdminApiController and the main repository manager
+    | will be invoked from RestfulApiController and the main repository manager
     |
     | returnOn options: single-record | all-records | none
     | 
@@ -138,6 +117,7 @@ return [
         'returnOn' => [
             'store' => 'single-record',
             'update' => 'single-record',
+            'patch' => 'single-record',
         ],
     ],
 
@@ -202,15 +182,15 @@ return [
     | 
     | Available Options: `array` | `object`, defaults to `array`
     |
-    | The arrayKey will set the name of object key that will hold the input name, defaults to `key`
-    | The arrayValue will set the name of object key that will hold the error message itself, defaults to `value`
+    | The `key` will set the name of object key that will hold the input name, defaults to `key`
+    | The `value` will set the name of object key that will hold the error message itself, defaults to `value`
     |
     */
     'response' => [
         'errors' => [
             'strategy' => 'array',
-            'arrayKey' => 'key',
-            'arrayValue' => 'value',
+            'key' => 'key',
+            'value' => 'value',
         ],
     ],
 
@@ -227,6 +207,36 @@ return [
         // add your repositories here  
         // 'repo-short-name' => RepositoryClassPath::class,
         // Auto generated repositories here: DO NOT remove this line.   
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Console Options
+    |--------------------------------------------------------------------------
+    |
+    | List of all console options that may be used when using command line
+    |
+    | All module builder configurations can be overridden when using the command line 
+    |
+    | build: this will determine if the module will be created 
+    | to be served with the admin api controller + api controller or
+    | to be served with the admin view controller + view controller
+    | available values: view|api, defaults to api
+    */
+    'console' => [
+        'builder' => [
+            'build' => 'api',
+            'controller' => [
+                // available options are: all | site | admin
+                'type' => 'all',
+                'auth' => [
+                    // auto add auth middleware when generating admin routes
+                    'enabled' => true,
+                    // middleware name that will be used for authorized requests
+                    'middleware' => 'authorized',
+                ]
+            ],
+        ]
     ],
 
     /*
@@ -267,7 +277,7 @@ return [
     |
     */
     'filters' => [
-        HZ\Illuminate\Mongez\Helpers\Filters\MYSQL\Filter::class,
-        HZ\Illuminate\Mongez\Helpers\Filters\MongoDB\Filter::class,
+        HZ\Illuminate\Mongez\Database\Filters\MYSQLFilter::class,
+        HZ\Illuminate\Mongez\Database\Filters\MongoDBFilter::class,
     ]
 ];

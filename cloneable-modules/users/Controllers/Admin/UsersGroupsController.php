@@ -1,9 +1,10 @@
 <?php
+
 namespace App\Modules\Users\Controllers\Admin;
 
-use HZ\Illuminate\Mongez\Managers\AdminApiController; 
+use use HZ\Illuminate\Mongez\Http\RestfulApiController;;
 
-class UsersGroupsController extends AdminApiController
+class UsersGroupsController extends RestfulApiController
 {
     /**
      * Controller info
@@ -13,7 +14,7 @@ class UsersGroupsController extends AdminApiController
     protected $controllerInfo = [
         'repository' => 'usersGroups',
         'listOptions' => [
-            'select' => ['id','name','permissions'],
+            'select' => ['id', 'name', 'permissions'],
             'filterBy' => [],
             'paginate' => null, // if set null, it will be automated based on repository configuration option
         ],

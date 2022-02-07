@@ -1,11 +1,12 @@
 <?php
+
 namespace App\Modules\Users\Controllers\Admin\Auth;
 
 use Illuminate\Http\Request;
-use HZ\Illuminate\Mongez\Managers\ApiController;
+use HZ\Illuminate\Mongez\Http\ApiController;
 
 class ResetPasswordController extends ApiController
-{    
+{
     /**
      * Verify user code
      *
@@ -16,11 +17,11 @@ class ResetPasswordController extends ApiController
         $usersRepository = repo('users');
         $user = $usersRepository->getBy('email', $request->email);
 
-        if (! $user || $user->resource->code != $request->code) {
+        if (!$user || $user->resource->code != $request->code) {
             return $this->badRequest([
                 'error' => 'Invalid code or email',
             ]);
-        } 
+        }
 
         $user = $user->resource;
 
@@ -31,7 +32,7 @@ class ResetPasswordController extends ApiController
         $accessToken = $usersRepository->generateAccessToken($user, $request);
 
         $userInfo = $usersRepository->wrap($user)->toArray($request);
-        
+
         $userInfo['accessToken'] = $accessToken;
 
         return $this->success([

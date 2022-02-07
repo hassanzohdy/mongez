@@ -1,8 +1,9 @@
 <?php
+
 namespace App\Modules\NewsLetters\Controllers\Admin;
 
 use Illuminate\Http\Request;
-use HZ\Illuminate\Mongez\Managers\ApiController;
+use HZ\Illuminate\Mongez\Http\ApiController;
 
 class ContactUsController extends ApiController
 {
@@ -24,7 +25,7 @@ class ContactUsController extends ApiController
             'records' => $this->repository->list($options),
         ]);
     }
-    
+
     /**
      * {@inheritDoc}
      */

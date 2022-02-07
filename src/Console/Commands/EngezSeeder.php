@@ -2,8 +2,8 @@
 
 namespace HZ\Illuminate\Mongez\Console\Commands;
 
-use HZ\Illuminate\Mongez\Contracts\Console\EngezInterface;
-use HZ\Illuminate\Mongez\Managers\Console\EngezGeneratorCommand;
+use HZ\Illuminate\Mongez\Console\EngezInterface;
+use HZ\Illuminate\Mongez\Console\EngezGeneratorCommand;
 
 class EngezSeeder extends EngezGeneratorCommand implements EngezInterface
 {
@@ -12,8 +12,8 @@ class EngezSeeder extends EngezGeneratorCommand implements EngezInterface
      *
      * @var string
      */
-    protected $signature = 'engez:seeder {seeder} 
-                                        {--module=} ';
+    protected $signature = 'engez:seeder {seeder} {--repository} 
+                                        {--module} ';
 
     /**
      * The console command description.
@@ -81,11 +81,10 @@ class EngezSeeder extends EngezGeneratorCommand implements EngezInterface
             '{{ ModuleName }}' => $this->getModule(),
             // seeder class name
             '{{ ClassName }}' => $this->seederClass,
-            // Repository name
-            '{{ repository }}' => $this->repositoryName($this->getModule())
+            '{{ repository }}' => $this->option('repository'),
         ];
 
-        $this->putFile("database/Seeders/{$this->seederClass}.php", $this->replaceStub('Seeders/seeder', $replacements), 'Seeder');        
+        $this->putFile("database/Seeders/{$this->seederClass}.php", $this->replaceStub('Seeders/seeder', $replacements), 'Seeder');
 
         $this->updateBaseSeedersClass();
     }
@@ -101,7 +100,7 @@ class EngezSeeder extends EngezGeneratorCommand implements EngezInterface
 
         $baseSeedersContent = $this->files->get($baseSeedersClass);
 
-        if (! $this->contains($baseSeedersContent, '$this->call')) {
+        if (!$this->contains($baseSeedersContent, '$this->call')) {
             $callReplacement = $this->getStub('Seeders/call-method');
 
             $baseSeedersContent = str_replace('    {', $callReplacement, $baseSeedersContent);
@@ -109,7 +108,7 @@ class EngezSeeder extends EngezGeneratorCommand implements EngezInterface
 
         $replacementLine = '// DatabaseSeeds: DO NOT Remove This Line.';
 
-        $addedSeederClass = '\\App\\Modules\\' . $this->getModule() . '\\Database\\Seeders\\'. $this->seederClass . '::class,';
+        $addedSeederClass = '\\App\\Modules\\' . $this->getModule() . '\\Database\\Seeders\\' . $this->seederClass . '::class,';
 
         $addedSeederClass .= PHP_EOL . "\t\t\t" . $replacementLine;
 

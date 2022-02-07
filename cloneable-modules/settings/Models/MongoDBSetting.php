@@ -1,9 +1,10 @@
 <?php
+
 namespace App\Modules\Settings\Models;
 
-use HZ\Illuminate\Mongez\Managers\Database\MongoDB\Model;
+use HZ\Illuminate\Mongez\Database\Eloquent\MongoDB\Model;
 
-class Setting extends Model 
+class Setting extends Model
 {
     /**
      * Get the value of setting if file.

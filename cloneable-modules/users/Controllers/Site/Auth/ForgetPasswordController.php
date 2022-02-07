@@ -6,7 +6,7 @@ use Mail;
 use Validator;
 use HZ\Illuminate\Mongez\Contracts\Repositories\RepositoryInterface;
 use Illuminate\Http\Request;
-use HZ\Illuminate\Mongez\Managers\ApiController;
+use HZ\Illuminate\Mongez\Http\ApiController;
 
 class ForgetPasswordController extends ApiController
 {
