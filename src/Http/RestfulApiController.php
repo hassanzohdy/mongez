@@ -100,6 +100,10 @@ abstract class RestfulApiController extends ApiController
             return $this->badRequest($validator->errors());
         }
 
+        if ($errors = $this->beforeStoring($request)) {
+            return $this->badRequest($errors);
+        }
+
         $model = $this->repository->create($request);
 
         $returnOnStore = $this->controllerInfo['returnOn']['store'] ?? config('mongez.admin.returnOn.store', 'single-record');
@@ -152,6 +156,10 @@ abstract class RestfulApiController extends ApiController
             return $this->badRequest($validator->errors());
         }
 
+        if ($errors = $this->beforeUpdating($model, $request)) {
+            return $this->badRequest($errors);
+        }
+
         $this->repository->update($model, $request);
 
         $returnOnUpdate = $this->controllerInfo['returnOn']['update'] ?? config('mongez.admin.returnOn.update', 'single-record');
@@ -194,6 +202,10 @@ abstract class RestfulApiController extends ApiController
 
         if ($validator->fails()) {
             return $this->badRequest($validator->errors());
+        }
+
+        if ($errors = $this->beforePatching($model, $request)) {
+            return $this->badRequest($errors);
         }
 
         $this->repository->patch($id, $request);
@@ -307,6 +319,47 @@ abstract class RestfulApiController extends ApiController
     protected function allValidation($request, $id = null): array
     {
         return (array) $this->controllerInfo('rules.all');
+    }
+
+    /**
+     * Triggered before storing a new record
+     * Useful when needs to make a validation before storing the record
+     * If it returns a value, it will be returned instead
+     *
+     * @param  Request  $request
+     * @return array|null
+     */
+    protected function beforeStoring(Request $request)
+    {
+        return null;
+    }
+
+    /**
+     * Triggered before updating the record
+     * Useful when needs to make a validation before updating the record
+     * If it returns a value, it will be returned instead
+     *
+     * @param  Model      $model
+     * @param  Request  $request
+     * @return array|null
+     */
+    protected function beforeUpdating($model, Request $request)
+    {
+        return null;
+    }
+
+    /**
+     * Triggered before patching the record
+     * Useful when needs to make a validation before patching the record
+     * If it returns a value, it will be returned instead
+     *
+     * @param  Model      $model
+     * @param  Request  $request
+     * @return array|null
+     */
+    protected function beforePatching($model, Request $request)
+    {
+        return null;
     }
 
     /**
