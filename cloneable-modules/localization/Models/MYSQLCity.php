@@ -1,6 +1,9 @@
 <?php
+
 namespace App\Modules\Localization\Models;
 
-use HZ\Illuminate\Mongez\Managers\Database\mysql\Model;
+use HZ\Illuminate\Mongez\Database\Eloquent\MYSQL\Model;
 
-class City extends Model {}
+class City extends Model
+{
+}

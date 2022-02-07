@@ -4,7 +4,7 @@ namespace App\Modules\Users\Controllers\Admin\Auth;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use HZ\Illuminate\Mongez\Managers\ApiController;
+use HZ\Illuminate\Mongez\Http\ApiController;
 
 class LogoutController extends ApiController
 {

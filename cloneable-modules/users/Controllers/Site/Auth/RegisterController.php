@@ -4,7 +4,7 @@ namespace App\Modules\Users\Controllers\Site\Auth;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use HZ\Illuminate\Mongez\Managers\ApiController;
+use HZ\Illuminate\Mongez\Http\ApiController;
 
 class RegisterController extends ApiController
 {

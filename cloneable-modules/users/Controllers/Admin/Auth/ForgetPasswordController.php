@@ -1,13 +1,14 @@
 <?php
+
 namespace App\Modules\Users\Controllers\Admin\Auth;
 
 use Mail;
 use Validator;
 use Illuminate\Http\Request;
-use HZ\Illuminate\Mongez\Managers\ApiController;
+use HZ\Illuminate\Mongez\Http\ApiController;
 
 class ForgetPasswordController extends ApiController
-{    
+{
     /**
      * Send an email to reset password
      *
@@ -21,15 +22,15 @@ class ForgetPasswordController extends ApiController
             $user->code = mt_rand(10000, 99999);
             $user->save();
             Mail::send([], [], function ($message) use ($user) {
-            $message->to($user->email)
-                ->subject('Reset password')
-                // here comes what you want
-                ->setBody("Your reset password code is: <strong>{$user->code}</strong>", 'text/html'); // assuming text/plain
+                $message->to($user->email)
+                    ->subject('Reset password')
+                    // here comes what you want
+                    ->setBody("Your reset password code is: <strong>{$user->code}</strong>", 'text/html'); // assuming text/plain
             });
-            return $this->success();              
+            return $this->success();
         } else {
             return $this->badRequest($validator->errors());
-        } 
+        }
     }
 
     /**

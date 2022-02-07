@@ -8,7 +8,7 @@ use App\Modules\Users\Traits\Auth\UpdatePassword;
 use App\Modules\Users\Traits\Deviceable;
 use HZ\Illuminate\Mongez\Traits\MongoDB\RecycleBin;
 use Illuminate\Auth\Authenticatable as AuthenticatableTrait;
-use HZ\Illuminate\Mongez\Managers\Database\MongoDB\Model;
+use HZ\Illuminate\Mongez\Database\Eloquent\MongoDB\Model;
 
 class User extends Model implements Authenticatable
 {

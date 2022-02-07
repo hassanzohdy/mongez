@@ -1,8 +1,9 @@
 <?php
+
 namespace App\Modules\Localization\Controllers\Site;
 
 use Illuminate\Http\Request;
-use HZ\Illuminate\Mongez\Managers\ApiController;
+use HZ\Illuminate\Mongez\Http\ApiController;
 
 class CountriesController extends ApiController
 {
@@ -24,7 +25,7 @@ class CountriesController extends ApiController
             'records' => $this->repository->list($options),
         ]);
     }
-    
+
     /**
      * {@inheritDoc}
      */

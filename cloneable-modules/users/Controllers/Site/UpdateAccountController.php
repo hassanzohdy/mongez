@@ -4,7 +4,7 @@ namespace App\Modules\Users\Controllers\Site;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use HZ\Illuminate\Mongez\Managers\ApiController;
+use HZ\Illuminate\Mongez\Http\ApiController;
 
 class UpdateAccountController extends ApiController
 {
@@ -51,7 +51,7 @@ class UpdateAccountController extends ApiController
             'name' => 'required|min:4',
             'password' => 'confirmed|min:8',
             'email' => [
-                'required',                
+                'required',
                 "unique:$table,email,{$user->email},email"
             ],
             'phoneNumber' => [

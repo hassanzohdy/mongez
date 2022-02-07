@@ -2,7 +2,7 @@
 
 namespace App\Modules\Localization\Controllers\Admin;
 
-use HZ\Illuminate\Mongez\Managers\RestfulApiController;
+use use HZ\Illuminate\Mongez\Http\RestfulApiController;;
 
 class CountriesController extends RestfulApiController
 {

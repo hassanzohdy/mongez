@@ -2,7 +2,7 @@
 
 namespace App\Modules\NewsLetters\Controllers\Site;
 
-use HZ\Illuminate\Mongez\Managers\RestfulApiController;
+use use HZ\Illuminate\Mongez\Http\RestfulApiController;;
 
 class ContactUsController extends RestfulApiController
 {

@@ -1,11 +1,12 @@
 <?php
+
 namespace App\Modules\Users\Models;
 
-use HZ\Illuminate\Mongez\Managers\Database\MongoDB\Model;
+use HZ\Illuminate\Mongez\Database\Eloquent\MongoDB\Model;
 
-class UserGroup extends Model 
+class UserGroup extends Model
 {
-    
+
     /**
      * {@inheritDoc}
      */

@@ -1,6 +1,6 @@
 <?php
 
-namespace HZ\Illuminate\Mongez\Managers;
+namespace HZ\Illuminate\Mongez\Http;
 
 use Illuminate\Support\Str;
 use Illuminate\Support\Arr;

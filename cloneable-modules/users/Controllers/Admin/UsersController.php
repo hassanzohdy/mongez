@@ -3,7 +3,7 @@
 namespace App\Modules\Users\Controllers\Admin;
 
 use Illuminate\Validation\Rule;
-use HZ\Illuminate\Mongez\Managers\RestfulApiController;
+use use HZ\Illuminate\Mongez\Http\RestfulApiController;;
 
 class UsersController extends RestfulApiController
 {
