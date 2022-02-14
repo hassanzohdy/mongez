@@ -549,8 +549,8 @@ abstract class RepositoryManager implements RepositoryInterface
      * PATCH request handler
      * 
      * @param int|Model $id
-     * @param array $data
-     * @return Model $model
+     * @param array|Request $data
+     * @return Model|null $model
      */
     public function patch($id, $data)
     {

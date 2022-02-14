@@ -6,7 +6,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use HZ\Illuminate\Mongez\Repository\Select;
 use Illuminate\Http\Resources\Json\JsonResource;
-use HZ\Illuminate\Mongez\Helpers\Filters\FilterManager;
+use HZ\Illuminate\Mongez\Database\Filters\FilterManager;
 
 trait Listable
 {

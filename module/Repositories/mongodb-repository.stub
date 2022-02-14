@@ -153,20 +153,6 @@ class {{ RepositoryClass }} extends MongoDBRepositoryManager implements Reposito
     const PATCHABLE_DATA = [];
 
     /**
-     * Set of the parents repositories of current repo
-     *
-     * @const array
-     */
-    const CHILD_OF = [];
-
-    /**
-     * Set of the children repositories of current repo
-     *
-     * @const array
-     */
-    const PARENT_OF = [];
-
-    /**
      * Determine wether to use pagination in the `list` method
      * if set null, it will depend on pagination configurations
      * 

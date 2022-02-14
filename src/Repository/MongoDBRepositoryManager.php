@@ -314,10 +314,18 @@ abstract class MongoDBRepositoryManager extends RepositoryManager implements Rep
             }
 
             $ids = array_map('intVal', $value);
+
+            if (is_array($documentModelClass)) {
+                list($class, $method) = $documentModelClass;
+                $documentModelClass = $class;
+            } else {
+                $method = 'sharedInfo';
+            }
+
             $records = $documentModelClass::whereIn('id', $ids)->get();
 
-            $records = $records->map(function ($record) {
-                return $record->sharedInfo();
+            $records = $records->map(function ($record) use ($method) {
+                return $record->$method();
             })->toArray();
 
             // make sure it is stored in same order as sent from request
