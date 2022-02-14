@@ -329,7 +329,7 @@ abstract class Model extends BaseModel
      */
     public static function truncate()
     {
-        static::delete();
+        static::where('id', '!=', -1)->delete();
         static::resetAutoIncrement();
     }
 
