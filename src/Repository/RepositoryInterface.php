@@ -15,21 +15,21 @@ interface RepositoryInterface
     public function create($data);
 
     /**
-     * Update a the given record id
+     * Update a the given record id or model
      * 
-     * @param  int id
+     * @param  int|model id
      * @param  \Illuminate\Http\Request|array $data
      * @return Illuminate\Database\Eloquent\Model
      */
-    public function update(int $id, $data);
+    public function update($id, $data);
 
     /**
      * Delete a specific record
      * 
-     * @param  int id
+     * @param  int|Model id
      * @return bool
      */
-    public function delete(int $id): bool;
+    public function delete($id): bool;
 
     /**
      * Return List of records
