@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Route;
 Route::group([
 {{ authMiddleware }}    
 ], function () {
-    // Sub API CRUD routes
+    // Sub API routes DO NOT remove this line
     // Main API CRUD routes 
     Route::{{ methodName }}('{{ route-path }}', {{ ControllerClass }}::class);
 });

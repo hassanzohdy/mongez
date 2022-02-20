@@ -81,7 +81,7 @@ class EngezRepository extends EngezGeneratorCommand implements EngezInterface
 
         $this->repositoryName = $this->repositoryName($this->argument('repository'));
 
-        $this->repositoryClassName = $this->getModule() . 'Repository';
+        $this->repositoryClassName = $this->studly($this->repositoryName) . 'Repository';
     }
 
     /**

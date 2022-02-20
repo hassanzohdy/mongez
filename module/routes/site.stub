@@ -13,10 +13,10 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::group([
-    'prefix' => '{{ route-path }}',
 ], function () {
+    // Sub API routes DO NOT remove this line
     // list records
-    Route::get('/', [{{ ControllerClass }}::class, 'index']);
+    Route::get('{{ route-path }}', [{{ ControllerClass }}::class, 'index']);
     // one record 
-    Route::get('/{id}', [{{ ControllerClass }}::class, 'show']);
+    Route::get('{{ route-path }}/{id}', [{{ ControllerClass }}::class, 'show']);
 });

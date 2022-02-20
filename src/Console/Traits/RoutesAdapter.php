@@ -2,6 +2,8 @@
 
 namespace HZ\Illuminate\Mongez\Console\Traits;
 
+use HZ\Illuminate\Mongez\Console\Stub;
+
 trait RoutesAdapter
 {
     use EngezStub, EngezTrait;
@@ -22,12 +24,73 @@ trait RoutesAdapter
     {
         $this->routesDirectory = $this->modulePath("routes");
 
+        if ($this->optionHasValue('parent')) {
+            return $this->createRoutesFromParent();
+        }
+
         if ($this->isAdminController()) {
             $this->createAdminRoutesFile();
         }
 
         if ($this->isSiteController()) {
             $this->createSiteRoutesFile();
+        }
+    }
+
+    /**
+     * Create routes in an existing parent routes files
+     * 
+     * @return void
+     */
+    protected function createRoutesFromParent()
+    {
+        $controller = $this->studly($this->argument('controller'));
+
+        if ($this->isAdminController()) {
+            $stub = new Stub($filePath = $this->modulePath('routes/admin.php'));
+            $route = $this->kebab($this->optionHasValue('route') ? $this->option('route') : $this->getModule());
+
+            $routeStatement = "Route::{{ methodName }}('{{ route-path }}', {{ ControllerClass }}::class);";
+
+            $replacements = [
+                '{{ ControllerClass }}' => $this->controllerName,
+                '{{ route-path }}' => $route,
+            ];
+
+            if (\config('mongez.admin.patchable', false)) {
+                $replacements['{{ methodName }}'] = 'restfulApi';
+            } else {
+                $replacements['{{ methodName }}'] = 'apiResource';
+            }
+
+            $stub->appendAfter('use Illuminate\Support\Facades\Route;', "use App\\Modules\\{$this->getModule()}\\Controllers\\Admin\\{$this->controllerName};");
+            $stub->appendAfter('    // Sub API routes DO NOT remove this line', '    // ' . $controller . PHP_EOL .  '    ' . str_replace(array_keys($replacements), array_values($replacements), $routeStatement) . PHP_EOL);
+
+            $stub->saveTo($filePath);
+        }
+
+
+        if ($this->isSiteController()) {
+            $stub = new Stub($filePath = $this->modulePath('routes/site.php'));
+            $route = $this->kebab($this->optionHasValue('route') ? $this->option('route') : $this->getModule());
+
+            $routeStatement = "Route::get('{{ route-path }}', [{{ ControllerClass }}::class, '{{ methodName }}']);";
+
+            $replacements = [
+                '{{ ControllerClass }}' => $this->controllerName,
+                '{{ route-path }}' => $route,
+                '{{ methodName }}' => 'index',
+            ];
+
+            $stub->appendAfter('    // Sub API routes DO NOT remove this line', '    ' . str_replace(array_keys($replacements), array_values($replacements), $routeStatement) . PHP_EOL);
+
+            $replacements['{{ route-path }}'] .= '/{id}';
+            $replacements['{{ methodName }}'] = 'show';
+            $stub->appendAfter('    // Sub API routes DO NOT remove this line', '    // ' . $controller . PHP_EOL . '    ' . str_replace(array_keys($replacements), array_values($replacements), $routeStatement));
+
+            $stub->appendAfter('use Illuminate\Support\Facades\Route;', "use App\\Modules\\{$this->getModule()}\\Controllers\\Site\\{$this->controllerName};");
+
+            $stub->saveTo($filePath);
         }
     }
 
@@ -47,6 +110,12 @@ trait RoutesAdapter
             '{{ methodName }}' => 'apiResource',
         ];
 
+        if (\config('mongez.admin.patchable', false)) {
+            $replacements['{{ methodName }}'] = 'restfulApi';
+        } else {
+            $replacements['{{ methodName }}'] = 'apiResource';
+        }
+
         $authIsEnabled = $this->optionHasValue('auth') ? $this->option('auth') : $this->config('router.auth.enabled', true);
 
         if ($authIsEnabled) {
@@ -55,12 +124,6 @@ trait RoutesAdapter
             $replacements['{{ authMiddleware }}'] = $this->tabWith(
                 "'middleware' => ['$authMiddlewareName'],"
             );
-        }
-
-        if (\config('mongez.admin.patchable', false)) {
-            $replacements['{{ methodName }}'] = 'restfulApi';
-        } else {
-            $replacements['{{ methodName }}'] = 'apiResource';
         }
 
         $stub = $this->stubInstance('routes/admin');

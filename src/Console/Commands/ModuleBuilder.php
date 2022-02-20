@@ -200,11 +200,19 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
      */
     protected function createController()
     {
+        $parent = $this->topParentModule();
+        $module = $this->getModule();
+
         $controllerOptions = [
-            'controller' => $this->getModule(),
-            '--module' => $this->topParentModule(),
-            '--repository' => $this->repositoryName($this->getModule()),
+            'controller' => $module,
+            '--module' => $parent,
+            '--repository' => $this->repositoryName($module),
+            '--route' => $module,
         ];
+
+        if ($parent !== $module) {
+            $controllerOptions['--parent'] = $parent;
+        }
 
         $options = $this->optionsValues(EngezController::CONTROLLER_OPTIONS_LIST);
 

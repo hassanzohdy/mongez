@@ -150,7 +150,13 @@ class Stub
     {
         $content = '';
 
-        foreach (explode(PHP_EOL, $this->content) as $line) {
+        $lines = explode(PHP_EOL, $this->content);
+
+        $lines = array_map(function ($line) {
+            return rtrim($line, "\r");
+        }, $lines);
+
+        foreach ($lines as $line) {
             $content .= $line . PHP_EOL;
 
             if ($this->areMatchedLines($searchLineText, $line)) {

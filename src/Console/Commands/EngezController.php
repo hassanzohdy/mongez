@@ -48,6 +48,7 @@ class EngezController extends EngezGeneratorCommand implements EngezInterface
      */
     protected $signature = 'engez:controller  {controller} 
                                                {--module=} 
+                                               {--parent=} 
                                                {--repository=}' . EngezController::CONTROLLER_OPTIONS;
 
     /**
