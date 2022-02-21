@@ -92,7 +92,7 @@ abstract class RestfulApiController extends ApiController
      */
     public function store(Request $request)
     {
-        $rules = array_merge($this->allValidation($request), $this->storeValidation($request));
+        $rules = array_merge_recursive($this->allValidation($request), $this->storeValidation($request));
 
         $validator = Validator::make($request->all(), $rules);
 
@@ -134,7 +134,7 @@ abstract class RestfulApiController extends ApiController
             return $this->notFound();
         }
 
-        $rules = array_merge($this->allValidation($request, $id), $this->updateValidation($id, $request));
+        $rules = array_merge_recursive($this->allValidation($request, $id), $this->updateValidation($id, $request));
 
         foreach ($rules as &$rulesList) {
             if (!is_array($rulesList)) {
@@ -190,7 +190,7 @@ abstract class RestfulApiController extends ApiController
             return $this->notFound();
         }
 
-        $rules = array_merge($this->allValidation($request, $id), $this->patchValidation($id, $request));
+        $rules = array_merge_recursive($this->allValidation($request, $id), $this->patchValidation($id, $request));
 
         foreach ($rules as $column => $rulesList) {
             if (!in_array($column, array_keys($request->all()))) {
@@ -208,7 +208,7 @@ abstract class RestfulApiController extends ApiController
             return $this->badRequest($errors);
         }
 
-        $this->repository->patch($id, $request);
+        $this->repository->patch($model, $request);
 
         $returnOnPatch = $this->controllerInfo['returnOn']['patch'] ?? config('mongez.admin.returnOn.patch', 'single-record');
 
@@ -271,7 +271,7 @@ abstract class RestfulApiController extends ApiController
             $requestData['orderBy'] = [$request->sortBy, $request->sortDirection];
         };
 
-        return array_merge($requestData, (array) $this->controllerInfo('listOptions'));
+        return array_merge_recursive($requestData, (array) $this->controllerInfo('listOptions'));
     }
 
     /**

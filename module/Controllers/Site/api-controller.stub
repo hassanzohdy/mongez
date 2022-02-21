@@ -20,9 +20,15 @@ class {{ ControllerName }} extends ApiController
     {
         $options = [];
 
-        return $this->success([
+        $response = [
             'records' => $this->repository->listPublished($options),
-        ]);
+        ];
+
+        if ($this->repository->getPaginateInfo()) {
+            $response['paginationInfo'] = $this->repository->getPaginateInfo();
+        }
+
+        return $this->success($response);
     }
     
     /**

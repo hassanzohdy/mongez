@@ -152,7 +152,7 @@ trait Listable
             $defaultOrderBy = [$this->column(static::ORDER_BY[0]), static::ORDER_BY[1]];
         }
 
-        $this->orderBy($this->option('orderBy', $defaultOrderBy));
+        $this->orderBy($defaultOrderBy);
     }
 
     /**

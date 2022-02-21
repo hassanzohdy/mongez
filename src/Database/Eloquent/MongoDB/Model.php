@@ -221,7 +221,9 @@ abstract class Model extends BaseModel
 
         // triggered when a model record is deleted from database
         static::deleted(function ($model) {
-            if (!empty(static::ON_MODEL_DELETE) || !empty($otherModels = config('mongez.database.onModel.delete.' . static::class))) {
+            $otherModels = config('mongez.database.onModel.delete.' . static::class);
+
+            if (!empty(static::ON_MODEL_DELETE) || !empty($otherModels)) {
                 $modelsList = array_merge((array) static::ON_MODEL_DELETE, (array) $otherModels);
 
                 foreach ($modelsList as $modelClass => $searchingColumn) {
@@ -235,7 +237,9 @@ abstract class Model extends BaseModel
                 }
             }
 
-            if (!empty(static::ON_MODEL_DELETE_PULL) || !empty($otherModels = config('mongez.database.onModel.deletePull.' . static::class))) {
+            $otherModels = config('mongez.database.onModel.deletePull.' . static::class);
+
+            if (!empty(static::ON_MODEL_DELETE_PULL) || !empty($otherModels)) {
                 $modelsList = array_merge((array) static::ON_MODEL_DELETE_PULL, (array) $otherModels);
 
                 foreach ($modelsList as $modelClass => $searchingColumn) {
@@ -261,7 +265,7 @@ abstract class Model extends BaseModel
                     $records = $modelClass::where($searchingColumn . '.id', $model->id)->get();
 
                     foreach ($records as $record) {
-                        unset($record, $clearingColumn);
+                        unset($record[$clearingColumn]);
                         $record->save();
                     }
                 }
