@@ -28,6 +28,10 @@ class Filter
         'date:<=' => 'filterDate',
         'date:>' => 'filterDate',
         'date:>=' => 'filterDate',
+        'dateTime:<' => 'filterDateTime',
+        'dateTime:<=' => 'filterDateTime',
+        'dateTime:>' => 'filterDateTime',
+        'dateTime:>=' => 'filterDateTime',
     ];
 
     /**
@@ -169,7 +173,7 @@ class Filter
     }
 
     /**
-     * Filter With Dates
+     * Filter With Date
      *
      * @param array $columns
      * @param string $value
@@ -181,6 +185,21 @@ class Filter
         $operator = str_replace('date:', '', $operator);
         foreach ($columns as $column) {
             $this->query->where($column, $operator, Carbon::parse($value)->endOfDay());
+        }
+    }
+    /**
+     * Filter With Date and Time
+     *
+     * @param array $columns
+     * @param string $value
+     * @param string $operator
+     * @return void
+     */
+    public function filterDateTime($columns, $value, $operator)
+    {
+        $operator = str_replace('dateTime:','', $operator);
+        foreach ($columns as $column) {
+            $this->query->where($column, $operator, Carbon::parse($value));
         }
     }
 
