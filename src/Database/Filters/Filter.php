@@ -2,6 +2,8 @@
 
 namespace HZ\Illuminate\Mongez\Database\Filters;
 
+use Carbon\Carbon;
+
 class Filter
 {
     /**
@@ -22,6 +24,14 @@ class Filter
         'notInInt' => 'filterNotInInt',
         'null' => 'filterNull',
         'notNull' => 'filterNotNull',
+        'date:<' => 'filterDate',
+        'date:<=' => 'filterDate',
+        'date:>' => 'filterDate',
+        'date:>=' => 'filterDate',
+        'dateTime:<' => 'filterDateTime',
+        'dateTime:<=' => 'filterDateTime',
+        'dateTime:>' => 'filterDateTime',
+        'dateTime:>=' => 'filterDateTime',
     ];
 
     /**
@@ -159,6 +169,37 @@ class Filter
     {
         foreach ($columns as $column) {
             $this->query->whereNotIn($column, array_map('intval', (array) $value));
+        }
+    }
+
+    /**
+     * Filter With Date
+     *
+     * @param array $columns
+     * @param string $value
+     * @param string $operator
+     * @return void
+     */
+    public function filterDate($columns, $value, $operator)
+    {
+        $operator = str_replace('date:', '', $operator);
+        foreach ($columns as $column) {
+            $this->query->where($column, $operator, Carbon::parse($value)->endOfDay());
+        }
+    }
+    /**
+     * Filter With Date and Time
+     *
+     * @param array $columns
+     * @param string $value
+     * @param string $operator
+     * @return void
+     */
+    public function filterDateTime($columns, $value, $operator)
+    {
+        $operator = str_replace('dateTime:','', $operator);
+        foreach ($columns as $column) {
+            $this->query->where($column, $operator, Carbon::parse($value));
         }
     }
 
