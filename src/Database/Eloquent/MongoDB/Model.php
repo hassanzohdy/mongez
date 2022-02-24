@@ -179,7 +179,7 @@ abstract class Model extends BaseModel
             }
         });
 
-        static::creating(function ($model) {
+        static::created(function ($model) {
             $otherModels = config('mongez.database.onModel.create.' . static::class);
             if (!empty(static::ON_MODEL_CREATE) || !empty($otherModels)) {
                 $modelsList = array_merge((array)static::ON_MODEL_CREATE, (array)$otherModels);
