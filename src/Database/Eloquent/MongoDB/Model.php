@@ -198,13 +198,13 @@ abstract class Model extends BaseModel
                         $modelOptions[] = 'sharedInfo';
                     }
                     [$searchingColumn, $creatingColumn, $sharedInfoMethod] = $modelOptions;
-                    if (array_is_list($model->$searchingColumn)) {
+                    if (isset($model->$searchingColumn['id'])) {
+                        $records = $modelClass::query()->where('id', (int) $model->$searchingColumn['id'])->get();
+                    } else {
                         $searchingIds = array_map(function ($item) {
                             return  (int) $item['id'] ;
-                        }, $model->$searchingColumn);
+                            }, $model->$searchingColumn);
                         $records = $modelClass::query()->whereIn('id', $searchingIds)->get();
-                    } else {
-                        $records = $modelClass::query()->where('id', (int) $model->$searchingColumn['id'])->get();
                     }
 
                     foreach ($records as $record) {
@@ -232,13 +232,13 @@ abstract class Model extends BaseModel
                     }
                     [$searchingColumn, $creatingColumn, $sharedInfoMethod] = $modelOptions;
 
-                    if (array_is_list($model->$searchingColumn)) {
+                    if (isset($model->$searchingColumn['id'])) {
+                        $records = $modelClass::query()->where('id', (int) $model->$searchingColumn['id'])->get();
+                    } else {
                         $searchingIds = array_map(function ($item) {
                             return  (int) $item['id'] ;
-                        }, $model->$searchingColumn);
+                            }, $model->$searchingColumn);
                         $records = $modelClass::query()->whereIn('id', $searchingIds)->get();
-                    } else {
-                        $records = $modelClass::query()->where('id', $model->$searchingColumn['id'])->get();
                     }
 
                     foreach ($records as $record) {
