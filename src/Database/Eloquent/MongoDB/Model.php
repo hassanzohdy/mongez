@@ -179,6 +179,8 @@ abstract class Model extends BaseModel
             }
         });
 
+        // When model create, detect whether there are any other models that
+        // shall be created with it
         static::created(function ($model) {
             $otherModels = config('mongez.database.onModel.create.' . static::class);
             if (!empty(static::ON_MODEL_CREATE) || !empty($otherModels)) {
@@ -246,7 +248,6 @@ abstract class Model extends BaseModel
                 }
             }
         });
-
 
         static::updating(function ($model) {
             if (static::UPDATED_BY && ($user = user())) {
