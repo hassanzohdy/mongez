@@ -70,6 +70,30 @@ abstract class Model extends BaseModel
 
     /**
      * Define list of other models that will be affected
+     * as the current model is sub-document to it when it gets created
+     *
+     * @example ModelClass::class => searchingColumn will be converted to ['searchingColumn['id']', 'columnName', 'sharedInfo']
+     * @example ModelClass::class => [searchingColumn, creatingColumn]
+     * @example ModelClass::class => [searchingColumn, creatingColumn, sharedInfoMethod]
+     *
+     * @const array
+     */
+    const ON_MODEL_CREATE = [];
+
+    /**
+     * Define list of other models that will be affected as the current object is part of array
+     * as the current model is sub-document to it when it gets created
+     *
+     * @example ModelClass::class => searchingColumn will be converted to ['searchingColumn['id'], 'columnName', 'sharedInfo']
+     * @example ModelClass::class => [searchingColumn, creatingColumn]
+     * @example ModelClass::class => [searchingColumn, creatingColumn, sharedInfoMethod]
+     *
+     * @const array
+     */
+    const ON_MODEL_CREATE_PUSH = [];
+
+    /**
+     * Define list of other models that will be affected
      * as the current model is sub-document to it when it gets updated
      *  
      * @example ModelClass::class => columnName will be converted to ['columnName.id', 'columnName', 'sharedInfo']
@@ -154,6 +178,75 @@ abstract class Model extends BaseModel
                 // $model->_id = sha1(time() . Str::random(40));
             }
         });
+
+        static::creating(function ($model) {
+            $otherModels = config('mongez.database.onModel.create.' . static::class);
+            if (!empty(static::ON_MODEL_CREATE) || !empty($otherModels)) {
+                $modelsList = array_merge((array)static::ON_MODEL_CREATE, (array)$otherModels);
+                foreach ($modelsList as $modelClass => $modelOptions) {
+                    if (is_string($modelOptions)) {
+                        $relationalModel = strtolower(str_replace('Models\\','', strstr($modelClass, 'Models')));
+                        $searchingKey = array_key_exists($relationalModel, $model->toArray()) ? $relationalModel :
+                            array_key_first(array_filter($model->toArray(), function($key) use ($relationalModel) {
+                                return strpos($key, $relationalModel) !== false;
+                            }, ARRAY_FILTER_USE_KEY));
+
+                        $modelOptions = [$searchingKey, $modelOptions, 'sharedInfo'];
+                    } elseif (count($modelOptions) === 2) {
+                        $modelOptions[] = 'sharedInfo';
+                    }
+                    [$searchingColumn, $creatingColumn, $sharedInfoMethod] = $modelOptions;
+                    if (array_is_list($model->$searchingColumn)) {
+                        $searchingIds = array_map(function ($item) {
+                            return  (int) $item['id'] ;
+                        }, $model->$searchingColumn);
+                        $records = $modelClass::query()->whereIn('id', $searchingIds)->get();
+                    } else {
+                        $records = $modelClass::query()->where('id', (int) $model->$searchingColumn['id'])->get();
+                    }
+
+                    foreach ($records as $record) {
+                        $record->$creatingColumn = $model->$sharedInfoMethod();
+                        $record->save();
+                    }
+                }
+            }
+
+
+            $otherModels = config('mongez.database.onModel.createPush.' . static::class);
+            if (!empty(static::ON_MODEL_CREATE_PUSH) || !empty($otherModels)) {
+                $modelsList = array_merge((array)static::ON_MODEL_CREATE_PUSH, (array)$otherModels);
+                foreach ($modelsList as $modelClass => $modelOptions) {
+                    if (is_string($modelOptions)) {
+                        $relationalModel = strtolower(str_replace('Models\\','', strstr($modelClass, 'Models')));
+                        $searchingKey = array_key_exists($relationalModel, $model->toArray()) ? $relationalModel :
+                            array_key_first(array_filter($model->toArray(), function($key) use ($relationalModel) {
+                                return strpos($key, $relationalModel) !== false;
+                            }, ARRAY_FILTER_USE_KEY));
+
+                        $modelOptions = [$searchingKey, $modelOptions, 'sharedInfo'];
+                    } elseif (count($modelOptions) === 2) {
+                        $modelOptions[] = 'sharedInfo';
+                    }
+                    [$searchingColumn, $creatingColumn, $sharedInfoMethod] = $modelOptions;
+
+                    if (array_is_list($model->$searchingColumn)) {
+                        $searchingIds = array_map(function ($item) {
+                            return  (int) $item['id'] ;
+                        }, $model->$searchingColumn);
+                        $records = $modelClass::query()->whereIn('id', $searchingIds)->get();
+                    } else {
+                        $records = $modelClass::query()->where('id', $model->$searchingColumn['id'])->get();
+                    }
+
+                    foreach ($records as $record) {
+                        $record->reassociate($model->$sharedInfoMethod(), $creatingColumn)->save();
+                    }
+
+                }
+            }
+        });
+
 
         static::updating(function ($model) {
             if (static::UPDATED_BY && ($user = user())) {
