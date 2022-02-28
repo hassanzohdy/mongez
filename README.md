@@ -49,6 +49,8 @@ class MyClass
 
 ## Change Log
 
+- 2.1.21 (28 Feb 2022)
+  - Fixed Multiple Trait Methods Alias
 - 2.1.20 (28 Feb 2022)
   - Fixed Missing Semi Colon
 - 2.1.19 (28 Feb 2022)

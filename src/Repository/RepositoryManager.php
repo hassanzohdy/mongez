@@ -50,14 +50,14 @@ abstract class RepositoryManager implements RepositoryInterface
      * Allow repository to be extended
      */
     use Macroable {
-        __call as marcoableMethods;
+        Macroable::__call as marcoableMethods;
     }
 
     /**
      * Allow translation from the repository
      */
     use Translatable {
-        __call as translate;
+        Translatable::__call as translate;
     }
 
     /**
