@@ -5,10 +5,11 @@ namespace HZ\Illuminate\Mongez\Http;
 use HZ\Illuminate\Mongez\Events\Events;
 use HZ\Illuminate\Mongez\Http\ApiResponse;
 use HZ\Illuminate\Mongez\Repository\Concerns\RepositoryTrait;
+use HZ\Illuminate\Mongez\Translation\Traits\Translatable;
 
 abstract class ApiController
 {
-    use RepositoryTrait, ApiResponse;
+    use RepositoryTrait, ApiResponse, Translatable;
 
     /**
      * Repository name

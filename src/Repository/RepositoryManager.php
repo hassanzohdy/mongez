@@ -16,6 +16,7 @@ use HZ\Illuminate\Mongez\Repository\Concerns\Cacheable;
 use HZ\Illuminate\Mongez\Repository\Concerns\Deletable;
 use HZ\Illuminate\Mongez\Repository\RepositoryInterface;
 use HZ\Illuminate\Mongez\Repository\Concerns\RepositoryTrait;
+use HZ\Illuminate\Mongez\Translation\Traits\Translatable;
 
 abstract class RepositoryManager implements RepositoryInterface
 {
@@ -50,6 +51,13 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     use Macroable {
         __call as marcoableMethods;
+    }
+
+    /**
+     * Allow translation from the repository
+     */
+    use Translatable {
+        __call as translate
     }
 
     /**
@@ -705,6 +713,10 @@ abstract class RepositoryManager implements RepositoryInterface
         if (method_exists($this->query, $method)) {
             return $this->query->$method(...$args);
         }
+
+        $translation = $this->translate($method, $args);
+
+        if ($translation) return $translation;
 
         return $this->marcoableMethods($method, $args);
     }
