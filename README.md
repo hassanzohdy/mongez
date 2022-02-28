@@ -26,12 +26,12 @@ Once its done run the following command to create the `config/mongez.php` file.
 
 `php artisan vendor:publish --provider="HZ\Illuminate\Mongez\Providers\MongezServiceProvider"`
 
-
 ## Change Log
 
+- 2.1.15 (28 Feb 2022)
+  - Added `Translatable` trait.
 - 2.1.14 (28 Feb 2022)
   - Fixed generated `database` directory to be `Database`.
-
 
 # Documentation
 

@@ -337,7 +337,7 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
                 '{{ viewName }}' => $this->kebab($this->getModule()),
             ]) : '',
             '{{ translatable }}' => $this->optionHasValue('translatable') ? $this->replaceStub('Providers/translatable', [
-                '{{ translationName }}' => $this->kebab($this->getModule()),
+                '{{ translationName }}' => $this->studly($this->getModule()),
             ]) : '',
         ];
 
