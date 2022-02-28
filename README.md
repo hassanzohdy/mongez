@@ -8,6 +8,7 @@ This project aims to make using Laravel framework more organized and extensible.
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Configurations](#configurations)
+  - [Translatable](#translatable)
   - [Change Log](#change-log)
 - [Documentation](#documentation)
 
@@ -26,9 +27,29 @@ Once its done run the following command to create the `config/mongez.php` file.
 
 `php artisan vendor:publish --provider="HZ\Illuminate\Mongez\Providers\MongezServiceProvider"`
 
+
+## Translatable
+
+```php
+<?php 
+use HZ\Illuminate\Mongez\Translation\Traits\Translatable;
+
+class MyClass 
+{
+  use Translatable;
+
+  public function index()
+  {
+    $this->transUsers('users.name'); // will translate from `Users` module and `users` file and the keyword is `name
+    $this->transUsers('usersGroups.permissions'); // will translate from `Users` module and `usersGroups` file and the keyword is `permissions
+  }
+}
+
+```
+
 ## Change Log
 
-- 2.1.16 (28 Feb 2022)
+- 2.1.17 (28 Feb 2022)
   - Added `Translatable` trait.
 - 2.1.14 (28 Feb 2022)
   - Fixed generated `database` directory to be `Database`.
