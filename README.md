@@ -49,7 +49,7 @@ class MyClass
 
 ## Change Log
 
-- 2.1.18 (28 Feb 2022)
+- 2.1.19 (28 Feb 2022)
   - Fixed `Model`, `Resource` and `Filter` in the repository while creating child module to receive the child module name instead of the parent module.
 - 2.1.17 (28 Feb 2022)
   - Added `Translatable` trait.
