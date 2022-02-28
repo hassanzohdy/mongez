@@ -244,10 +244,16 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
      */
     protected function createRepository()
     {
+        $module = $this->singularModule();
+
         $repositoryOptions = [
             'repository' => $this->repositoryName($this->moduleName),
             '--module' => $this->topParentModule(),
+            '--model' => $module,
+            '--resource' => $module . 'Resource',
+            '--filter' => $module . 'Filter',
         ];
+
 
         $this->call(
             'engez:repository',
