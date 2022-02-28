@@ -442,6 +442,54 @@ abstract class JsonResourceManager extends JsonResource
     }
 
     /**
+     * Get localized 
+     *
+     * @return mixed
+     */
+    protected function locale($column)
+    {
+        $value = $this->value($column);
+
+        if (empty($value)) return '';
+
+        if (is_string($value) || !Mongez::requestHasLocaleCode()) return $value;
+
+        $localeCode = Mongez::getRequestLocaleCode();
+
+        // get the localization mode
+        // it cn be an object or an array of objects
+        $localizationMode = config('mognez.localizationMode', 'array');
+
+        // the OR in the following if conditions is used as a fallback for the data that is 
+        // not matching the current localization mode 
+        // for example, if the data is stored as object and the localization mode is an array
+        // in that case it will be rendered as an array 
+
+        if ($localizationMode === 'array' && isset($value[0]) || isset($value[0])) {
+            $valuesList = [];
+            foreach ($value as $localizedValue) {
+                // check if it is an array of values
+                if (isset($localizedValue[0])) {
+                    foreach ($localizedValue as $subValue) {
+                        if ($subValue['localeCode'] === $localeCode) {
+                            $valuesList[] = (string) $subValue['text'];
+                        }
+                    }
+                } else {
+                    if ($localizedValue['localeCode'] === $localeCode) {
+                        return (string) $localizedValue['text'];
+                    }
+                }
+            }
+            return $valuesList ?: $value;
+        } elseif ($localizationMode === 'object' && isset($value[$localeCode]) || isset($value[$localeCode])) {
+            return (string) $value[$localeCode];
+        }
+
+        return $value;
+    }
+
+    /**
      * Collect assets
      *
      * @param array $columns
@@ -751,54 +799,6 @@ abstract class JsonResourceManager extends JsonResource
         }
 
         $this->set($column, $resources);
-    }
-
-    /**
-     * Get name
-     *
-     * @return mixed
-     */
-    protected function locale($column)
-    {
-        $value = $this->value($column);
-
-        if (empty($value)) return '';
-
-        if (is_string($value) || !Mongez::requestHasLocaleCode()) return $value;
-
-        $localeCode = Mongez::getRequestLocaleCode();
-
-        // get the localization mode
-        // it cn be an object or an array of objects
-        $localizationMode = config('mognez.localizationMode', 'array');
-
-        // the OR in the following if conditions is used as a fallback for the data that is 
-        // not matching the current localization mode 
-        // for example, if the data is stored as object and the localization mode is an array
-        // in that case it will be rendered as an array 
-
-        if ($localizationMode === 'array' && isset($value[0]) || isset($value[0])) {
-            $valuesList = [];
-            foreach ($value as $localizedValue) {
-                // check if it is an array of values
-                if (isset($localizedValue[0])) {
-                    foreach ($localizedValue as $subValue) {
-                        if ($subValue['localeCode'] === $localeCode) {
-                            $valuesList[] = (string) $subValue['text'];
-                        }
-                    }
-                } else {
-                    if ($localizedValue['localeCode'] === $localeCode) {
-                        return (string) $localizedValue['text'];
-                    }
-                }
-            }
-            return $valuesList ?: $value;
-        } elseif ($localizationMode === 'object' && isset($value[$localeCode]) || isset($value[$localeCode])) {
-            return (string) $value[$localeCode];
-        }
-
-        return $value;
     }
 
 

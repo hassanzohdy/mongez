@@ -57,7 +57,7 @@ abstract class RepositoryManager implements RepositoryInterface
      * Allow translation from the repository
      */
     use Translatable {
-        __call as translate
+        __call as translate;
     }
 
     /**
