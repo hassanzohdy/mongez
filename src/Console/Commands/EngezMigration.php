@@ -153,6 +153,6 @@ class EngezMigration extends EngezGeneratorCommand implements EngezInterface
 
         $databaseMigration = $this->isMongoDB() ? 'mongodb-migration' : 'mysql-migration';
 
-        $this->putFIle("database/migrations/{$databaseFileName}.php", $this->replaceStub('Migrations/' . $databaseMigration, $replacements), 'Migration');
+        $this->putFIle("Database/migrations/{$databaseFileName}.php", $this->replaceStub('Migrations/' . $databaseMigration, $replacements), 'Migration');
     }
 }
