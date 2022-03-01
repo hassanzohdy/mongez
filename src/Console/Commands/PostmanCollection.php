@@ -14,7 +14,7 @@ class PostmanCollection extends Command
     /**
      * Docs Folder Name
     */
-    const DOCS_DIRECTORY_NAME = 'docs';
+    const DOCS_DIRECTORY_NAME = 'docs/postman';
 
     /**
      * default generate file name
