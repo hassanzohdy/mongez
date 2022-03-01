@@ -32,6 +32,7 @@ class Mongez
     const MONGEZ_STORAGE_FILE_DEfAULT_CONTENT = [
         'installed' => true,
         'modules' => [],
+        'postmanVersion' => "1.0"
     ];
 
     /**

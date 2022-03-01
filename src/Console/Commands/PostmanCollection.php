@@ -3,6 +3,8 @@
 namespace HZ\Illuminate\Mongez\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\File;
+use HZ\Illuminate\Mongez\Helpers\Mongez;
 
 class PostmanCollection extends Command
 {
@@ -128,8 +130,14 @@ class PostmanCollection extends Command
         $collection['variable'] = $this->getGlobalVariables();
 
         $fileName = $this->optionHasValue('fileName') ? $this->option('fileName') : self::DEFAULT_GENERATED_FILE_NAME;
+        
+        if(!File::exists($postmanDirectory = public_path('/postman'))) {
+            File::makeDirectory($postmanDirectory, 0755, true, true);
+        }
 
-        file_put_contents(base_path("$fileName.postman.json"), json_encode($collection, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+        $fileName = $fileName . "-v{$this->newVersion()}";
+
+        file_put_contents($postmanDirectory . "/$fileName.postman.json", json_encode($collection, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 
         $this->info("Success Generate Postman Collection for ' $appName '");
     }
@@ -148,9 +156,33 @@ class PostmanCollection extends Command
                 $allGlobalVariables[$variable['key']] = $variable;
             }
         }
+
+        $allGlobalVariables = array_merge($allGlobalVariables, $this->getConfigGlobalVariables());
+
+        return array_values($allGlobalVariables);
+    }
+
+    /**
+     * Get global variables from config
+     * 
+     * @return array
+    */
+    private function getConfigGlobalVariables()
+    {
+        $allGlobalVariables = [];
+
+        foreach(config('mongez.postman.variables') as $key => $value) {
+            $allGlobalVariables[$key] = [
+                'key' => $key,
+                'value' => $value
+            ];
+        }
         
         return $allGlobalVariables;
     }
+
+
+    
 
     /**
      * parsing file from text to json
@@ -173,5 +205,23 @@ class PostmanCollection extends Command
     private function getModulePath()
     {
         return base_path(self::MODULES_PATH);
+    }
+
+    /**
+     * Update postman veriosn in config and return new version
+     * 
+     * @return float
+     */
+    private function newVersion()
+    {
+        $oldVersion = Mongez::getStored('postmanVersion');
+
+        $newVersion = number_format(round($oldVersion + 0.1, 1), 1, '.', '');
+
+        Mongez::setStored('postmanVersion', "$newVersion");
+
+        Mongez::updateStorageFile();
+
+        return $newVersion;
     }
 }
