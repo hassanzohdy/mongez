@@ -182,14 +182,21 @@ trait ApiResponse
      *
      * @param  array $data
      * @param  int $statusCode
+     * @param  array $headers
+     * @param  mixed $jsonOptions
      * @return Response
      */
-    protected function send(array $data, int $statusCode)
+    protected function send(array $data, int $statusCode, array $headers = [], $jsonOptions = JSON_PRESERVE_ZERO_FRACTION)
     {
-        if (($eventResponse = events()->trigger('response.send', $data, $statusCode)) && is_array($eventResponse)) {
+        if (($eventResponse = events()->trigger('response.send', $data, $statusCode, $headers, $jsonOptions)) && is_array($eventResponse)) {
             $data = $eventResponse;
         }
 
-        return response()->json($data, $statusCode);
+        return response()->json(
+            $data,
+            $statusCode,
+            $headers,
+            $jsonOptions
+        );
     }
 }

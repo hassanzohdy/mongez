@@ -3,6 +3,7 @@
 namespace HZ\Illuminate\Mongez\Database\Eloquent\MongoDB;
 
 use DateTime;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Jenssegers\Mongodb\Eloquent\Model as BaseModel;
 use HZ\Illuminate\Mongez\Database\Eloquent\ModelTrait;
@@ -183,13 +184,19 @@ abstract class Model extends BaseModel
         // shall be created with it
         static::created(function ($model) {
             $otherModels = config('mongez.database.onModel.create.' . static::class);
+
             if (!empty(static::ON_MODEL_CREATE) || !empty($otherModels)) {
-                $modelsList = array_merge((array)static::ON_MODEL_CREATE, (array)$otherModels);
+                $modelsList = array_merge((array)static::ON_MODEL_CREATE, (array) $otherModels);
+
                 foreach ($modelsList as $modelClass => $modelOptions) {
                     if (is_string($modelOptions)) {
-                        $relationalModel = strtolower(str_replace('Models\\','', strstr($modelClass, 'Models')));
+                        // resolves related (Model::class) namespace to camelCase model name (model)
+
+                        $relationalModel = Str::camel(str_replace('Models\\', '', strstr($modelClass, 'Models')));
+
+                        // searching in the model attributes for key asymptotic to resolved (Model::class) name to get the searching key
                         $searchingKey = array_key_exists($relationalModel, $model->toArray()) ? $relationalModel :
-                            array_key_first(array_filter($model->toArray(), function($key) use ($relationalModel) {
+                            array_key_first(array_filter($model->toArray(), function ($key) use ($relationalModel) {
                                 return strpos($key, $relationalModel) !== false;
                             }, ARRAY_FILTER_USE_KEY));
 
@@ -197,13 +204,15 @@ abstract class Model extends BaseModel
                     } elseif (count($modelOptions) === 2) {
                         $modelOptions[] = 'sharedInfo';
                     }
+
                     [$searchingColumn, $creatingColumn, $sharedInfoMethod] = $modelOptions;
+
                     if (isset($model->$searchingColumn['id'])) {
                         $records = $modelClass::query()->where('id', (int) $model->$searchingColumn['id'])->get();
                     } else {
                         $searchingIds = array_map(function ($item) {
-                            return  (int) $item['id'] ;
-                            }, $model->$searchingColumn);
+                            return  (int) $item['id'];
+                        }, $model->$searchingColumn ?: []);
                         $records = $modelClass::query()->whereIn('id', $searchingIds)->get();
                     }
 
@@ -216,13 +225,18 @@ abstract class Model extends BaseModel
 
 
             $otherModels = config('mongez.database.onModel.createPush.' . static::class);
+
             if (!empty(static::ON_MODEL_CREATE_PUSH) || !empty($otherModels)) {
-                $modelsList = array_merge((array)static::ON_MODEL_CREATE_PUSH, (array)$otherModels);
+                $modelsList = array_merge((array)static::ON_MODEL_CREATE_PUSH, (array) $otherModels);
+
                 foreach ($modelsList as $modelClass => $modelOptions) {
                     if (is_string($modelOptions)) {
-                        $relationalModel = strtolower(str_replace('Models\\','', strstr($modelClass, 'Models')));
+                        // searching in the model attributes for key asymptotic to resolved (Model::class) name to get the searching key
+                        $relationalModel = Str::camel(str_replace('Models\\', '', strstr($modelClass, 'Models')));
+
+                        // searching in the model attributes for key asymptotic to resolved (Model::class) name to get the searching key
                         $searchingKey = array_key_exists($relationalModel, $model->toArray()) ? $relationalModel :
-                            array_key_first(array_filter($model->toArray(), function($key) use ($relationalModel) {
+                            array_key_first(array_filter($model->toArray(), function ($key) use ($relationalModel) {
                                 return strpos($key, $relationalModel) !== false;
                             }, ARRAY_FILTER_USE_KEY));
 
@@ -230,28 +244,28 @@ abstract class Model extends BaseModel
                     } elseif (count($modelOptions) === 2) {
                         $modelOptions[] = 'sharedInfo';
                     }
+
                     [$searchingColumn, $creatingColumn, $sharedInfoMethod] = $modelOptions;
 
                     if (isset($model->$searchingColumn['id'])) {
                         $records = $modelClass::query()->where('id', (int) $model->$searchingColumn['id'])->get();
                     } else {
                         $searchingIds = array_map(function ($item) {
-                            return  (int) $item['id'] ;
-                            }, $model->$searchingColumn);
+                            return  (int) $item['id'];
+                        }, $model->$searchingColumn ?: []);
                         $records = $modelClass::query()->whereIn('id', $searchingIds)->get();
                     }
 
                     foreach ($records as $record) {
                         $record->reassociate($model->$sharedInfoMethod(), $creatingColumn)->save();
                     }
-
                 }
             }
         });
 
         static::updating(function ($model) {
             if (static::UPDATED_BY && ($user = user())) {
-                $model->updatedBy = user()->sharedInfo();
+                $model->updatedBy = $user->sharedInfo();
             }
         });
 
