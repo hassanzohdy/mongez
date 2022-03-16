@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace HZ\Illuminate\Mongez\Testing\Rules;
 
 use HZ\Illuminate\Mongez\Testing\UnitRuleInterface;
-use Illuminate\Support\Arr;
 
 class IsArrayRule extends UnitRule implements UnitRuleInterface
 {
@@ -23,7 +22,7 @@ class IsArrayRule extends UnitRule implements UnitRuleInterface
 
         if (count($this->value) === 0) return true;
 
-        return Arr::isAssoc($this->value);
+        return isset($this->value[0]);
     }
 
     /**

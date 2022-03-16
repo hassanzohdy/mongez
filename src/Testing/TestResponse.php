@@ -10,6 +10,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Arr;
 use Illuminate\Testing\TestResponse as BaseTestResponse;
 use PHPUnit\TextUI\XmlConfiguration\PHPUnit;
+use Symfony\Component\HttpFoundation\Response as HttpFoundationResponse;
 
 class TestResponse extends BaseTestResponse
 {
@@ -228,7 +229,7 @@ class TestResponse extends BaseTestResponse
      */
     public function assertSuccess()
     {
-        return $this->assertStatus(200);
+        return $this->assertStatus(HttpFoundationResponse::HTTP_OK);
     }
 
     /**
@@ -238,7 +239,37 @@ class TestResponse extends BaseTestResponse
      */
     public function assertSuccessCreate()
     {
-        return $this->assertStatus(201);
+        return $this->assertStatus(HttpFoundationResponse::HTTP_CREATED);
+    }
+
+    /**
+     * Assert bad request response
+     * 
+     * @return $this
+     */
+    public function assertBadRequest()
+    {
+        return $this->assertStatus(HttpFoundationResponse::HTTP_BAD_REQUEST);
+    }
+
+    /**
+     * Assert not found response
+     * 
+     * @return $this
+     */
+    public function assertNotFound()
+    {
+        return $this->assertStatus(HttpFoundationResponse::HTTP_NOT_FOUND);
+    }
+
+    /**
+     * Assert unauthorized
+     * 
+     * @return $this
+     */
+    public function assertUnauthorized()
+    {
+        return $this->assertStatus(HttpFoundationResponse::HTTP_UNAUTHORIZED);
     }
 
     /**

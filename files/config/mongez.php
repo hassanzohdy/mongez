@@ -9,16 +9,22 @@ use HZ\Illuminate\Mongez\Testing\Rules\IsFloatRule;
 use HZ\Illuminate\Mongez\Testing\Rules\IsIntRule;
 use HZ\Illuminate\Mongez\Testing\Rules\IsObjectRule;
 use HZ\Illuminate\Mongez\Testing\Rules\IsUrlRule;
+use HZ\Illuminate\Mongez\Testing\Rules\LengthRule;
+use HZ\Illuminate\Mongez\Testing\Rules\MaxLengthRule;
+use HZ\Illuminate\Mongez\Testing\Rules\MaxRule;
+use HZ\Illuminate\Mongez\Testing\Rules\MinLengthRule;
 use HZ\Illuminate\Mongez\Testing\Rules\MinRule;
 use HZ\Illuminate\Mongez\Testing\Units\ArrayOfUnit;
 use HZ\Illuminate\Mongez\Testing\Units\ArrayUnit;
 use HZ\Illuminate\Mongez\Testing\Units\BooleanUnit;
 use HZ\Illuminate\Mongez\Testing\Units\BoolUnit;
 use HZ\Illuminate\Mongez\Testing\Units\EmailUnit;
+use HZ\Illuminate\Mongez\Testing\Units\ErrorKeyValueUnit;
 use HZ\Illuminate\Mongez\Testing\Units\FloatUnit;
 use HZ\Illuminate\Mongez\Testing\Units\IdUnit;
 use HZ\Illuminate\Mongez\Testing\Units\IntUnit;
 use HZ\Illuminate\Mongez\Testing\Units\ObjectUnit;
+use HZ\Illuminate\Mongez\Testing\Units\PaginationInfoUnit;
 use HZ\Illuminate\Mongez\Testing\Units\StringUnit;
 use HZ\Illuminate\Mongez\Testing\Units\UrlUnit;
 
@@ -269,14 +275,16 @@ return [
     |
     */
     'testing' => [
-        'headers' => [],
-        'response' => [
-            'rootKey' => '',
+        'headers' => [
+            'os' => 'ios',
         ],
+        'response' => [],
         'accessToken' => [
             'route' => '/login/guests',
-            'tokenResponseKey' => 'authorization.accessToken',
-            'headers' => []
+            'tokenResponseKey' => 'data.authorization.accessToken',
+            'headers' => [
+                'Authorization' => 'key xxx',
+            ]
         ],
         'units' => [
             EmailUnit::NAME => EmailUnit::class,
@@ -290,6 +298,8 @@ return [
             ArrayOfUnit::NAME => ArrayOfUnit::class,
             ArrayUnit::NAME => ArrayUnit::class,
             ObjectUnit::NAME => ObjectUnit::class,
+            PaginationInfoUnit::NAME => PaginationInfoUnit::class,
+            ErrorKeyValueUnit::NAME => ErrorKeyValueUnit::class,
         ],
         'rules' => [
             EqualRule::NAME => EqualRule::class,
@@ -302,6 +312,10 @@ return [
             IsArrayRule::NAME => IsArrayRule::class,
             IsObjectRule::NAME => IsObjectRule::class,
             MinRule::NAME => MinRule::class,
+            MaxRule::NAME => MaxRule::class,
+            LengthRule::NAME => LengthRule::class,
+            MaxLengthRule::NAME => MaxLengthRule::class,
+            MinLengthRule::NAME => MinLengthRule::class,
         ],
     ],
 

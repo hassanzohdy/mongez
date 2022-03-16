@@ -281,7 +281,7 @@ class UnitType
                     static::resolveRule($rule),
                 ]);
             } else {
-                throw new InvalidUnitRuleException(sprintf('The current unit does not have the given rule, also there are no rule called %s in the rules list', $this->color($rule, 'cyan')));
+                throw new InvalidUnitRuleException(sprintf('The current unit %s does not have %s rule, also there are no rule called %s in the rules list', $this->color($this->name(), 'magenta'),  $ruleName = $this->color($rule, 'cyan'), $ruleName));
             }
         }
 
