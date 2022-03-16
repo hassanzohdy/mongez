@@ -27,6 +27,7 @@ use HZ\Illuminate\Mongez\Testing\Units\ObjectUnit;
 use HZ\Illuminate\Mongez\Testing\Units\PaginationInfoUnit;
 use HZ\Illuminate\Mongez\Testing\Units\StringUnit;
 use HZ\Illuminate\Mongez\Testing\Units\UrlUnit;
+use HZ\Illuminate\Mongez\Testing\Units\ErrorsListUnit;
 
 return [
     /*
@@ -300,6 +301,7 @@ return [
             ObjectUnit::NAME => ObjectUnit::class,
             PaginationInfoUnit::NAME => PaginationInfoUnit::class,
             ErrorKeyValueUnit::NAME => ErrorKeyValueUnit::class,
+            ErrorsListUnit::NAME => ErrorsListUnit::class,
         ],
         'rules' => [
             EqualRule::NAME => EqualRule::class,

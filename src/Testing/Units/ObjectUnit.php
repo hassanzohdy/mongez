@@ -109,6 +109,8 @@ class ObjectUnit extends UnitType
                 $unit->strict($this->isStrict);
             }
 
+            $unit->beforeValidation();
+
             $unit->validate();
 
             if (!$unit->isValid()) {

@@ -73,6 +73,15 @@ class UnitType
     }
 
     /**
+     * Called before validation
+     * 
+     * @return void
+     */
+    public function beforeValidation()
+    {
+    }
+
+    /**
      * Unit can have empty value
      * 
      * @return UnitType

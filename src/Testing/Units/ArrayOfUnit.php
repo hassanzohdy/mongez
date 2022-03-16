@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace HZ\Illuminate\Mongez\Testing\Units;
 
+use Closure;
 
 class ArrayOfUnit extends ArrayUnit
 {
@@ -18,6 +19,25 @@ class ArrayOfUnit extends ArrayUnit
      * @var unitTypeClass
      */
     protected string $unitTypeClass;
+
+    /**
+     * Perform operation on each unit class in the array list
+     * 
+     * @var rarray
+     */
+    private array $callbacks = [];
+
+    /**
+     * Append a callback to each unit type
+     * 
+     * @param  \Clouse $callback
+     * @return self
+     */
+    public function each(Closure $callback): ArrayOfUnit
+    {
+        $this->callbacks[] = $callback;
+        return $this;
+    }
 
     /**
      * {@inheritDoc}
@@ -48,6 +68,12 @@ class ArrayOfUnit extends ArrayUnit
             if ($this->hasDeterminedIfStrict() && !$unitType->hasDeterminedIfStrict()) {
                 $unitType->strict($this->isStrict);
             }
+
+            foreach ($this->callbacks as $callback) {
+                $callback($unitType, $index, $class);
+            }
+
+            $unitType->beforeValidation();
 
             $unitType->validate();
 
