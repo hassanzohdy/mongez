@@ -4,22 +4,19 @@ declare(strict_types=1);
 
 namespace HZ\Illuminate\Mongez\Testing;
 
-use HZ\Illuminate\Mongez\Testing\Traits\Messageable;
-use HZ\Illuminate\Mongez\Testing\Traits\WithAccessToken;
-use HZ\Illuminate\Mongez\Testing\Traits\WithRepository;
 use Illuminate\Support\Str;
 use Tests\CreatesApplication;
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Testing\LoggedExceptionCollection;
+use HZ\Illuminate\Mongez\Testing\Traits\Messageable;
+use HZ\Illuminate\Mongez\Testing\Traits\WithAccessToken;
 
 abstract class ApiTestCase extends TestCase
 {
     use CreatesApplication;
 
     use WithFaker;
-
-    use WithRepository;
 
     use WithAccessToken;
 
@@ -39,7 +36,7 @@ abstract class ApiTestCase extends TestCase
      * 
      * @var bool
      */
-    protected bool $isAuthenticated = false;
+    protected ?bool $isAuthenticated = false;
 
     /**
      * Add Prefix to all routes
@@ -65,16 +62,18 @@ abstract class ApiTestCase extends TestCase
      * Handle Authorization Header
      * 
      * @param array $headers
-     * @return void
+     * @return array
      */
-    protected function handleAuthorizationHeader(array &$headers)
+    protected function handleAuthorizationHeader(array $headers): array
     {
         // merge headers with default config headers
-        $headers = array_merge($headers, config('mongez.testing.headers', []));
+        $headers = array_merge($this->appendHeaders(), $headers);
 
-        if (!empty($headers['Authorization'])) return;
+        if (empty($headers['Authorization']) && $this->isAuthenticated !== null) {
+            $headers['Authorization'] = $this->isAuthenticated ? 'Bearer ' . $this->getAccessToken() : 'key ' . $this->getApiKey();
+        }
 
-        $headers['Authorization'] = $this->isAuthenticated ? 'Bearer ' . $this->getAccessToken() : 'key ' . env('API_KEY');
+        return $headers;
     }
 
     /**
@@ -86,7 +85,7 @@ abstract class ApiTestCase extends TestCase
      */
     public function get($uri, array $headers = []): TestResponse
     {
-        $this->handleAuthorizationHeader($headers);
+        $headers = $this->handleAuthorizationHeader($headers);
 
         return parent::getJson($uri, $headers);
     }
@@ -101,7 +100,7 @@ abstract class ApiTestCase extends TestCase
      */
     public function post($uri, array $data = [], array $headers = [])
     {
-        $this->handleAuthorizationHeader($headers);
+        $headers = $this->handleAuthorizationHeader($headers);
 
         return parent::postJson($uri, $data, $headers);
     }
@@ -116,7 +115,7 @@ abstract class ApiTestCase extends TestCase
      */
     public function put($uri, array $data = [], array $headers = [])
     {
-        $this->handleAuthorizationHeader($headers);
+        $headers = $this->handleAuthorizationHeader($headers);
 
         return parent::putJson($uri, $data, $headers);
     }
@@ -131,7 +130,7 @@ abstract class ApiTestCase extends TestCase
      */
     public function patch($uri, array $data = [], array $headers = [])
     {
-        $this->handleAuthorizationHeader($headers);
+        $headers = $this->handleAuthorizationHeader($headers);
 
         return parent::patchJson($uri, $data, $headers);
     }
@@ -146,7 +145,7 @@ abstract class ApiTestCase extends TestCase
      */
     public function delete($uri, array $data = [], array $headers = [])
     {
-        $this->handleAuthorizationHeader($headers);
+        $headers = $this->handleAuthorizationHeader($headers);
 
         return parent::deleteJson($uri, $data, $headers);
     }
@@ -161,7 +160,7 @@ abstract class ApiTestCase extends TestCase
      */
     public function options($uri, array $data = [], array $headers = [])
     {
-        $this->handleAuthorizationHeader($headers);
+        $headers = $this->handleAuthorizationHeader($headers);
 
         return parent::optionsJson($uri, $data, $headers);
     }
@@ -261,5 +260,15 @@ abstract class ApiTestCase extends TestCase
         }
 
         return $data;
+    }
+
+    /**
+     * Append more headers to each request
+     * 
+     * @return array
+     */
+    public function appendHeaders(): array
+    {
+        return config('mongez.testing.headers', []);
     }
 }

@@ -17,6 +17,13 @@ trait WithAccessToken
     protected static string $accessToken = '';
 
     /**
+     * Get api key
+     * 
+     * @var string
+     */
+    protected static string $apiKey = '';
+
+    /**
      * Get access token
      * 
      * @return string
@@ -33,14 +40,24 @@ trait WithAccessToken
 
         $response = $this->post($accessToken['route'], $accessToken['body'] ?? [], $accessToken['headers'] ?? []);
 
-        $this->instantMessage('Generating Access Token...', 'yellow');
+        $this->instantMessage('Generating Access Token...', 'cyan');
 
         static::$accessToken = Arr::get($response->toArray(), $accessTokenResponseKeyPath);
         $this->isAuthenticated = true;
 
-        $this->instantMessage('Access Token Has been generated successfully...', 'yellow');
+        $this->instantMessage('Access Token Has been generated successfully...', 'green');
 
         return static::$accessToken;
+    }
+
+    /**
+     * Get api key
+     * 
+     * @return string
+     */
+    protected function getApiKey(): string
+    {
+        return static::$apiKey;
     }
 
     /**

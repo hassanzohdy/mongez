@@ -36,8 +36,12 @@ trait Messageable
      * @param string $message
      * @return void
      */
-    protected function instantMessage(string $message)
+    protected function instantMessage(string $message, string $color = '')
     {
+        if ($color) {
+            $message = $this->color($message, $color);
+        }
+
         echo $message . PHP_EOL;
 
         echo ob_get_clean();

@@ -11,17 +11,12 @@ class ErrorsListUnit extends ArrayOfUnit
      */
     public function __construct(array $errorsKeys)
     {
-        $units = [];
+        parent::__construct(ErrorKeyValueUnit::class);
 
-        foreach ($errorsKeys as $index => $errorKey) {
-            $units[$index . '.key'] = ['string', 'equal:' . $errorKey];
-            $units[$index . '.value'] = ['string'];
-        }
+        $this->length(count($errorsKeys));
 
         $this->each(function ($unit, $index) use ($errorsKeys) {
             $unit->setErrorKeyName($errorsKeys[$index]);
         });
-
-        parent::__construct(ErrorKeyValueUnit::class);
     }
 }

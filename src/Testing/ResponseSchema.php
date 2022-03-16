@@ -12,9 +12,13 @@ class ResponseSchema extends ObjectUnit implements ResponseSchemaInterface
      * Constructor
      * @param array $unitsList
      */
-    public function __construct(array $unitsList = [])
+    public function __construct(array $unitsList = [], array $options = [])
     {
-        $rootKey = config('mongez.testing.response.rootKey');
+        $options = array_merge([
+            'rootKey' => config('mongez.testing.response.rootKey'),
+        ], $options);
+
+        $rootKey = $options['rootKey'];
 
         if ($rootKey) {
             $unitsList = [
