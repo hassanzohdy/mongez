@@ -373,7 +373,7 @@ abstract class Model extends BaseModel
                     $records = $modelClass::where($searchingColumn . '.id', $model->id)->get();
 
                     foreach ($records as $record) {
-                        unset($record[$clearingColumn]);
+                        $record->unset($clearingColumn);
                         $record->save();
                     }
                 }

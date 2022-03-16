@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace HZ\Illuminate\Mongez\Traits\Testing;
+namespace HZ\Illuminate\Mongez\Testing\Traits;
 
 use Illuminate\Support\Arr;
 use HZ\Illuminate\Mongez\Testing\apiRequest;

@@ -228,7 +228,7 @@ abstract class MongoDBRepositoryManager extends RepositoryManager implements Rep
             if ($location) {
                 $model->$locationKey = [
                     'type' => 'Point',
-                    'coordinates' => [(float) $location['lat'], (float) $location['lng']],
+                    'coordinates' => [(float) $location['lat'] ?? 0, (float) $location['lng'] ?? 0],
                     'address' => $location['address'] ?? null,
                 ];
             }

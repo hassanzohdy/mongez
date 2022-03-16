@@ -1,13 +1,20 @@
 <?php
+
 declare(strict_types=1);
 
 namespace HZ\Illuminate\Mongez\Testing;
 
+use HZ\Illuminate\Mongez\Testing\Traits\Messageable;
+use Illuminate\Foundation\Testing\TestCase;
+use Illuminate\Http\Response;
 use Illuminate\Support\Arr;
 use Illuminate\Testing\TestResponse as BaseTestResponse;
+use PHPUnit\TextUI\XmlConfiguration\PHPUnit;
 
 class TestResponse extends BaseTestResponse
 {
+    use Messageable;
+
     /**
      * Response object
      * 
@@ -44,24 +51,18 @@ class TestResponse extends BaseTestResponse
     protected array $setResponseShape;
 
     /**
+     * Test case
+     * 
+     * @var TestCase
+     */
+    protected $testCase;
+
+    /**
      * Response body
      * 
      * @var object
      */
     protected $responseBody;
-
-    /**
-     * Set response object
-     * 
-     * @param  \Illuminate\Testing\TestResponse $response
-     * @return $this
-     */
-    public function setResponse(TestResponse $response): self
-    {
-        $this->response = $response;
-        $this->responseBody = json_decode($this->response->getContent());
-        return $this;
-    }
 
     /**
      * Set request route
@@ -132,11 +133,42 @@ class TestResponse extends BaseTestResponse
     /**
      * Get response object
      * 
-     * @return \Illuminate\Testing\TestResponse
+     * @return \Illuminate\Http\Response
      */
-    public function getResponse(): TestResponse
+    public function getResponse(): Response
     {
-        return $this->response;
+        return $this->baseResponse;
+    }
+
+    /**
+     * Get response status code
+     * 
+     * @return int
+     */
+    public function getStatusCode(): int
+    {
+        return $this->baseResponse->getStatusCode();
+    }
+
+    /**
+     * Set test case
+     * 
+     * @param  TestCase $testCase
+     * @return void 
+     */
+    public function setTestSuit(TestCase $testCase)
+    {
+        $this->testCase = $testCase;
+    }
+
+    /**
+     * Get response status code
+     * 
+     * @return int
+     */
+    public function statusCode(): int
+    {
+        return $this->baseResponse->getStatusCode();
     }
 
     /**
@@ -146,7 +178,7 @@ class TestResponse extends BaseTestResponse
      */
     public function getResponseBody()
     {
-        return $this->responseBody;
+        return json_decode($this->baseResponse->getContent());
     }
 
     /**
@@ -156,7 +188,7 @@ class TestResponse extends BaseTestResponse
      */
     public function body()
     {
-        return $this->responseBody;
+        return json_decode($this->baseResponse->getContent());
     }
 
     /**
@@ -166,7 +198,7 @@ class TestResponse extends BaseTestResponse
      */
     public function toArray(): array
     {
-        return json_decode($this->response->getContent(), true);
+        return json_decode($this->baseResponse->getContent(), true);
     }
 
     /**
@@ -187,5 +219,50 @@ class TestResponse extends BaseTestResponse
     public function getLastInsertId(): int
     {
         return (int) Arr::get($this->toArray(), 'data.record.id');
+    }
+
+    /**
+     * Assert success response
+     * 
+     * @return $this
+     */
+    public function assertSuccess()
+    {
+        return $this->assertStatus(200);
+    }
+
+    /**
+     * Assert success create response
+     * 
+     * @return $this
+     */
+    public function assertSuccessCreate()
+    {
+        return $this->assertStatus(201);
+    }
+
+    /**
+     * Assert the current response to be the given response schema
+     * 
+     * @param  ResponseSchemaIterface $responseSchema
+     * @return $this
+     */
+    public function assertResponse(ResponseSchemaInterface $responseSchema)
+    {
+        $responseSchema->setValue($this->toArray())->validate();
+
+        if (!$responseSchema->isValid()) {
+            $errors = (new ErrorsMessagesParser($responseSchema->errorsList()))->parse();
+
+            $message = $this->color('Response Schema Failed:', 'red', ['bold']) . PHP_EOL;
+
+            foreach ($errors as $error) {
+                $message .= $error . PHP_EOL;
+            }
+
+            $this->testCase->fail($message);
+        }
+
+        return $this;
     }
 }

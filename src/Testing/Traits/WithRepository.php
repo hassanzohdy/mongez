@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace HZ\Illuminate\Mongez\Traits\Testing;
+namespace HZ\Illuminate\Mongez\Testing\Traits;
 
-use HZ\Illuminate\Mongez\Contracts\Repositories\RepositoryInterface;
+use HZ\Illuminate\Mongez\Repository\RepositoryInterface;
 
 trait WithRepository
 {
@@ -37,7 +37,7 @@ trait WithRepository
      */
     protected function repo(): RepositoryInterface
     {
-        return repo($this->getRepositoryName());
+        return repo(static::REPOSITORY_NAME);
     }
 
     /**
@@ -49,11 +49,4 @@ trait WithRepository
     {
         return $this->repo()->getQuery();
     }
-
-    /**
-     * Get Repository name
-     * 
-     * @var string
-     */
-    abstract protected function getRepositoryName(): string;
 }

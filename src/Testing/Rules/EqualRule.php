@@ -5,22 +5,24 @@ declare(strict_types=1);
 namespace HZ\Illuminate\Mongez\Testing\Rules;
 
 use Exception;
-use HZ\Illuminate\Mongez\Contracts\Testing\UnitRule;
-use HZ\Illuminate\Mongez\Managers\Testing\UnitRuleManager;
+use HZ\Illuminate\Mongez\Testing\MissingUnitRuleOptionsException;
+use HZ\Illuminate\Mongez\Testing\UnitRuleInterface;
 
-class MustBe extends UnitRuleManager implements UnitRule
+class EqualRule extends UnitRule implements UnitRuleInterface
 {
     /**
-     * Asserting value
+     * {@inheritDoc}
      */
-    protected $assertingValue;
+    const NAME = 'equal';
 
     /**
      * {@inheritDoc}
      */
-    public function name(): string
+    public function beforeValidating()
     {
-        return 'mustBe';
+        if (empty($this->options[0])) {
+            throw new MissingUnitRuleOptionsException('equal rule parameter is missing.');
+        }
     }
 
     /**
@@ -28,10 +30,6 @@ class MustBe extends UnitRuleManager implements UnitRule
      */
     public function isValid(): bool
     {
-        if (empty($this->options[0])) {
-            throw new Exception('mustBe method parameter is missing.');
-        }
-
         $value = $this->options[0];
 
         if ($value === 'false') {
@@ -63,12 +61,10 @@ class MustBe extends UnitRuleManager implements UnitRule
 
         $returnedValueType = gettype($this->value);
 
-        return $this->message(
-            sprintf(
-                'must be ' . ($assertingValueType === 'string' ? '"%s"' : '%s') . ', ' . ($returnedValueType === 'string' ? '"%s"' : '%s') . ' returned.',
-                $this->color($mapValue($this->assertingValue), 'green'),
-                $this->color($mapValue($this->value), 'red')
-            )
+        return sprintf(
+            ':key must be ' . ($assertingValueType === 'string' ? '"%s"' : '%s') . ', ' . ($returnedValueType === 'string' ? '"%s"' : '%s') . ' returned.',
+            $this->color($mapValue($this->assertingValue), 'green'),
+            $this->color($mapValue($this->value), 'red')
         );
     }
 }

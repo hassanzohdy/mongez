@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace HZ\Illuminate\Mongez\Testing;
 
-use HZ\Illuminate\Mongez\Contracts\Testing\ResponseStructure;
-use HZ\Illuminate\Mongez\Traits\Testing\Messageable;
-use HZ\Illuminate\Mongez\Traits\Testing\WithAccessToken;
+use HZ\Illuminate\Mongez\Testing\Traits\Messageable;
+use HZ\Illuminate\Mongez\Testing\Traits\WithAccessToken;
+use HZ\Illuminate\Mongez\Testing\Traits\WithRepository;
 use Illuminate\Support\Str;
 use Tests\CreatesApplication;
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
-// use Illuminate\Foundation\Testing\RefreshDatabase;
-use HZ\Illuminate\Mongez\Traits\Testing\WithRepository;
 use Illuminate\Testing\LoggedExceptionCollection;
 
 abstract class ApiTestCase extends TestCase
@@ -26,6 +24,13 @@ abstract class ApiTestCase extends TestCase
     use WithAccessToken;
 
     use Messageable;
+
+    /**
+     * Repository name
+     * 
+     * @const string
+     */
+    protected const REPOSITORY_NAME = '';
 
     // use RefreshDatabase;
 
@@ -74,9 +79,9 @@ abstract class ApiTestCase extends TestCase
      *
      * @param  string  $uri
      * @param  array  $headers
-     * @return \HZ\Illuminate\Mongez\TestingTestResponse
+     * @return \HZ\Illuminate\Mongez\Testing\TestResponse
      */
-    public function get($uri, array $headers = [])
+    public function get($uri, array $headers = []): TestResponse
     {
         $this->handleAuthorizationHeader($headers);
 
@@ -89,7 +94,7 @@ abstract class ApiTestCase extends TestCase
      * @param  string  $uri
      * @param  array  $data
      * @param  array  $headers
-     * @return \HZ\Illuminate\Mongez\TestingTestResponse
+     * @return \HZ\Illuminate\Mongez\Testing\TestResponse
      */
     public function post($uri, array $data = [], array $headers = [])
     {
@@ -104,7 +109,7 @@ abstract class ApiTestCase extends TestCase
      * @param  string  $uri
      * @param  array  $data
      * @param  array  $headers
-     * @return \HZ\Illuminate\Mongez\TestingTestResponse
+     * @return \HZ\Illuminate\Mongez\Testing\TestResponse
      */
     public function put($uri, array $data = [], array $headers = [])
     {
@@ -119,7 +124,7 @@ abstract class ApiTestCase extends TestCase
      * @param  string  $uri
      * @param  array  $data
      * @param  array  $headers
-     * @return \HZ\Illuminate\Mongez\TestingTestResponse
+     * @return \HZ\Illuminate\Mongez\Testing\TestResponse
      */
     public function patch($uri, array $data = [], array $headers = [])
     {
@@ -134,7 +139,7 @@ abstract class ApiTestCase extends TestCase
      * @param  string  $uri
      * @param  array  $data
      * @param  array  $headers
-     * @return \HZ\Illuminate\Mongez\TestingTestResponse
+     * @return \HZ\Illuminate\Mongez\Testing\TestResponse
      */
     public function delete($uri, array $data = [], array $headers = [])
     {
@@ -149,7 +154,7 @@ abstract class ApiTestCase extends TestCase
      * @param  string  $uri
      * @param  array  $data
      * @param  array  $headers
-     * @return \HZ\Illuminate\Mongez\TestingTestResponse
+     * @return \HZ\Illuminate\Mongez\Testing\TestResponse
      */
     public function options($uri, array $data = [], array $headers = [])
     {
@@ -168,7 +173,7 @@ abstract class ApiTestCase extends TestCase
      * @param  array  $files
      * @param  array  $server
      * @param  string|null  $content
-     * @return \HZ\Illuminate\Mongez\TestingTestResponse
+     * @return \HZ\Illuminate\Mongez\Testing\TestResponse
      */
     public function call($method, $route, $parameters = [], $cookies = [], $files = [], $server = [], $content = null)
     {
@@ -189,7 +194,11 @@ abstract class ApiTestCase extends TestCase
      */
     protected function createTestResponse($response)
     {
-        return tap(TestResponse::fromBaseResponse($response), function ($response) {
+        $testResponse = TestResponse::fromBaseResponse($response);
+
+        $testResponse->setTestSuit($this);
+
+        return tap($testResponse, function ($response) {
             $response->withExceptions(
                 $this->app->bound(LoggedExceptionCollection::class)
                     ? $this->app->make(LoggedExceptionCollection::class)

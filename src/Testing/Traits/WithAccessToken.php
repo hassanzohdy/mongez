@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace HZ\Illuminate\Mongez\Traits\Testing;
+namespace HZ\Illuminate\Mongez\Testing\Traits;
 
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
@@ -25,32 +25,22 @@ trait WithAccessToken
     {
         if (static::$accessToken) return static::$accessToken;
 
-        $settings = $this->accessTokenSettings();
+        $accessToken = $this->accessTokenSettings();
+
+        $accessTokenResponseKeyPath = $accessToken['tokenResponseKey'] ?? 'accessToken';
+
+        $this->isAuthenticated = false;
+
+        $response = $this->post($accessToken['route']);
 
         $this->instantMessage('Generating Access Token...', 'yellow');
 
-        $currentApiPrefix = $this->apiPrefix;
+        static::$accessToken = $response->body()->$accessTokenResponseKeyPath;
+        $this->isAuthenticated = true;
 
-        $this->apiPrefix = $settings['apiPrefix'];
-        $credentials = [];
 
-        if (!empty($settings['credentials'])) {
-            $credentials = $settings['credentials'];
-        } elseif (isset($settings['createUser'])) {
-            [$className, $method] = $settings['createUser'];
-            $userCreator = App::make($className);
-            $credentials = $userCreator->$method();
-        }
+        $this->instantMessage('Access Token Has been generated successfully...', 'yellow');
 
-        $response = $this->isAuthorized(false)->post($settings['loginRoute'], $credentials);
-
-        $this->apiPrefix = $currentApiPrefix;
-        $response = json_decode($response->getContent(), true);
-
-        static::$accessToken = Arr::get($response, $settings['accessTokenResponseKey']);
-
-        $this->instantMessage('Access Token Has Been Generated Successfully.', 'green');
-        $this->instantMessage('Access Token Has Been Cached for rest of unit tests.', 'cyan');
 
         return static::$accessToken;
     }

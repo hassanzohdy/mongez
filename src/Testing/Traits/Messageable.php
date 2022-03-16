@@ -1,9 +1,10 @@
 <?php
+
 declare(strict_types=1);
-namespace HZ\Illuminate\Mongez\Traits\Testing;
+
+namespace HZ\Illuminate\Mongez\Testing\Traits;
 
 use Symfony\Component\Console\Color;
-use HZ\Illuminate\Mongez\Helpers\Testing\Message;
 
 trait Messageable
 {
@@ -12,9 +13,9 @@ trait Messageable
      * 
      * @return string
      */
-    public function color(string $text, string $color = ''): string
+    public function color(string $text, string $color = '', array $options = []): string
     {
-        return (new Color($color))->apply($text);
+        return (new Color($color, '', $options))->apply($text);
     }
 
     /**
@@ -26,19 +27,18 @@ trait Messageable
      */
     protected function message(string $message, string $color = ''): string
     {
-        return (new Message($this->key ?? ''))->apply($message, $color);
+        return $this->color($message, $color);
     }
 
     /**
      * Print the given message
      * 
      * @param string $message
-     * @param string $color
      * @return void
      */
-    protected function instantMessage(string $message, string $color)
+    protected function instantMessage(string $message)
     {
-        echo $this->message($message, $color) . PHP_EOL;
+        echo $message . PHP_EOL;
 
         echo ob_get_clean();
     }
