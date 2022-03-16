@@ -31,16 +31,14 @@ trait WithAccessToken
 
         $this->isAuthenticated = false;
 
-        $response = $this->post($accessToken['route']);
+        $response = $this->post($accessToken['route'], $accessToken['body'] ?? [], $accessToken['headers'] ?? []);
 
         $this->instantMessage('Generating Access Token...', 'yellow');
 
-        static::$accessToken = $response->body()->$accessTokenResponseKeyPath;
+        static::$accessToken = Arr::get($response->toArray(), $accessTokenResponseKeyPath);
         $this->isAuthenticated = true;
 
-
         $this->instantMessage('Access Token Has been generated successfully...', 'yellow');
-
 
         return static::$accessToken;
     }

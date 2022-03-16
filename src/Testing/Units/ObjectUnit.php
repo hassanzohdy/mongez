@@ -29,6 +29,14 @@ class ObjectUnit extends UnitType
      */
     public function __construct(array $unitsList = [])
     {
+        $rootKey = config('mongez.testing.response.rootKey');
+        if ($rootKey) {
+            foreach ($unitsList as $key => $unit) {
+                unset($unitsList[$key]);
+                $unitsList[$rootKey . '.' . $key] = $unit;
+            }
+        }
+
         $this->setUnits($unitsList);
         parent::__construct();
     }

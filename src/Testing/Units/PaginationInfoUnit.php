@@ -14,7 +14,7 @@ class PaginationInfoUnit extends ObjectUnit
         parent::init();
 
         $this->setUnits([
-            'currentResults' => (new IntUnit())->min(29),
+            'currentResults' => (new IntUnit()),
             'totalRecords' => new IntUnit(),
             'numberOfPages' => new IntUnit(),
             'itemsPerPage' => new IntUnit(),

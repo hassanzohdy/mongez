@@ -69,6 +69,9 @@ abstract class ApiTestCase extends TestCase
      */
     protected function handleAuthorizationHeader(array &$headers)
     {
+        // merge headers with default config headers
+        $headers = array_merge($headers, config('mongez.testing.headers', []));
+
         if (!empty($headers['Authorization'])) return;
 
         $headers['Authorization'] = $this->isAuthenticated ? 'Bearer ' . $this->getAccessToken() : 'key ' . env('API_KEY');

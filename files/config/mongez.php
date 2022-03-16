@@ -1,5 +1,27 @@
 <?php
 
+use HZ\Illuminate\Mongez\Testing\Rules\EqualRule;
+use HZ\Illuminate\Mongez\Testing\Rules\IsArrayRule;
+use HZ\Illuminate\Mongez\Testing\Rules\IsBooleanRule;
+use HZ\Illuminate\Mongez\Testing\Rules\IsBoolRule;
+use HZ\Illuminate\Mongez\Testing\Rules\IsEmailRule;
+use HZ\Illuminate\Mongez\Testing\Rules\IsFloatRule;
+use HZ\Illuminate\Mongez\Testing\Rules\IsIntRule;
+use HZ\Illuminate\Mongez\Testing\Rules\IsObjectRule;
+use HZ\Illuminate\Mongez\Testing\Rules\IsUrlRule;
+use HZ\Illuminate\Mongez\Testing\Rules\MinRule;
+use HZ\Illuminate\Mongez\Testing\Units\ArrayOfUnit;
+use HZ\Illuminate\Mongez\Testing\Units\ArrayUnit;
+use HZ\Illuminate\Mongez\Testing\Units\BooleanUnit;
+use HZ\Illuminate\Mongez\Testing\Units\BoolUnit;
+use HZ\Illuminate\Mongez\Testing\Units\EmailUnit;
+use HZ\Illuminate\Mongez\Testing\Units\FloatUnit;
+use HZ\Illuminate\Mongez\Testing\Units\IdUnit;
+use HZ\Illuminate\Mongez\Testing\Units\IntUnit;
+use HZ\Illuminate\Mongez\Testing\Units\ObjectUnit;
+use HZ\Illuminate\Mongez\Testing\Units\StringUnit;
+use HZ\Illuminate\Mongez\Testing\Units\UrlUnit;
+
 return [
     /*
     |--------------------------------------------------------------------------
@@ -223,6 +245,64 @@ return [
         // add your repositories here  
         // 'repo-short-name' => RepositoryClassPath::class,
         // Auto generated repositories here: DO NOT remove this line.   
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Unit Testing Configurations
+    |--------------------------------------------------------------------------
+    |
+    | The headers array will be sent with each request, except the access token request, it has its own headers
+    |
+    | If The response.rootKey is set, then the response schema will append it to each key
+    | For example `response.rootKey = data`, then it will assume that the entire response is sent in the `data` key thus
+    | it will be prefixed for each key in the response schema units 
+    |
+    | The `accessToken.route` will be used when `sAuthenticated` property set to true in any `ApiTestCase`
+    | This will generate a new access token from the given route and store its value 
+    | to all other requests that need an access token
+    |
+    | The `tokenResponseKey` is a dot notation key to get the access token from the access token response
+    |
+    | `units` are list of units that can be used when creating a new response schema validation
+    | This can be useful if you're using aliases instead of calling the unit class directly
+    |
+    */
+    'testing' => [
+        'headers' => [],
+        'response' => [
+            'rootKey' => '',
+        ],
+        'accessToken' => [
+            'route' => '/login/guests',
+            'tokenResponseKey' => 'authorization.accessToken',
+            'headers' => []
+        ],
+        'units' => [
+            EmailUnit::NAME => EmailUnit::class,
+            BooleanUnit::NAME => BooleanUnit::class,
+            BoolUnit::NAME => BoolUnit::class,
+            IdUnit::NAME => IdUnit::class,
+            StringUnit::NAME => StringUnit::class,
+            UrlUnit::NAME => UrlUnit::class,
+            IntUnit::NAME => IntUnit::class,
+            FloatUnit::NAME => FloatUnit::class,
+            ArrayOfUnit::NAME => ArrayOfUnit::class,
+            ArrayUnit::NAME => ArrayUnit::class,
+            ObjectUnit::NAME => ObjectUnit::class,
+        ],
+        'rules' => [
+            EqualRule::NAME => EqualRule::class,
+            IsUrlRule::NAME => IsUrlRule::class,
+            IsFloatRule::NAME => IsFloatRule::class,
+            IsIntRule::NAME => IsIntRule::class,
+            IsBoolRule::NAME => IsBoolRule::class,
+            IsBooleanRule::NAME => IsBooleanRule::class,
+            IsEmailRule::NAME => IsEmailRule::class,
+            IsArrayRule::NAME => IsArrayRule::class,
+            IsObjectRule::NAME => IsObjectRule::class,
+            MinRule::NAME => MinRule::class,
+        ],
     ],
 
     /*

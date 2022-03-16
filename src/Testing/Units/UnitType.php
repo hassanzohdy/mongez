@@ -239,7 +239,11 @@ class UnitType
      */
     public function getBaseUnitMessageAttributes(): array
     {
-        $type = gettype($this->value);
+        if ($this->value === ResponseSchemaInterface::MISSING_RESPONSE_KEY) {
+            $type = 'none';
+        } else {
+            $type = gettype($this->value);
+        }
 
         if ($type === 'array' && is_object((object) $this->value)) {
             $type = 'object';
