@@ -407,4 +407,9 @@ abstract class SeederManager extends Seeder
 
         return $object;
     }
+
+    private function faker(string $fakerLocale)
+    {
+        return Faker::create($fakerLocale);
+    }
 }
