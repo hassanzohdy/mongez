@@ -62,12 +62,15 @@ class ArrayOfUnit extends ArrayUnit
         foreach ($this->value as $index => $singleValue) {
             $unitType = new $class();
 
-            $unitType->setKeyNamespace($this->fullKeyPath())->setParentKey($this->key)->setKey((string) $index);
+            $unitType->setKeyNamespace($this->fullKeyPath())
+                ->setParentKey($this->key)
+                ->setKey((string) $index);
             $unitType->setValue($singleValue);
 
             if ($this->hasDeterminedIfStrict() && !$unitType->hasDeterminedIfStrict()) {
                 $unitType->strict($this->isStrict);
             }
+
 
             foreach ($this->callbacks as $callback) {
                 $callback($unitType, $index, $class);

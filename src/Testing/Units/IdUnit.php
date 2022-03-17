@@ -16,9 +16,8 @@ class IdUnit extends IntUnit
     /**
      * {@inheritdoc}
      */
-    protected function init()
+    public function beforeValidation()
     {
-        parent::init();
         $this->addRules([
             new MinRule(),
         ]);

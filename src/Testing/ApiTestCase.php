@@ -219,13 +219,13 @@ abstract class ApiTestCase extends TestCase
     {
         $uri = $this->apiPrefix . '/' . ltrim($uri, '/');
 
-        if (Str::contains($uri, '?')) {
-            $uri .= '&';
-        } else {
-            $uri .= '?';
-        }
+        // if (Str::contains($uri, '?')) {
+        //     $uri .= '&';
+        // } else {
+        //     $uri .= '?';
+        // }
 
-        $uri .= $this->isAuthenticated ? 'Token=' . $this->getAccessToken() : 'Key=' . env('API_KEY');
+        // $uri .= $this->isAuthenticated ? 'Token=' . $this->getAccessToken() : 'Key=' . env('API_KEY');
 
         return $uri;
     }

@@ -19,7 +19,7 @@ class MaxRule extends UnitRule implements UnitRuleInterface
      */
     public function beforeValidating()
     {
-        if (empty($this->options[0])) {
+        if (!isset($this->options[0])) {
             throw new MissingUnitRuleOptionsException(sprintf('max rule needs a max value to compare the given value with.'));
         }
     }

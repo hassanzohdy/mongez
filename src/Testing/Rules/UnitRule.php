@@ -7,6 +7,7 @@ namespace HZ\Illuminate\Mongez\Testing\Rules;
 use HZ\Illuminate\Mongez\Testing\Traits\Messageable;
 use HZ\Illuminate\Mongez\Testing\Traits\WithKeyAndValue;
 use HZ\Illuminate\Mongez\Testing\UnitRuleInterface;
+use HZ\Illuminate\Mongez\Testing\Units\UnitType;
 
 abstract class UnitRule implements UnitRuleInterface
 {
@@ -15,8 +16,18 @@ abstract class UnitRule implements UnitRuleInterface
 
     /**
      * Rule name
+     * 
+     * @const string
      */
     const NAME = '';
+
+    /**
+     * The unit that holds the rule
+     * 
+     * @var UnitType
+     */
+    protected $unit;
+
 
     /**
      * Rule Error Message
@@ -31,6 +42,18 @@ abstract class UnitRule implements UnitRuleInterface
      * @var array
      */
     protected array $options = [];
+
+    /**
+     * Set rule unit
+     * 
+     * @var  UnitType $unit
+     * @return self
+     */
+    public function setUnit(UnitType $unit): UnitRule
+    {
+        $this->unit = $unit;
+        return $this;
+    }
 
     /**
      * Determine whether the rule will be executed.

@@ -19,7 +19,7 @@ class MinRule extends UnitRule implements UnitRuleInterface
      */
     public function beforeValidating()
     {
-        if (empty($this->options[0])) {
+        if (!isset($this->options[0])) {
             throw new MissingUnitRuleOptionsException(sprintf('min rule needs a min value to compare the given value with.'));
         }
     }

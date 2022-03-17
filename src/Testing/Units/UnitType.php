@@ -200,6 +200,10 @@ class UnitType
 
             $rule->setOptions($this->getRuleOptions($rule));
 
+            $rule->setUnit($this);
+
+            $rule->beforeValidating();
+
             if (!$rule->isValid()) {
                 $this->addError($rule->name(), $rule->getErrorMessage(), $rule->getMessageAttributes());
             }

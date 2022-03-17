@@ -19,7 +19,7 @@ class MaxLengthRule extends UnitRule implements UnitRuleInterface
      */
     public function beforeValidating()
     {
-        if (empty($this->options[0])) {
+        if (!isset($this->options[0])) {
             throw new MissingUnitRuleOptionsException(sprintf('maxLength rule needs a value to compare the given value length.'));
         }
     }
