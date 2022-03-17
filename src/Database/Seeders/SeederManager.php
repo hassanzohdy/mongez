@@ -3,6 +3,7 @@
 namespace HZ\Illuminate\Mongez\Database\Seeders;
 
 use Faker\Factory as Faker;
+use Faker\Generator;
 use Illuminate\Database\Seeder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
@@ -282,10 +283,10 @@ abstract class SeederManager extends Seeder
                 if ($localizationMode == 'array') {
                     $this->dataLocal[] = [
                         'localeCode' => $localeCode,
-                        'text' => $this->faker($fakerLocale)->text(20)
+                        'text' => $this->faker($fakerLocale)->realText(10)
                     ];
                 } else {
-                    $this->dataLocal[$localeCode] = $this->faker($fakerLocale)->text(20);
+                    $this->dataLocal[$localeCode] = $this->faker($fakerLocale)->realText(10);
                 }
             }
 
@@ -406,5 +407,16 @@ abstract class SeederManager extends Seeder
         $object = new UploadedFile($path, $originalName, $mimeType, $error, $test);
 
         return $object;
+    }
+
+    /**
+     * Create an instance of Faker/Factory with given locale
+     *
+     * @param string $fakerLocale
+     * @return Generator
+     */
+    private function faker(string $fakerLocale): Generator
+    {
+        return Faker::create($fakerLocale);
     }
 }
