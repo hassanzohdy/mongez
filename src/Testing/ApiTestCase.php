@@ -6,6 +6,7 @@ namespace HZ\Illuminate\Mongez\Testing;
 
 use Illuminate\Support\Str;
 use Tests\CreatesApplication;
+use Illuminate\Support\Facades\App;
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Testing\LoggedExceptionCollection;
@@ -44,6 +45,29 @@ abstract class ApiTestCase extends TestCase
      * @var string
      */
     protected $apiPrefix = '/api';
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setUp(): void
+    {
+        parent::setUp();
+    }
+
+    /**
+     * Call another test unit
+     * 
+     * @param  string $unitTestClass
+     * @return  ApTestCase
+     */
+    public function callTest(string $unitTestClass)
+    {
+        $class = App::make($unitTestClass);
+
+        $class->setUp();
+
+        return $class;
+    }
 
     /**
      * Mark the request as authorized request

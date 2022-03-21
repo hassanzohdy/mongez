@@ -56,6 +56,10 @@ class MongoDBFilter extends Filter
      */
     public function filterBoolean($columns, $value)
     {
+        if ($value === 'false') {
+            $value = false;
+        }
+
         foreach ($columns as $column) {
             $this->query->where($column, (bool) $value);
         }
