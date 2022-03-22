@@ -43,7 +43,5 @@ trait Messageable
         }
 
         echo $message . PHP_EOL;
-
-        echo ob_get_clean();
     }
 }

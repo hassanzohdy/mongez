@@ -12,6 +12,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Testing\LoggedExceptionCollection;
 use HZ\Illuminate\Mongez\Testing\Traits\Messageable;
 use HZ\Illuminate\Mongez\Testing\Traits\WithAccessToken;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 abstract class ApiTestCase extends TestCase
 {
@@ -30,7 +31,7 @@ abstract class ApiTestCase extends TestCase
      */
     protected const REPOSITORY_NAME = '';
 
-    // use RefreshDatabase;
+    use RefreshDatabase;
 
     /**
      * If marked as true, a bearer token will be passed with Bearer in the Authorization Header
