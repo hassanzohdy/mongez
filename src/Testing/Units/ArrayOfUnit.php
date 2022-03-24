@@ -57,6 +57,8 @@ class ArrayOfUnit extends ArrayUnit
 
         if ($this->isValid() === false) return $this;
 
+        if ($this->isNulable && $this->value === null) return $this;
+
         $class = $this->unitTypeClass;
 
         foreach ($this->value as $index => $singleValue) {

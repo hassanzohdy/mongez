@@ -65,6 +65,8 @@ class ObjectUnit extends UnitType
 
         if (!$this->isValid()) return $this;
 
+        if ($this->isNulable && $this->value === null) return $this;
+
         // TODO: Strict with additional keys that should not be in the response
         if ($this->isStrict) {
             $additionalKeys = array_diff(
@@ -78,7 +80,7 @@ class ObjectUnit extends UnitType
         }
 
         foreach ($this->unitsList as $key => $unitType) {
-            $unitValue = Arr::get($this->value, $key, ResponseSchemaInterface::MISSING_RESPONSE_KEY);
+            $unitValue = $this->value === null ? null : Arr::get($this->value, $key, ResponseSchemaInterface::MISSING_RESPONSE_KEY);
 
             if (is_array($unitType)) {
                 $unitTypeName = array_shift($unitType);
