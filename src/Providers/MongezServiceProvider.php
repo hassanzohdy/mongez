@@ -26,6 +26,7 @@ use HZ\Illuminate\Mongez\Console\Commands\EngezTranslation;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use HZ\Illuminate\Mongez\Console\Commands\PostmanCollection;
 use HZ\Illuminate\Mongez\Console\Commands\CloneModuleBuilder;
+use HZ\Illuminate\Mongez\Console\Commands\MongezTestCommand;
 
 class MongezServiceProvider extends ServiceProvider
 {
@@ -48,7 +49,8 @@ class MongezServiceProvider extends ServiceProvider
         EngezRepository::class,
         EngezTranslation::class,
         CloneModuleBuilder::class,
-        PostmanCollection::class
+        PostmanCollection::class,
+        MongezTestCommand::class,
     ];
 
     /**
