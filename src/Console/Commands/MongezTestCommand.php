@@ -77,6 +77,6 @@ class MongezTestCommand extends Command
 
         $this->call('migrate');
         $this->call('db:seed');
-        $this->call('test', array_merge($this->options(), $otherOptions));
+        return $this->call('test', array_merge($this->options(), $otherOptions));
     }
 }
