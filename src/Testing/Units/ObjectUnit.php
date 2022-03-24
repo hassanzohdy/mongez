@@ -68,7 +68,7 @@ class ObjectUnit extends UnitType
         // TODO: Strict with additional keys that should not be in the response
         if ($this->isStrict) {
             $additionalKeys = array_diff(
-                array_keys($this->value),
+                array_keys((array) $this->value),
                 array_keys($this->unitsList),
             );
 
