@@ -13,7 +13,10 @@ class MongezTestCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'mongez:test';
+    protected $signature = 'mongez:test     
+    {--without-tty : Disable output to TTY}
+    {--p|parallel : Indicates if the tests should run in parallel}
+    ';
 
     /**
      * The console command description.
@@ -30,6 +33,18 @@ class MongezTestCommand extends Command
     protected string $filterName;
 
     /**
+     * Create a new command instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->ignoreValidationErrors();
+    }
+
+    /**
      * Execute the console command.
      *
      * @return mixed
@@ -44,18 +59,24 @@ class MongezTestCommand extends Command
             return $this->error('No database set in `database.connection.testing.database`');
         }
 
-        Config::set('database.connections.mongodb.database', $databaseTest);
-
         DB::purge('mongodb');
+
+        $this->info(sprintf('Connecting To Testing Database <comment>%s</comment>', $databaseTest));
+
+        Config::set('database.connections.mongodb.database', $databaseTest);
 
         DB::reconnect();
 
         $db = DB::getMongoDB();
 
+        $this->info(sprintf('Dropping Testing Database <comment>%s</comment>', $databaseTest));
+
         $db->drop();
+
+        $otherOptions = array_slice($_SERVER['argv'], $this->option('without-tty') ? 3 : 2);
 
         $this->call('migrate');
         $this->call('db:seed');
-        $this->call('test', $this->arguments());
+        $this->call('test', array_merge($this->options(), $otherOptions));
     }
 }
