@@ -6,10 +6,9 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 
-abstract class AdminUIController extends Controller
+abstract class AdminUIController
 {
     /**
      * Repository object

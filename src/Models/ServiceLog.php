@@ -1,6 +1,6 @@
 <?php
 
-namespace HZ\Illuminate\Mongez\Models\Services;
+namespace HZ\Illuminate\Mongez\Models;
 
 use Illuminate\Support\Str;
 use HZ\Illuminate\Mongez\Database\Eloquent\MongoDB\Model;

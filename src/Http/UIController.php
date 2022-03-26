@@ -4,12 +4,11 @@ namespace HZ\Illuminate\Mongez\Http;
 
 use Illuminate\Http\Response;
 use Illuminate\Support\MessageBag;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\App;
 use HZ\Illuminate\Mongez\Events\Events;
 use HZ\Illuminate\Mongez\Repository\Concerns\RepositoryTrait;
 
-abstract class UIController extends Controller
+abstract class UIController
 {
     use RepositoryTrait;
 
