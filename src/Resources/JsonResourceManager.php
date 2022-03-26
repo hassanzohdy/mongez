@@ -337,10 +337,10 @@ abstract class JsonResourceManager extends JsonResource
      */
     protected function setData(array $columns, callable $valueCallback = null): JsonResourceManager
     {
-        foreach ($columns as $outputKey => $column) {
-            if ($this->ignoreEmptyColumn($column)) continue;
+        foreach ($columns as $column => $outputKey) {
+            $column = is_numeric($column) ? $outputKey : $column;
 
-            $outputKey = is_numeric($outputKey) ? $column : $outputKey;;
+            if ($this->ignoreEmptyColumn($column)) continue;
 
             $this->set($outputKey, $valueCallback ? $valueCallback($column) : $this->value($column));
         }
