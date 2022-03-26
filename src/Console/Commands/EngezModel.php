@@ -165,7 +165,7 @@ class EngezModel extends EngezGeneratorCommand implements EngezInterface
             'id' => 'int',
         ];
 
-        $path = $this->modulePath("database/migrations");
+        $path = $this->modulePath("Database/migrations");
 
         $this->makeDirectory($path);
 

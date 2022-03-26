@@ -46,7 +46,7 @@ class EngezMigrate extends Command
         if ($this->argumentHasValue('modules')) {
             $this->availableModules = explode(',', $this->argument('modules'));
         } else {
-            $this->paths[] = Mongez::packagePath('src/database/migrations/' . config('database.default'));
+            $this->paths[] = Mongez::packagePath('src/Database/migrations/' . config('database.default'));
             $this->availableModules = Mongez::getStored('modules');
         }
 
@@ -82,7 +82,7 @@ class EngezMigrate extends Command
     protected function generateModulesPaths()
     {
         foreach ($this->availableModules as $moduleName) {
-            $this->paths[] = app_path("Modules/{$moduleName}/database/migrations");
+            $this->paths[] = app_path("Modules/{$moduleName}/Database/migrations");
         }
     }
 }

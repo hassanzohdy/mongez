@@ -33,7 +33,7 @@ class CloneModuleBuilder extends Command
             'conditionalDirectories' => [
                 'Repositories',
                 'Models',
-                'database/migrations',
+                'Database/migrations',
                 'Filters',
                 'Resources'
             ],
@@ -92,7 +92,7 @@ class CloneModuleBuilder extends Command
             'conditionalDirectories' => [
                 'Models',
                 'Repositories',
-                'database/migrations',
+                'Database/migrations',
                 'Filters'
             ],
             'migrationFiles' => []
@@ -125,7 +125,7 @@ class CloneModuleBuilder extends Command
             'conditionalDirectories' => [
                 'Repositories',
                 'Models',
-                'database/migrations',
+                'Database/migrations',
                 'Filters',
                 'Resources'
             ],
