@@ -71,6 +71,19 @@ abstract class ApiTestCase extends TestCase
     }
 
     /**
+     * Make a call from another test and refresh the application
+     * 
+     * @param  mixed $response
+     * @return mixed
+     */
+    protected function callFrom($response)
+    {
+        $this->refreshApplication();
+
+        return $response;
+    }
+
+    /**
      * Mark the request as authorized request
      * 
      * @param bool $isAuthenticated 
