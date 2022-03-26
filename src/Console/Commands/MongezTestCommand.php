@@ -16,6 +16,8 @@ class MongezTestCommand extends Command
     protected $signature = 'mongez:test     
     {--without-tty : Disable output to TTY}
     {--p|parallel : Indicates if the tests should run in parallel}
+    {--no-migration : Run Tests Without Migration Command}
+    {--no-seeds : Run Tests Without DB Seed Command}
     ';
 
     /**
@@ -75,8 +77,14 @@ class MongezTestCommand extends Command
 
         $otherOptions = array_slice($_SERVER['argv'], $this->option('without-tty') ? 3 : 2);
 
-        $this->call('migrate');
-        $this->call('db:seed');
+        if ($this->option('no-migration') !== true) {
+            $this->call('migrate');
+        }
+
+        if ($this->option('no-seeds') !== true) {
+            $this->call('db:seed');
+        }
+
         return $this->call('test', array_merge($this->options(), $otherOptions));
     }
 }
