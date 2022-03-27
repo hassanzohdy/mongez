@@ -96,7 +96,7 @@ class EngezSeeder extends EngezGeneratorCommand implements EngezInterface
      */
     private function updateBaseSeedersClass()
     {
-        $baseSeedersClass = base_path('Database/seeders/DatabaseSeeder.php');
+        $baseSeedersClass = base_path('database/seeders/DatabaseSeeder.php');
 
         $baseSeedersContent = $this->files->get($baseSeedersClass);
 
