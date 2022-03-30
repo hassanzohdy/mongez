@@ -1,0 +1,131 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Modules\{{ ModuleName }}\Tests\Admin;
+
+use HZ\Illuminate\Mongez\Testing\ApiTestCase;
+use HZ\Illuminate\Mongez\Testing\StrictResponseSchema;
+use HZ\Illuminate\Mongez\Testing\Units\ErrorsListUnit;
+use App\Modules\Users\Traits\Tests\WithUserAccessToken;
+use HZ\Illuminate\Mongez\Testing\Units\NotFoundUnit;
+use HZ\Illuminate\Mongez\Testing\Units\ArrayOfUnit;
+use App\Modules\{{ ModuleName }}\Tests\Units\{{ model }}Unit;
+use App\Modules\{{ ModuleName }}\Tests\Admin\Create{{ ModuleName }}Test;
+
+class {{ className }} extends ApiTestCase
+{
+    use WithUserAccessToken;
+
+    /**
+     * {@inheritDoc}
+     */
+    protected ?bool $isAuthenticated = true;
+
+    /**
+     * define all request data.
+     *
+     * @example $requestData = [
+     *  'name' => $this->faker->text,
+     *  'email' => $this->faker->email,
+     *  ];
+     *
+     * @var array
+     */
+    protected array $requestData = [];
+
+    /**
+     * define all probably validation error message
+     *
+     * @example $requestValidationErrors = ['name', 'email']
+     *
+     * @var array
+     */
+    protected array $requestValidationErrors = [];
+
+    /**
+     * test success update {{ model }}.
+     *
+     * @return void
+     */
+    public function testSuccessUpdate{{ model }}(): void
+    {
+        $adminCreated{{ model }}Test = $this->callTest(Create{{ ModuleName }}Test::class);
+
+        $created{{ model }}Response = $this->callFrom($adminCreated{{ model }}Test->testSuccessCreate{{ model }}());
+
+        ${{ model }}Id = $created{{ model }}Response->body()->data->record->id;
+
+        $response = $this->put('admin/{{ ModuleRoute }}/' . ${{ model }}Id, $this->requestData);
+
+        $response->assertSuccess();
+
+        $responseSchema = new StrictResponseSchema([
+            'record' => new {{ model }}Unit(),
+        ]);
+
+        $response->assertResponse($responseSchema);
+    }
+
+    /**
+     * failed update {{ model }} with invalid authorization.
+     *
+     * @return void
+     */
+    public function testFailedUpdate{{ model }}WithInvalidAuthorization(): void
+    {
+        $this->isAuthenticated = null;
+
+        $response = $this->put('admin/{{ ModuleRoute }}/'.rand());
+
+        $response->assertUnauthorized();
+
+        $responseSchema = new StrictResponseSchema([
+            'error' => 'string',
+        ]);
+
+        $response->assertResponse($responseSchema);
+    }
+
+    /**
+     * failed update {{ model }} without sending any data.
+     *
+     * @return void
+     */
+    public function testFailedUpdate{{ model }}WithoutSendingAnyData(): void
+    {
+        $adminCreated{{ model }}Test = $this->callTest(Create{{ ModuleName }}Test::class);
+
+        $created{{ model }}Response = $this->callFrom($adminCreated{{ model }}Test->testSuccessCreate{{ model }}());
+
+        ${{ model }}Id = $created{{ model }}Response->body()->data->record->id;
+
+        $response = $this->put('admin/{{ ModuleRoute }}/' . ${{ model }}Id);
+
+        $response->assertBadRequest();
+
+        $responseSchema = new StrictResponseSchema([
+            'errors' => new ErrorsListUnit($this->requestValidationErrors),
+        ]);
+
+        $response->assertResponse($responseSchema);
+    }
+
+    /**
+     * failed update {{ model }} with not found document.
+     *
+     * @return void
+     */
+    public function testFailedUpdate{{ model }}WithNotFound(): void
+    {
+        $response = $this->put('admin/{{ ModuleRoute }}/'.rand());
+
+        $response->assertNotFound();
+
+        $responseSchema = new StrictResponseSchema([
+            'errors' => new ArrayOfUnit(NotFoundUnit::class),
+        ]);
+
+        $response->assertResponse($responseSchema);
+    }
+}

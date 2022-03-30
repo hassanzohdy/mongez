@@ -45,7 +45,7 @@ abstract class EngezGeneratorCommand extends Command implements EngezInterface
 
     /**
      * List of data types
-     * 
+     *
      * @const array
      */
     public const DATA_TYPES = [
@@ -57,7 +57,7 @@ abstract class EngezGeneratorCommand extends Command implements EngezInterface
 
     /**
      * List of data types options
-     * 
+     *
      * @const string
      */
     public const DATA_TYPES_OPTIONS = '
@@ -66,13 +66,13 @@ abstract class EngezGeneratorCommand extends Command implements EngezInterface
     {--int=}
     {--float=}
     {--bool=}
-    {--string=}    
+    {--string=}
     {--uploads=}
     ';
 
     /**
      * Table options list
-     * 
+     *
      * @const array
      */
     public const TABLE_INDEXES = [
@@ -85,9 +85,9 @@ abstract class EngezGeneratorCommand extends Command implements EngezInterface
 
     /**
      * Table indexes options
-     * 
+     *
      * The geo index is for MongoDB
-     * 
+     *
      * @const string
      */
     public const TABLE_INDEXES_OPTIONS = '
@@ -120,7 +120,7 @@ abstract class EngezGeneratorCommand extends Command implements EngezInterface
 
     /**
      * Initialize the command and prepare its data
-     * 
+     *
      * @return void
      */
     public function init()
@@ -149,7 +149,7 @@ abstract class EngezGeneratorCommand extends Command implements EngezInterface
 
     /**
      * Add The given content in the given path in the app module directory
-     * 
+     *
      * @param  string $filePath
      * @param string $content
      * @return void
@@ -168,7 +168,7 @@ abstract class EngezGeneratorCommand extends Command implements EngezInterface
 
     /**
      * Build utils class
-     * 
+     *
      * @return void
      */
     protected function buildUtilsClass()
@@ -181,7 +181,7 @@ abstract class EngezGeneratorCommand extends Command implements EngezInterface
             $utilsReplacements = [
                 // module name
                 '{{ ModuleName }}' => $moduleName,
-                // class name 
+                // class name
                 '{{ ClassName }}' => $utilsClass,
             ];
 
@@ -191,7 +191,7 @@ abstract class EngezGeneratorCommand extends Command implements EngezInterface
 
     /**
      * Get value from config
-     * 
+     *
      * @param string $key
      * @param  mixed $default
      * @return mixed

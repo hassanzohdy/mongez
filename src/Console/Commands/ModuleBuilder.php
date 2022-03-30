@@ -133,7 +133,6 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
     public function create()
     {
         $this->addModule();
-
         $this->info('Creating filter class');
         $this->createFilter();
 
@@ -173,6 +172,9 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
         // if ($this->isUserModuleExits) {
         //     $this->addRoutesToPermissionTable();
         // }
+
+        $this->info('Creating tests file');
+        $this->createTest();
 
         $this->markModuleAsInstalled();
     }
@@ -217,6 +219,24 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
         $options = $this->optionsValues(EngezController::CONTROLLER_OPTIONS_LIST);
 
         $this->call('engez:controller', array_merge($controllerOptions, $options));
+    }
+
+    /**
+     * Create test file
+     *
+     * @return void
+     */
+    protected function createTest()
+    {
+        $parent = $this->topParentModule();
+        $module = $this->getModule();
+
+        $testOptions = [
+            'test' => $module,
+            '--module' => $parent,
+        ];
+
+        $this->call('engez:test', $testOptions);
     }
 
     /**
@@ -501,7 +521,7 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
 
     /**
      * Determine if current generated module is a subset of parent module
-     * 
+     *
      * @return bool
      */
     protected function hasParentModule(): bool
@@ -512,7 +532,7 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
     /**
      * Get top module name
      * If parent exists, then return the parent, otherwise return the original module
-     * 
+     *
      * @return string
      */
     protected function topParentModule(): string
