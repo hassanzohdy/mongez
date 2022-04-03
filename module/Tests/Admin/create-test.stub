@@ -23,9 +23,10 @@ class {{ className }} extends ApiTestCase
      * define all request data.
      *
      * @example $requestData = [
-     *  'name' => $this->faker->text,
-     *  'email' => $this->faker->email,
-     *  ];
+     *  'title' => $this->faker->title,
+     *  'description' => $this->faker->text,
+     *  'published' => $this->faker->boolean,
+     * ];
      *
      * @var array
      */
@@ -34,7 +35,7 @@ class {{ className }} extends ApiTestCase
     /**
      * define all probably validation error message
      *
-     * @example $requestValidationErrors = ['name', 'email']
+     * @example $requestValidationErrors = ['title']
      *
      * @var array
      */

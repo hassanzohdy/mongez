@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace HZ\Illuminate\Mongez\Testing\Units;
 
-use HZ\Illuminate\Mongez\Testing\Rules\IsArrayRule;
-
 class DateUnit extends UnitType
 {
     /**
@@ -19,7 +17,7 @@ class DateUnit extends UnitType
     protected function init()
     {
         $this->setUnits([
-            'format' => new DateFormatUnit(),
+            'format' => new DateTimeUnit(),
             'timestamp' => new IntUnit(),
             'humanTime' => new StringUnit(),
             'text' => new StringUnit(),

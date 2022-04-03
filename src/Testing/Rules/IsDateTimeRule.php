@@ -6,7 +6,7 @@ namespace HZ\Illuminate\Mongez\Testing\Rules;
 
 use HZ\Illuminate\Mongez\Testing\UnitRuleInterface;
 
-class IsDateRule extends UnitRule implements UnitRuleInterface
+class IsDateTimeRule extends UnitRule implements UnitRuleInterface
 {
     /**
      * {@inheritDoc}

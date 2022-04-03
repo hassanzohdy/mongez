@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace HZ\Illuminate\Mongez\Testing\Units;
 
-use HZ\Illuminate\Mongez\Testing\Rules\IsDateRule;
+use HZ\Illuminate\Mongez\Testing\Rules\IsDateTimeRule;
 
-class DateFormatUnit extends UnitType
+class DateTimeUnit extends UnitType
 {
     /**
      * {@inheritDoc}
@@ -19,7 +19,7 @@ class DateFormatUnit extends UnitType
     protected function init()
     {
         $this->addRules([
-            new IsDateRule(),
+            new IsDateTimeRule(),
         ]);
     }
 }
