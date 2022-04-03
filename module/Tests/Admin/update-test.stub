@@ -23,19 +23,6 @@ class {{ className }} extends ApiTestCase
     protected ?bool $isAuthenticated = true;
 
     /**
-     * define all request data.
-     *
-     * @example $requestData = [
-     *  'title' => $this->faker->title,
-     *  'description' => $this->faker->text,
-     *  'published' => $this->faker->boolean,
-     * ];
-     *
-     * @var array
-     */
-    protected array $requestData = [];
-
-    /**
      * define all probably validation error message
      *
      * @example $requestValidationErrors = ['title']
@@ -43,6 +30,24 @@ class {{ className }} extends ApiTestCase
      * @var array
      */
     protected array $requestValidationErrors = [];
+
+    /**
+     * define all request data.
+     *
+     * @example return [
+     *  'title' => $this->faker->title,
+     *  'description' => $this->faker->text,
+     *  'published' => $this->faker->boolean,
+     * ]
+     *
+     * @return array
+     */
+    public function setRequestData(): array
+    {
+        return [
+            //
+        ];
+    }
 
     /**
      * test success update {{ model }}.
@@ -57,7 +62,7 @@ class {{ className }} extends ApiTestCase
 
         ${{ model }}Id = $created{{ model }}Response->body()->data->record->id;
 
-        $response = $this->put('admin/{{ ModuleRoute }}/' . ${{ model }}Id, $this->requestData);
+        $response = $this->put('admin/{{ ModuleRoute }}/' . ${{ model }}Id, $this->setRequestData());
 
         $response->assertSuccess();
 
