@@ -177,7 +177,7 @@ abstract class RestfulApiController extends ApiController
 
     /**
      * Edit the specified fields of the specified resource
-     * 
+     *
      * @param  \Illuminate\Http\Request  $request
      * @param  int $id
      * @return \Illuminate\Http\Response
@@ -248,8 +248,8 @@ abstract class RestfulApiController extends ApiController
 
     /**
      * Get value from controller info
-     * 
-     * @param  string $key 
+     *
+     * @param  string $key
      * @return mixed
      */
     protected function controllerInfo(string $key)

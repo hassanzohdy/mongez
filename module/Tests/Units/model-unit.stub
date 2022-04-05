@@ -1,0 +1,21 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Modules\{{ ModuleName }}\Tests\Units;
+
+use HZ\Illuminate\Mongez\Testing\Units\ObjectUnit;
+
+class {{ className }} extends ObjectUnit
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function beforeValidation(): void
+    {
+        $this->setUnits([
+            'id' => 'id',
+            'published' => 'bool',
+        ]);
+    }
+}

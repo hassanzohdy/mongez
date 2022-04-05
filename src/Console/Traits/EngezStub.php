@@ -9,7 +9,7 @@ trait EngezStub
 {
     /**
      * Get stub content
-     * 
+     *
      * @param string path
      * @return string
      */
@@ -24,7 +24,7 @@ trait EngezStub
 
     /**
      * Create a new stub instance for more complex updates
-     * 
+     *
      * @param string $path
      * @return Stub
      */
@@ -39,7 +39,7 @@ trait EngezStub
 
     /**
      * Convert the given data as array syntax
-     * 
+     *
      * @param array|string $data
      * @return string
      */
@@ -74,7 +74,7 @@ trait EngezStub
     /**
      * Get the content of the given stub path
      * then replace all stubs inside it with the given values
-     * 
+     *
      * @param  string $stubPath
      * @param  array $replacements
      * @return string
@@ -93,7 +93,7 @@ trait EngezStub
     /**
      * Return proper value for default data that will be replaced
      * If the given data is empty, then return tab indent with double slash
-     * 
+     *
      * @param  array $data
      * @param  string $defaultValue
      * @return string
@@ -105,7 +105,7 @@ trait EngezStub
 
     /**
      * Add tab indent then append the given text
-     * 
+     *
      * @param string $text
      * @return string
      */

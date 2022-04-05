@@ -1,0 +1,104 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Modules\{{ ModuleName }}\Tests\Admin;
+
+use HZ\Illuminate\Mongez\Testing\ApiTestCase;
+use HZ\Illuminate\Mongez\Testing\StrictResponseSchema;
+use HZ\Illuminate\Mongez\Testing\Units\ErrorsListUnit;
+use App\Modules\Users\Traits\Tests\WithUserAccessToken;
+use App\Modules\{{ ModuleName }}\Tests\Units\{{ model }}Unit;
+
+class {{ className }} extends ApiTestCase
+{
+    use WithUserAccessToken;
+
+    /**
+     * {@inheritDoc}
+     */
+    protected ?bool $isAuthenticated = true;
+
+    /**
+     * define all probably validation error message
+     *
+     * @example $requestValidationErrors = ['title']
+     *
+     * @var array
+     */
+    protected array $requestValidationErrors = [];
+
+    /**
+     * define all request data.
+     *
+     * @example return [
+     *  'title' => $this->faker->title,
+     *  'description' => $this->faker->text,
+     *  'published' => $this->faker->boolean,
+     * ]
+     *
+     * @return array
+     */
+    public function setRequestData(): array
+    {
+        return [
+            //
+        ];
+    }
+
+    /**
+     * test success create {{ model }}.
+     *
+     * @return void
+     */
+    public function testSuccessCreate{{ model }}(): void
+    {
+        $response = $this->post('admin/{{ ModuleRoute }}', $this->setRequestData();
+
+        $response->assertSuccessCreate();
+
+        $responseSchema = new StrictResponseSchema([
+            'record' => new {{ model }}Unit(),
+        ]);
+
+        $response->assertResponse($responseSchema);
+    }
+
+    /**
+     * failed create {{ model }} with invalid authorization.
+     *
+     * @return void
+     */
+    public function testFailedCreate{{ model }}WithInvalidAuthorization(): void
+    {
+        $this->isAuthenticated = null;
+
+        $response = $this->post('admin/{{ ModuleRoute }}');
+
+        $response->assertUnauthorized();
+
+        $responseSchema = new StrictResponseSchema([
+            'error' => 'string',
+        ]);
+
+        $response->assertResponse($responseSchema);
+    }
+
+    /**
+     * failed create {{ model }} without sending any data.
+     *
+     * @return void
+     */
+    public function testFailedCreate{{ model }}WithoutSendingAnyData(): void
+    {
+        $response = $this->post('admin/{{ ModuleRoute }}');
+
+        $response->assertBadRequest();
+
+        $responseSchema = new StrictResponseSchema([
+            'errors' => new ErrorsListUnit($this->requestValidationErrors),
+        ]);
+
+        $response->assertResponse($responseSchema);
+    }
+}
