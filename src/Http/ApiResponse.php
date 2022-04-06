@@ -10,29 +10,29 @@ trait ApiResponse
 
     /**
      * Return error as array
-     * 
-     * @var string 
+     *
+     * @var string
      */
     protected string $errorAsArray = 'array';
 
     /**
-     * The returned key in the error array type 
-     * 
-     * @var string 
+     * The returned key in the error array type
+     *
+     * @var string
      */
     protected string $errorKey = 'key';
 
     /**
-     * The returned value in the error array type 
-     * 
-     * @var string 
+     * The returned value in the error array type
+     *
+     * @var string
      */
     protected string $errorValue = 'value';
 
     /**
      * Return error as object
-     * 
-     * @var string 
+     *
+     * @var string
      */
     protected string $errorStrategy = 'object';
 
@@ -87,13 +87,12 @@ trait ApiResponse
         if (($eventResponse = events()->trigger('response.badRequest', $data)) && is_array($eventResponse)) {
             $data = $eventResponse;
         }
-
         return $this->send($data, Response::HTTP_BAD_REQUEST);
     }
 
     /**
      * Map error based on configurations
-     * 
+     *
      * @param  mixed $data
      * @return array
      */

@@ -141,7 +141,6 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
     public function create()
     {
         $this->addModule();
-
         $this->info('Creating filter class');
         $this->createFilter();
 
@@ -186,6 +185,9 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
         // if ($this->isUserModuleExits) {
         //     $this->addRoutesToPermissionTable();
         // }
+
+        $this->info('Creating tests file');
+        $this->createTest();
 
         $this->markModuleAsInstalled();
     }
@@ -237,20 +239,21 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
     }
 
     /**
-     * Create the service
+     * Create test file
      *
      * @return void
      */
-    protected function createService()
+    protected function createTest()
     {
-        $replacements = [
-            // Module Name, also the class name suffixed with ServiceProvider
-            '{{ ModuleName }}' => $moduleName = $this->getModule(),
-            '{{ ServiceName }}' => $moduleName . 'Service',
-            '{{ RepositoryName }}' => $this->studly($this->repositoryName($this->moduleName)) . 'Repository',
+        $parent = $this->topParentModule();
+        $module = $this->getModule();
+
+        $testOptions = [
+            'test' => $module,
+            '--module' => $parent,
         ];
 
-        $this->putFile("Services/{$moduleName}Service.php", $this->replaceStub('Services/service', $replacements), 'Provider');
+        $this->call('engez:test', $testOptions);
     }
 
     /**
@@ -535,7 +538,7 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
 
     /**
      * Determine if current generated module is a subset of parent module
-     * 
+     *
      * @return bool
      */
     protected function hasParentModule(): bool
@@ -546,7 +549,7 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
     /**
      * Get top module name
      * If parent exists, then return the parent, otherwise return the original module
-     * 
+     *
      * @return string
      */
     protected function topParentModule(): string

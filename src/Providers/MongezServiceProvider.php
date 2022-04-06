@@ -10,6 +10,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Artisan;
 use HZ\Illuminate\Mongez\Events\Events;
 use HZ\Illuminate\Mongez\Helpers\Mongez;
+use HZ\Illuminate\Mongez\Console\Commands\EngezTest;
 use HZ\Illuminate\Mongez\Console\Commands\EngezModel;
 use HZ\Illuminate\Mongez\Console\Commands\EngezSeeder;
 use HZ\Illuminate\Mongez\Console\Commands\EngezFilter;
@@ -51,6 +52,7 @@ class MongezServiceProvider extends ServiceProvider
         CloneModuleBuilder::class,
         PostmanCollection::class,
         MongezTestCommand::class,
+        EngezTest::class,
     ];
 
     /**
@@ -83,7 +85,7 @@ class MongezServiceProvider extends ServiceProvider
         // register commands
         $this->commands(static::COMMANDS_LIST);
 
-        // Initialize Mongez 
+        // Initialize Mongez
         Mongez::init();
 
         if (!Mongez::isInstalled()) {
@@ -93,7 +95,7 @@ class MongezServiceProvider extends ServiceProvider
 
     /**
      * Initialize localization and prepare locale code
-     * 
+     *
      * @return void
      */
     private function initializeLocalization()
@@ -106,7 +108,7 @@ class MongezServiceProvider extends ServiceProvider
 
     /**
      * Prepare locale code
-     * 
+     *
      * @return void
      */
     private function prepareLocaleCode()
@@ -127,7 +129,7 @@ class MongezServiceProvider extends ServiceProvider
 
     /**
      * Prepare the package for first time installation
-     * 
+     *
      * @return void
      */
     private function prepareForFirstTime()
@@ -147,8 +149,8 @@ class MongezServiceProvider extends ServiceProvider
 
     /**
      * Add line replacementLine to app/config file.
-     * 
-     * @return void 
+     *
+     * @return void
      */
     private function addingCommentToAppConfig()
     {
@@ -192,7 +194,7 @@ class MongezServiceProvider extends ServiceProvider
 
         $this->config = config('mongez');
 
-        // 
+        //
         if (isset($this->config['serialize_precision'])) {
             ini_set('serialize_precision', $this->config['serialize_precision']);
         }
@@ -217,7 +219,7 @@ class MongezServiceProvider extends ServiceProvider
 
     /**
      * Get config value from the mongez config file
-     * 
+     *
      * @param  string $key
      * @param  mixed  $default
      * @return mixed
@@ -279,8 +281,8 @@ class MongezServiceProvider extends ServiceProvider
 
     /**
      * Register Routes
-     * 
-     * @return void 
+     *
+     * @return void
      */
     protected function registerRoutes()
     {

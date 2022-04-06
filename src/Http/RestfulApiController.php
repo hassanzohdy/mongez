@@ -185,7 +185,7 @@ abstract class RestfulApiController extends ApiController
 
     /**
      * Edit the specified fields of the specified resource
-     * 
+     *
      * @param  \Illuminate\Http\Request  $request
      * @param  int $id
      * @return \Illuminate\Http\Response
@@ -264,8 +264,8 @@ abstract class RestfulApiController extends ApiController
 
     /**
      * Get value from controller info
-     * 
-     * @param  string $key 
+     *
+     * @param  string $key
      * @return mixed
      */
     protected function controllerInfo(string $key)
@@ -349,8 +349,9 @@ abstract class RestfulApiController extends ApiController
     {
         return null;
     }
+    
     /**
-     * Triggered before storing|updating|patching a new record
+     * Triggered before storing|updating|patching a record
      * Useful when needs to make a validation before operating on a record
      * If it returns a value, it will be returned instead
      *

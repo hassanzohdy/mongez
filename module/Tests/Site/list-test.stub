@@ -1,0 +1,61 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Modules\{{ ModuleName }}\Tests\Site;
+
+use HZ\Illuminate\Mongez\Testing\ApiTestCase;
+use HZ\Illuminate\Mongez\Testing\Units\ArrayOfUnit;
+use HZ\Illuminate\Mongez\Testing\StrictResponseSchema;
+use HZ\Illuminate\Mongez\Testing\Units\PaginationInfoUnit;
+use App\Modules\{{ ModuleName }}\Tests\Units\{{ model }}Unit;
+use App\Modules\Customers\Traits\Tests\WithCustomerAccessToken;
+
+class {{ className }} extends ApiTestCase
+{
+    use WithCustomerAccessToken;
+
+    /**
+     * {@inheritDoc}
+     */
+    protected ?bool $isAuthenticated = true;
+
+    /**
+     * test success list {{ ModuleName }}.
+     *
+     * @return void
+     */
+    public function testSuccessList{{ ModuleName }}(): void
+    {
+        $response = $this->get('{{ ModuleRoute }}');
+
+        $response->assertSuccess();
+
+        $responseSchema = new StrictResponseSchema([
+            'records' => (new ArrayOfUnit({{ model }}Unit::class))->canBeEmpty(),
+            'paginationInfo' => new PaginationInfoUnit(),
+        ]);
+
+        $response->assertResponse($responseSchema);
+    }
+
+    /**
+     * failed list {{ ModuleName }} with invalid authorization.
+     *
+     * @return void
+     */
+    public function testFailedList{{ ModuleName }}WithInvalidAuthorization(): void
+    {
+        $this->isAuthenticated = null;
+
+        $response = $this->get('{{ ModuleRoute }}');
+
+        $response->assertUnauthorized();
+
+        $responseSchema = new StrictResponseSchema([
+            'error' => 'string',
+        ]);
+
+        $response->assertResponse($responseSchema);
+    }
+}

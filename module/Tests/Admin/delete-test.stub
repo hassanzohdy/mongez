@@ -1,0 +1,92 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Modules\{{ ModuleName }}\Tests\Admin;
+
+use HZ\Illuminate\Mongez\Testing\ApiTestCase;
+use HZ\Illuminate\Mongez\Testing\Units\ArrayOfUnit;
+use HZ\Illuminate\Mongez\Testing\Units\NotFoundUnit;
+use HZ\Illuminate\Mongez\Testing\StrictResponseSchema;
+use App\Modules\Users\Traits\Tests\WithUserAccessToken;
+use HZ\Illuminate\Mongez\Testing\Units\BooleanUnit;
+use App\Modules\{{ ModuleName }}\Tests\Units\{{ model }}Unit;
+use App\Modules\{{ ModuleName }}\Tests\Admin\Create{{ ModuleName }}Test;
+
+class {{ className }} extends ApiTestCase
+{
+    use WithUserAccessToken;
+
+    /**
+     * {@inheritDoc}
+     */
+    protected ?bool $isAuthenticated = true;
+
+    /**
+     * test success delete {{ model }}.
+     *
+     * @return void
+     */
+    public function testSuccessDelete{{ model }}(): void
+    {
+        $adminCreated{{ model }}Test = $this->callTest(Create{{ ModuleName }}Test::class);
+
+        $created{{ model }}Response = $this->callFrom($adminCreated{{ model }}Test->testSuccessCreate{{ model }}());
+
+        ${{ model }}Id = $created{{ model }}Response->body()->data->record->id;
+
+        $response = $this->delete('admin/{{ ModuleRoute }}/' . ${{ model }}Id);
+
+        $response->assertSuccess();
+
+        $responseSchema = new StrictResponseSchema([
+            'success' => (new BooleanUnit())->equal(true),
+        ]);
+
+        $response->assertResponse($responseSchema);
+    }
+
+    /**
+     * failed delete {{ model }} with invalid authorization.
+     *
+     * @return void
+     */
+    public function testFailedDelete{{ model }}WithInvalidAuthorization(): void
+    {
+        $this->isAuthenticated = null;
+
+        $adminCreated{{ model }}Test = $this->callTest(Create{{ ModuleName }}Test::class);
+
+        $created{{ model }}Response = $this->callFrom($adminCreated{{ model }}Test->testSuccessCreate{{ model }}());
+
+        ${{ model }}Id = $created{{ model }}Response->body()->data->record->id;
+
+        $response = $this->delete('admin/{{ ModuleRoute }}/' . ${{ model }}Id);
+
+        $response->assertUnauthorized();
+
+        $responseSchema = new StrictResponseSchema([
+            'error' => 'string',
+        ]);
+
+        $response->assertResponse($responseSchema);
+    }
+
+    /**
+     * test failed delete {{model}} with not found.
+     *
+     * @return void
+     */
+    public function testFailedDelete{{ model }}WithNotFound(): void
+    {
+        $response = $this->delete('admin/{{ ModuleRoute }}/' . rand());
+
+        $response->assertNotFound();
+
+        $responseSchema = new StrictResponseSchema([
+            'errors' => new ArrayOfUnit(NotFoundUnit::class),
+        ]);
+
+        $response->assertResponse($responseSchema);
+    }
+}
