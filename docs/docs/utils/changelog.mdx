@@ -1,0 +1,36 @@
+---
+title: Change Log
+---
+
+import {
+  ModuleName,
+  NewFeature,
+  FixedBug,
+  UpdateFeature,
+} from "./../../src/components/ChangeLogStatus";
+
+## V2.3.1 (6 Apr 2022)
+  - Added `docs` in Repository.
+## V2.3.0 (6 Apr 2022)
+
+- **RestfulApiController**
+  - `beforeAll` method that run store/update/patch <NewFeature />
+  - Fixed `patch` method validation <FixedBug />
+
+- **Unit Testing**
+  - `Tests` directory is auto generated in each new generated
+    module <NewFeature />
+  - **Added New Units**
+    - `DateTimeUnit` Unit <NewFeature /> 
+    - `DateUnit` Unit <NewFeature /> 
+    - `NotFoundUnit` Unit <NewFeature /> 
+  - **Added New Rules**
+    - `IsDateTimeRule` Rule <NewFeature /> 
+- **Services Directory**
+  - `Services` directory is generated in each new generated module <NewFeature />
+  - `WithService` trait to call services dynamically <NewFeature />
+  - `WithRepositoryAndService` trait to call services and
+  repositories <NewFeature /> 
+  - **RepositoryTrait** is replaced with
+  **WithRepositoryAndService** in `ApiControlller` `JsonResourceManager`
+  `RepositoryManager` <UpdateFeature />

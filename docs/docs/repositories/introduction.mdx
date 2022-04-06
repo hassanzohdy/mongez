@@ -1,0 +1,285 @@
+---
+title: Repository Design Pattern
+---
+
+## Introduction
+
+The repository paatern is one of the most powerful patterns for handling data either in storing, deleting or fetching data from database.
+
+In Mongez, the repository provides a simple way to handle advanced and complex usage when dealing with data.
+
+**In theory**, the repsotiroy design pattern mainly works with models to handle data from and to database, as it is used as an additional layer between top layers like controllers and models.
+
+## Repository Structure
+
+Each repository MUST implement `HZ\Illuminate\Mongez\Repositories\RepositoryInterface` which contains the following methods:
+
+```php title="RepositoryInterface"
+<?php
+
+namespace HZ\Illuminate\Mongez\Repository;
+
+use Illuminate\Support\Collection;
+
+interface RepositoryInterface
+{
+    /**
+     * Create new record
+     *
+     * @param  \Illuminate\Http\Request|array $data
+     * @return Illuminate\Database\Eloquent\Model
+     */
+    public function create($data);
+
+    /**
+     * Update a the given record id or model
+     *
+     * @param  int|model id
+     * @param  \Illuminate\Http\Request|array $data
+     * @return Illuminate\Database\Eloquent\Model
+     */
+    public function update($id, $data);
+
+    /**
+     * Delete a specific record
+     *
+     * @param  int|Model id
+     * @return bool
+     */
+    public function delete($id): bool;
+
+    /**
+     * Return List of records
+     *
+     * @param  array options
+     * @return Illuminate\Support\Collection
+     */
+    public function list(array $option): Collection;
+
+    /**
+     * Get a specific record with full details
+     *
+     * @param  int id
+     * @return mixed
+     */
+    public function get(int $id);
+
+    /**
+     * Determine whether the given value exists
+     *
+     * @param  mixed    $value
+     * @param  string   $column
+     * @return bool
+     */
+    public function has($value, string $column): bool;
+
+    /**
+     * Get the query handler
+     *
+     * @return mixed
+     */
+    public function getQuery();
+}
+```
+
+Thankfully, **Mongez** is shipped with [Repository Managers](./managers) that handles most of the prior methods with robust features to organize your operations.
+
+## Repository Initiation
+
+Repositories declartions are stored on the [Mongez Configurations Repositories Section](./config##repositories-list), each repository has an alias for quicker usage instead of injecting the repository class.
+
+:::tip
+All repositories are singletons, which means when you call any repository from anywhere, it will `create only single instance` of it.
+:::
+
+## Using Repositories
+
+Repositories can be called with `5 ways`
+
+### 1. Using Service Containers
+
+Repositories can be injected into any method using [Laravel Service Container](https://laravel.com/docs/8.x/container) or `IoC`.
+
+```php
+
+<?php
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Modules\Users\Repositories\UsersRepository;
+
+class UsersControllers extends Controller
+{
+    /**
+     * Get users
+     *
+     * @param  UsersRepository $repository
+     * @param  Request $request
+     * @return Response
+     */
+    public function index(UsersRepository $repository, Request $reuqest)
+    {
+        $users = $repository->list([
+            'name' => $request->name,
+        ]);
+    }
+}
+```
+
+:::info
+This is not the prefered way to use repositories, it can be used though.
+:::
+
+### 2. Using repo function
+
+The [repo(string $repositoryAlais): RepositoryInterface](./helper-functions#repo-function-helper) can be used from anywhere in the application.
+
+```php title="routes/api.php"
+<?php
+
+Route::delete('/users/{id}', function ($id) {
+    repo('users')->delete($id);
+
+    return [
+        'success' => true,
+    ];
+});
+```
+
+### 3. Using ApiController
+
+Any controller extends `ApiController` class, a `REPOSITORY_NAME` constanct can be declared in the derived class with the repository alias name, then from any method the `repository` property can be used as a reference to the repository instance.
+
+```php title="UsersControllers.php" {14,26}
+<?php
+namespace App\Modules\Users\Controllers\Site;
+
+use Illuminate\Http\Request;
+use HZ\Illuminate\Mongez\Managers\ApiController;
+
+class UsersControllers extends ApiController
+{
+    /**
+     * Repository name
+     *
+     * @var string
+     */
+    protected const REPOSITORY_NAME = 'users';
+
+    /**
+     * {@inheritDoc}
+     */
+    public function index(Request $request)
+    {
+        $options = [
+            'status' => 'active'
+        ];
+
+        return $this->success([
+            'records' => $this->repository->list($options),
+        ]);
+    }
+}
+```
+
+:::tip
+This is the recommended way if you're extending any Mongez Base Controller for using repositories.
+:::
+
+### 4. Using RestfulApiController
+
+Similar to the `ApiController` except that the repository name is in the controller options array.
+
+```php title="UsersControllers.php" {15,37,43}
+<?php
+namespace App\Modules\Users\Controllers\Admin;
+
+use Illuminate\Http\Request;
+use HZ\Illuminate\Mongez\Http\RestfulApiController;
+
+class UsersControllers extends RestfulApiController
+{
+    /**
+     * Controller info
+     *
+     * @var array
+     */
+    protected $controllerInfo = [
+        'repository' => 'users',
+        'listOptions' => [
+            'select' => [],
+            'filterBy' => [],
+            'paginate' => null, // if set null, it will be automated based on repository configuration option
+        ],
+        'rules' => [
+            'all' => [],
+            'store' => [],
+            'update' => [],
+        ],
+    ];
+
+    /**
+     * Active/Deactivate user account
+     *
+     * @param  int $id
+     * @param Request $request
+     * @return Response
+     */
+    public function toggleUserActivation($id, Request $request)
+    {
+        $user = $this->repository->getModel($id);
+
+        if (! $user) {
+            return $this->notFound('User is not listed in our database records.');
+        }
+
+        $this->repository->toggleActivation($user, (bool) $request->activate);
+
+        return $this->success();
+    }
+}
+```
+
+### 5. Using Repository Trait
+
+Another way of using repositories is by using [Repository Trait](./trait).
+
+```php title="app\Http\Controllers\UsersControllers.php" {9,17}
+<?php
+
+namespace App\Http\Controllers;
+
+use HZ\Illuminate\Mongez\Repository\Concerns\RepositoryTrait;
+
+class UsersControllers extends Controller
+{
+    use RepositoryTrait;
+
+    /**
+     * {@inheritDoc}
+     */
+    public function index()
+    {
+        // now use the property to access the repository and append `Repository` keyword after the repository alias
+        $users = $this->usersRepository->list([
+            'status' => 'active',
+        ]);
+    }
+}
+```
+
+This will allow you to use any repository from the class that injects the Repository trait.
+
+## Generating new repository
+
+To create a new repository, use the following command line:
+
+```bash
+php artisan engez:repository usersGroups --module=users --string=name --bool=published --uploads=avatar
+```
+
+This will create a new repository classes located in the `Users` module `Repositories` directory.
+
+## Repository Simpler Structure
+
+All inherited repositories from any [Repository Maanger](./managers) have mere `constants` and `methods` for quicker development.

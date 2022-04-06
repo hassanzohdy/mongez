@@ -1,0 +1,276 @@
+---
+title: Api Controller Manager
+---
+import {config, laravelMessageBag } from './variables';
+import Highlights from './../../../src/components/Highlights';
+
+The `ApiController` class is an `abstract` class that manages some features to help you complete your requests rapidly.
+
+## A Basic Api Controller Example
+
+The following snippet shows the basic usage of the `ApiController` class.
+
+```php title="app/Modules/Users/Controllers/Site/UsersController.php"
+<?php
+namespace App\Modules\Users\Controllers\Site;
+
+use Illuminate\Http\Request;
+use HZ\Illuminate\Mongez\Managers\ApiController;
+
+class UsersController extends ApiController
+{
+    /**
+     * Repository name
+     * 
+     * @var string
+     */
+    public const REPOSITORY_NAME = 'users';
+
+    /**
+     * {@inheritDoc}
+     */
+    public function index(Request $request)
+    {
+        $options = [];
+
+        return $this->success([
+            'records' => $this->repository->list($options),
+        ]);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public function show($id, Request $request)
+    {
+        $record = $this->repository->getPublished($id);
+
+        if (! $record) {
+            return $this->notFound(trans('notFoundRecord'));
+        }
+
+        return $this->success([
+            'record' => $record,
+        ]);
+    }
+}
+```
+
+Let's see what is in this snippet.
+
+- **REPOSITORY_NAME**: we set the repository shorthand name which is defined in the [Mongez Config File](./../../config/mongez) in the `repositories` section 
+- **$this->repsoitory**: the instance of <Highlights text="users" /> repository, will be autmatically available once `REPOSITORY_NAME` is defined.
+- **success method**: returns a success `200` response with the passed array data, if no arguments is passed to that method, <Highlights text="['success' => true]" /> will be returned instead.
+- **notFound method**: returns a failure `404` response with the passed string message, if no arguments is passed to that method, **trans('response.notFound')** will be returned instead.
+> Check the [response error schema](#response-error-schema) for returned errors.
+
+## Using other repositories
+
+The ApiController class uses [RepositoryTrait](./../../repositories/trait) which means you can call any repository in any method.
+
+```php title="UsersController.php"
+public function index(Request $request)
+{
+    $posts = $this->postsRepository->getByUser(user()->id);
+    //
+}
+```
+
+## Available Methods
+
+- [success Method](#success-method)
+- [successCreate Method](#successCreate-method)
+- [notFound Method](#notFound-method)
+- [badRequest Method](#badRequest-method)
+- [unauthorized Method](#unauthorized-method)
+- [send Method](#send-method)
+
+
+### success Method
+
+`public success(array $data = null): Response`
+
+Returns `200` response code with the provided data.
+
+If no passed arguments, then **['success' => true]** will be returned by default.
+
+> Default returned value can be overriden from [Mongez Config File](./../../config/mongez) under `response.defaults.success` key.
+
+This method triggers `response.success` [event](./../../events/introduction) and passes the passed data argument to it.
+
+### successCreate Method
+
+`public successCreate(array $data = null): Response`
+
+Returns `201` response code with the provided data.
+
+This method should be used with creating new records.
+
+If no passed arguments, then **['success' => true]** will be returned by default.
+
+> Default returned value can be overriden from [Mongez Config File](./../../config/mongez) under `response.defaults.successCreate` key.
+
+This method triggers `response.successCreate` [event](./../../events/introduction) and passes the passed data argument to it.
+
+### notFound Method
+
+`public notFound(string $data = null): Response`
+
+Returns `404` response code with the provided data.
+
+If no passed arguments, then **trans('response.notFound')** will be returned by default.
+
+> Default returned value can be overriden from [Mongez Config File](./../../config/mongez) under `mongez.response.defaults.notFound` key.
+
+This method triggers `response.notFound` [event](./../../events/introduction) and passes the passed data argument to it.
+
+> See [Response Error Schema](#Response-Error-Schema) for the returned response schema.
+
+### badRequest Method
+
+`public badRequest(string|MessageBag $data): Response`
+
+Returns `400` response code with the provided data.
+
+[Laravel MessageBag](https://laravel.com/docs/master/validation#working-with-error-messages) or `string` can be passed.
+
+> Default returned value can be overriden from [Mongez Config File](./../../config/mongez) under `response.success.default` key.
+
+This method triggers `response.badRequest` [event](./../../events/introduction) and passes the passed data argument to it.
+
+> See [Response Error Schema](#Response-Error-Schema) for the returned response schema.
+
+### unauthorized Method
+
+`public notFound(mixed $data = null): Response`
+
+Returns `422` response code with the provided data.
+
+If no passed arguments, then **trans('response.unauthorized')** will be returned by default.
+
+> Default returned value can be overriden from [Mongez Config File](./../../config/mongez) under `response.defaults.unauthorized` key.
+
+This method triggers `response.unauthorized` [event](./../../events/introduction) and passes the passed data argument to it.
+
+> See [Response Error Schema](#Response-Error-Schema) for the returned response schema.
+
+### send Method
+
+`public send(array $data, int $statusCode): Response`
+
+Returns the given data and the response code.
+
+This method triggers `response.send` [event](./../../events/introduction) and passes the passed data and response status code as arguments for the event callbacks.
+
+
+## Manipulating Returned Values
+
+Sometimes you want to send extra data in all requests, or in success requests for example, you can achieve this by listening to any of the response events and return data
+
+> Please note that if any of the previous method events returned array value then it will be returned instead.
+
+So for instance if we want to return the `me` object that contains current user data for all responses, then we can as follows:
+
+1. Go to **mongez config file**.
+2. Under `events` key, add `response.send` key with an array.
+3. In the array add another array that holds the event class as first element and method name as second element.
+
+
+```php title="config/mongez.php"
+`events` => [
+    'response.send' => [
+        [App\Modules\Users\Events\ReturnMeObject::class, 'sendMe']
+    ]
+]
+```
+
+Now we navigate to our class <Highlights text="App\Modules\Users\Events\ReturnMeObject" /> which should be located in <Highlights text="app/Modules/Users/Events/ReturnMeObject.php" />
+
+```php title="app/Modules/Users/Events/ReturnMeObject.php"
+<?php
+
+namespace App\Modules\Users\Events;
+
+class ReturnMeObject 
+{
+    /**
+     * Send current user data with all requests
+     * 
+     * @param array $response
+     * @return array
+     */
+    public function sendMe($response)
+    {
+        $response['me'] = repo('users')->wrap(user());
+
+        return $response;
+    }
+}
+```
+
+## Response Error Schema
+
+The returned error can be customized how it should be returned.
+
+> The response schema can be overriden in [Mongez Config](./../../config/mongez) under `response.error` key.
+
+The response can be one of the following:
+
+- String
+- [Laravel MessageBag](https://laravel.com/docs/master/validation#working-with-error-messages)
+- Associated Array
+- Indexed Array
+
+If the response is a **string** then it will be converted into an associated array as <Highlights text="'error' => '$errorMessageString" />.
+
+If the response is a **Laravel MessageBag** then it will be converted into an associated array as <Highlights text="'inputName' => 'firstError" /> and will take only first error for each input.
+
+> You can override the returned messages from Laravel MessageBag in the monez config file under `mongez.response.error.maxArrayLength`.
+
+### Resposne Error Defaults
+
+The following snippet illustrates the default values that will be used for returend errors.
+
+```php title="Response Error Settings"
+$errorMaxArrayLength = config('mongez.response.error.maxArrayLength', 1);
+$errorReturn = config('mongez.response.error.strategy', self::ERROR_AS_ARRAY<array>);
+$arrayKey = config('mongez.response.error.arrayKey', self::ERROR_AS_ARRAY_KEY<key>);
+$arrayValue = config('mongez.response.error.arrayValue', self::ERROR_AS_ARRAY_VALUE<value>);
+```
+
+### Resposne Error Schema Strategies
+
+There are two strategies: `array` and `object`.
+
+The `array` strategy will convert the errors into an array of object, each object contains a **key** which holds the input name and **value** which holds the error message.
+
+The response shape will be as follows:
+
+```json
+{
+    "errors": [
+        {
+            $arrayKey => "error",
+            $arrayValue => $data
+        }
+    ]
+}
+```
+
+> Please note that only string and Laravel MessageBag will be converted, if the passed data is an array it will be returned the same.
+
+
+The `object` strategy will convert the errors into object with a **key** which holds the input name and **value** which holds the error message.
+
+The response shape will be as follows:
+
+```json
+{
+    "errors": {
+        $errorKey: $errorValue,
+        $anotherErrorKey: $anotherErrorValue
+    }
+}
+```
+
+> Please note that only string and Laravel MessageBag will be converted, if the passed data is an array it will be returned the same.
