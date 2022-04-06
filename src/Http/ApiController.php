@@ -1,15 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace HZ\Illuminate\Mongez\Http;
 
 use HZ\Illuminate\Mongez\Events\Events;
 use HZ\Illuminate\Mongez\Http\ApiResponse;
-use HZ\Illuminate\Mongez\Repository\Concerns\RepositoryTrait;
+use HZ\Illuminate\Mongez\Traits\WithRepositoryAndService;
 use HZ\Illuminate\Mongez\Translation\Traits\Translatable;
 
 abstract class ApiController
 {
-    use RepositoryTrait, ApiResponse, Translatable;
+    use ApiResponse, Translatable, WithRepositoryAndService;
 
     /**
      * Repository name
@@ -20,12 +22,26 @@ abstract class ApiController
     public const REPOSITORY_NAME = '';
 
     /**
+     * Service Class 
+     * 
+     * @const string
+     */
+    public const SERVICE_CLASS = '';
+
+    /**
      * Repository Object
      * Can be filled when REPOSITORY_NAME is provided.
      * 
      * @var RepositoryInterface
      */
     protected $repository;
+
+    /**
+     * Service object
+     * 
+     * @var mixed
+     */
+    protected $service;
 
     /**
      * Events Object
@@ -38,12 +54,16 @@ abstract class ApiController
      * Constructor
      *
      */
-    public function __construct(Events $events)
+    public function __construct()
     {
-        $this->events = $events;
+        $this->events = app()->make(Events::class);
 
         if (static::REPOSITORY_NAME) {
             $this->repository = repo(static::REPOSITORY_NAME);
+        }
+
+        if (static::SERVICE_CLASS) {
+            $this->service = app()->make(static::SERVICE_CLASS);
         }
     }
 }

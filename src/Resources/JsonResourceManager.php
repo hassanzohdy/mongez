@@ -13,11 +13,11 @@ use Illuminate\Database\Eloquent\Model;
 use HZ\Illuminate\Mongez\Helpers\Mongez;
 use Illuminate\Http\Resources\Json\JsonResource;
 use HZ\Illuminate\Mongez\Translation\Traits\Translatable;
-use HZ\Illuminate\Mongez\Repository\Concerns\RepositoryTrait;
+use HZ\Illuminate\Mongez\Traits\WithRepositoryAndService;
 
 abstract class JsonResourceManager extends JsonResource
 {
-    use RepositoryTrait, Translatable;
+    use WithRepositoryAndService, Translatable;
 
     /**
      * Data that must be returned

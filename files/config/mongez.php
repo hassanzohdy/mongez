@@ -18,6 +18,7 @@ use HZ\Illuminate\Mongez\Testing\Units\ArrayOfUnit;
 use HZ\Illuminate\Mongez\Testing\Units\ArrayUnit;
 use HZ\Illuminate\Mongez\Testing\Units\BooleanUnit;
 use HZ\Illuminate\Mongez\Testing\Units\BoolUnit;
+use HZ\Illuminate\Mongez\Testing\Units\DateUnit;
 use HZ\Illuminate\Mongez\Testing\Units\EmailUnit;
 use HZ\Illuminate\Mongez\Testing\Units\ErrorKeyValueUnit;
 use HZ\Illuminate\Mongez\Testing\Units\FloatUnit;
@@ -302,6 +303,7 @@ return [
             PaginationInfoUnit::NAME => PaginationInfoUnit::class,
             ErrorKeyValueUnit::NAME => ErrorKeyValueUnit::class,
             ErrorsListUnit::NAME => ErrorsListUnit::class,
+            DateUnit::NAME => DateUnit::class,
         ],
         'rules' => [
             EqualRule::NAME => EqualRule::class,
@@ -334,9 +336,18 @@ return [
     | to be served with the admin api controller + api controller or
     | to be served with the admin view controller + view controller
     | available values: view|api, defaults to api
+    | 
+    | `withServivce` If set to true, then `Services` directory will be created with `ModuleService` class 
+    | It can be overriden by passing --with-service option when using engez:module command
+    | @default: true
+    |
+    | `full` if set to true, then `Events` `Mail` `views` directories will be created as empty directories
+    | @default: false
     */
     'console' => [
         'builder' => [
+            'withService' => true,
+            'full' => false,
             'build' => 'api',
             'controller' => [
                 // available options are: all | site | admin
