@@ -30,6 +30,11 @@ trait WithRepositoryAndService
 
         if ($return) return $return;
 
-        throw new Exception(sprintf('Call to undefined propertغ %s', $key));
+        // check if the trait in a sub-class and the parent has __get method 
+        if (class_parents($this) && method_exists(parent::class, '__get')) {
+            return parent::__get($key);
+        }
+
+        throw new Exception(sprintf('Call to undefined property %s', $key));
     }
 }

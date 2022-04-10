@@ -6,7 +6,6 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use HZ\Illuminate\Mongez\Events\Events;
 use Illuminate\Support\Facades\Validator;
 
 abstract class RestfulApiController extends ApiController
@@ -220,9 +219,9 @@ abstract class RestfulApiController extends ApiController
             return $this->badRequest($errors);
         }
 
-        if ($errors = $this->beforeAll($request)) {
-            return $this->badRequest($errors);
-        }
+        // if ($errors = $this->beforeAll($request)) {
+        //     return $this->badRequest($errors);
+        // }
 
         $this->repository->patch($model, $request);
 
@@ -349,7 +348,7 @@ abstract class RestfulApiController extends ApiController
     {
         return null;
     }
-    
+
     /**
      * Triggered before storing|updating|patching a record
      * Useful when needs to make a validation before operating on a record

@@ -291,7 +291,6 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
             '--filter' => $module . 'Filter',
         ];
 
-
         $this->call(
             'engez:repository',
             $this->withDataTypes($repositoryOptions)
@@ -357,6 +356,22 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
     }
 
     /**
+     * Create service module
+     * 
+     * @return void
+     */
+    protected function createService()
+    {
+        $replacements = [
+            '{{ ModuleName }}' => $moduleName = $this->getModule(),
+            '{{ ServiceName }}' => $moduleName  . 'Service',
+            '{{ RepositoryName }}' => $this->plural($moduleName) . 'Repository',
+        ];
+
+        $this->putFile("Services/{$moduleName}Service.php", $this->replaceStub('Services/service', $replacements));
+    }
+
+    /**
      * Create module service provider
      *
      * @return void
@@ -365,7 +380,7 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
     {
         $types = $this->option('type');
 
-        if ($types == 'all') {
+        if ($types === 'all') {
             $types = 'admin,site';
         }
 
