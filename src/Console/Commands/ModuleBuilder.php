@@ -61,7 +61,7 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
 
     /**
      * Determine whether to generate service class with the module
-     * 
+     *
      * @var bool
      */
     protected ?bool $withService;
@@ -253,7 +253,10 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
             '--module' => $parent,
         ];
 
-        $this->call('engez:test', $testOptions);
+        $this->call(
+            'engez:test',
+            $this->withDataTypes($testOptions)
+        );
     }
 
     /**
@@ -357,7 +360,7 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
 
     /**
      * Create service module
-     * 
+     *
      * @return void
      */
     protected function createService()

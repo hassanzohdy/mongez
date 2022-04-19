@@ -2,6 +2,7 @@
 
 namespace HZ\Illuminate\Mongez\Console\Commands;
 
+use Illuminate\Http\UploadedFile;
 use HZ\Illuminate\Mongez\Console\EngezInterface;
 use HZ\Illuminate\Mongez\Console\EngezGeneratorCommand;
 
@@ -47,7 +48,7 @@ class EngezTest extends EngezGeneratorCommand implements EngezInterface
      *
      * @var string
      */
-    protected $signature = 'engez:test {test} {--module} ' . EngezTest::TEST_OPTIONS;
+    protected $signature = 'engez:test {test} {--module} ' . EngezTest::TEST_OPTIONS . EngezGeneratorCommand::DATA_TYPES_OPTIONS;
 
     /**
      * The console command description.
@@ -186,6 +187,7 @@ class EngezTest extends EngezGeneratorCommand implements EngezInterface
         }
 
         foreach ($files as $file) {
+
             $capitalizeTestType = ucfirst($testType);
             $capitalizeTestFile = ucfirst($file);
             $moduleName = $this->getModule();
@@ -195,7 +197,7 @@ class EngezTest extends EngezGeneratorCommand implements EngezInterface
             $this->testName = "{$capitalizeTestFile}{$moduleName}Test.php";
             $className = "{$capitalizeTestFile}{$moduleName}Test";
 
-            $this->info("Creating {$capitalizeTestFile}{$moduleName} test...");
+            $this->info("Creating {$capitalizeTestFile}{$moduleName} test");
 
             $replaces = [
                 // replace the className name
@@ -206,6 +208,8 @@ class EngezTest extends EngezGeneratorCommand implements EngezInterface
                 '{{ ModuleRoute }}' => $moduleRoute,
                 // replace model name
                 '{{ model }}' => $model,
+                // replace all request data
+                '{{ allRequestData }}' => $this->getRequestFakerData(),
             ];
 
             // create the file
@@ -263,5 +267,63 @@ class EngezTest extends EngezGeneratorCommand implements EngezInterface
     protected function isSiteTest(): bool
     {
         return in_array($this->option('type'), ['all', 'site']);
+    }
+
+    /**
+     * return request faker data
+     *
+     * @return string
+     */
+    protected function getRequestFakerData()
+    {
+        $allRequestData = '';
+        $publishedColumn = config('mongez.repository.publishedColumn');
+
+        foreach (static::DATA_TYPES as $type) {
+
+            if ($this->optionHasValue($type)) {
+
+                $typeElements = explode(',', $this->option($type));
+                $allRequestData .= str_repeat(" ", 12) . "// $type \r\n";
+
+                if ($type == 'bool') {
+                    $allRequestData .= str_repeat(" ", 12) . "'$publishedColumn' => " . $this->getFakerForType('bool') .  "\n";
+                }
+
+                foreach ($typeElements as $typeElement) {
+                    $allRequestData .= str_repeat(" ", 12) . "'$typeElement' => " . $this->getFakerForType($type) .  "\r\n";
+                }
+            }
+        }
+
+        if (! $this->optionHasValue('bool')) {
+            $allRequestData .= str_repeat(" ", 12) . "// bool \n";
+            $allRequestData .= str_repeat(" ", 12) . "'$publishedColumn' => " . $this->getFakerForType('bool') .  "\n";
+        }
+
+        return $allRequestData;
+    }
+
+    /**
+     * get faker for each type
+     *
+     * @param string $type
+     * @return string|void
+     */
+    protected function getFakerForType(string $type)
+    {
+        if ($type == 'string') {
+            return '$this->faker->title,';
+        }elseif ($type == 'int') {
+            return '$this->faker->randomNumber(),';
+        }elseif ($type == 'float') {
+            return '$this->faker->randomFloat(2),';
+        }elseif ($type == 'bool') {
+            return '$this->faker->boolean,';
+        }elseif ($type == 'date') {
+            return '$this->faker->dateTime,';
+        }elseif ($type == 'uploads') {
+            return "UploadedFile::fake()->image('image.jpg'),";
+        }
     }
 }

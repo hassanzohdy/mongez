@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\{{ ModuleName }}\Tests\Admin;
 
+use Illuminate\Http\UploadedFile;
 use HZ\Illuminate\Mongez\Testing\ApiTestCase;
 use HZ\Illuminate\Mongez\Testing\TestResponse;
 use HZ\Illuminate\Mongez\Testing\StrictResponseSchema;
@@ -43,7 +44,7 @@ class {{ className }} extends ApiTestCase
     public function setRequestData(): array
     {
         return [
-            //
+{{ allRequestData }}
         ];
     }
 
