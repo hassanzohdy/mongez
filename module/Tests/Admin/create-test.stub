@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\{{ ModuleName }}\Tests\Admin;
 
 use HZ\Illuminate\Mongez\Testing\ApiTestCase;
+use HZ\Illuminate\Mongez\Testing\TestResponse;
 use HZ\Illuminate\Mongez\Testing\StrictResponseSchema;
 use HZ\Illuminate\Mongez\Testing\Units\ErrorsListUnit;
 use App\Modules\Users\Traits\Tests\WithUserAccessToken;
@@ -49,9 +50,9 @@ class {{ className }} extends ApiTestCase
     /**
      * test success create {{ model }}.
      *
-     * @return void
+     * @return TestResponse
      */
-    public function testSuccessCreate{{ model }}(): void
+    public function testSuccessCreate{{ model }}(): TestResponse
     {
         $response = $this->post('admin/{{ ModuleRoute }}', $this->setRequestData());
 
@@ -62,6 +63,8 @@ class {{ className }} extends ApiTestCase
         ]);
 
         $response->assertResponse($responseSchema);
+
+        return $response;
     }
 
     /**
