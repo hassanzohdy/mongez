@@ -44,6 +44,7 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
                                        {--model=}
                                        {--translatable=true}
                                        {--data=}
+                                       {--with-service=}
                                        {--resource=}
                                        {--repository=}
                                        ' . EngezGeneratorCommand::DATA_TYPES_OPTIONS
@@ -57,6 +58,13 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
      * @var string
      */
     protected $description = 'Module builder';
+
+    /**
+     * Determine whether to generate service class with the module
+     * 
+     * @var bool
+     */
+    protected ?bool $withService;
 
     /**
      * Execute the console command.
@@ -157,6 +165,11 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
             $this->createServiceProvider();
         }
 
+        if ($this->withService) {
+            $this->info('Creating Service...');
+            $this->createService();
+        }
+
         // $this->info('Creating database files');
         // $this->createDatabase();
 
@@ -193,6 +206,8 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
                 $this->info[$option] = explode(',', $value);
             }
         }
+
+        $this->withService = ($this->optionHasValue('with-service') && $this->option('with-service') !== 'false') || config('mongez.builder.withService', true);
     }
 
     /**
@@ -210,6 +225,8 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
             '--module' => $parent,
             '--repository' => $this->repositoryName($module),
             '--route' => $module,
+            '--service' => $module . 'Service',
+            '--serviceClass' => 'App\\Modules\\' . $module . '\\Services\\' . $module . 'Service',
         ];
 
         if ($parent !== $module) {
@@ -273,7 +290,6 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
             '--resource' => $module . 'Resource',
             '--filter' => $module . 'Filter',
         ];
-
 
         $this->call(
             'engez:repository',
@@ -340,6 +356,22 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
     }
 
     /**
+     * Create service module
+     * 
+     * @return void
+     */
+    protected function createService()
+    {
+        $replacements = [
+            '{{ ModuleName }}' => $moduleName = $this->getModule(),
+            '{{ ServiceName }}' => $moduleName  . 'Service',
+            '{{ RepositoryName }}' => $this->plural($moduleName) . 'Repository',
+        ];
+
+        $this->putFile("Services/{$moduleName}Service.php", $this->replaceStub('Services/service', $replacements));
+    }
+
+    /**
      * Create module service provider
      *
      * @return void
@@ -348,7 +380,7 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
     {
         $types = $this->option('type');
 
-        if ($types == 'all') {
+        if ($types === 'all') {
             $types = 'admin,site';
         }
 

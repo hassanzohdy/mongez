@@ -6,7 +6,6 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use HZ\Illuminate\Mongez\Events\Events;
 use Illuminate\Support\Facades\Validator;
 
 abstract class RestfulApiController extends ApiController
@@ -39,9 +38,9 @@ abstract class RestfulApiController extends ApiController
      * Constructor
      *
      */
-    public function __construct(Events $events)
+    public function __construct()
     {
-        parent::__construct($events);
+        parent::__construct();
 
         if (!empty($this->controllerInfo['repository'])) {
             $this->repository = repo($this->controllerInfo['repository']);
@@ -104,6 +103,10 @@ abstract class RestfulApiController extends ApiController
             return $this->badRequest($errors);
         }
 
+        if ($errors = $this->beforeAll($request)) {
+            return $this->badRequest($errors);
+        }
+
         $model = $this->repository->create($request);
 
         $returnOnStore = $this->controllerInfo['returnOn']['store'] ?? config('mongez.admin.returnOn.store', 'single-record');
@@ -160,6 +163,10 @@ abstract class RestfulApiController extends ApiController
             return $this->badRequest($errors);
         }
 
+        if ($errors = $this->beforeAll($request)) {
+            return $this->badRequest($errors);
+        }
+
         $this->repository->update($model, $request);
 
         $returnOnUpdate = $this->controllerInfo['returnOn']['update'] ?? config('mongez.admin.returnOn.update', 'single-record');
@@ -190,13 +197,17 @@ abstract class RestfulApiController extends ApiController
             return $this->notFound();
         }
 
-        $rules = array_merge_recursive($this->allValidation($request, $id), $this->patchValidation($id, $request));
+        $rules = $this->allValidation($request, $id);
 
-        foreach ($rules as $column => $rulesList) {
-            if (!in_array($column, array_keys($request->all()))) {
+        $requestInputs = array_keys($request->all());
+
+        foreach (array_keys($rules) as $column) {
+            if (!in_array($column, $requestInputs)) {
                 unset($rules[$column]);
             }
         }
+
+        $rules = array_merge_recursive($rules, $this->patchValidation($id, $request));
 
         $validator = Validator::make($request->all(), $rules);
 
@@ -207,6 +218,10 @@ abstract class RestfulApiController extends ApiController
         if ($errors = $this->beforePatching($model, $request)) {
             return $this->badRequest($errors);
         }
+
+        // if ($errors = $this->beforeAll($request)) {
+        //     return $this->badRequest($errors);
+        // }
 
         $this->repository->patch($model, $request);
 
@@ -330,6 +345,19 @@ abstract class RestfulApiController extends ApiController
      * @return array|null
      */
     protected function beforeStoring(Request $request)
+    {
+        return null;
+    }
+
+    /**
+     * Triggered before storing|updating|patching a record
+     * Useful when needs to make a validation before operating on a record
+     * If it returns a value, it will be returned instead
+     *
+     * @param  Request  $request
+     * @return array|null
+     */
+    protected function beforeAll(Request $request)
     {
         return null;
     }

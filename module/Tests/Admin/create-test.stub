@@ -53,7 +53,7 @@ class {{ className }} extends ApiTestCase
      */
     public function testSuccessCreate{{ model }}(): void
     {
-        $response = $this->post('admin/{{ ModuleRoute }}', $this->setRequestData();
+        $response = $this->post('admin/{{ ModuleRoute }}', $this->setRequestData());
 
         $response->assertSuccessCreate();
 

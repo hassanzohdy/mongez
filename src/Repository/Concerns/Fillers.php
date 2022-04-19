@@ -48,6 +48,8 @@ trait Fillers
             $request = clone $data;
         }
 
+        $this->request = $request;
+
         return $request;
     }
 

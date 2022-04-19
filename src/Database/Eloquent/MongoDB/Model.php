@@ -162,6 +162,20 @@ abstract class Model extends BaseModel
     protected $guarded = [];
 
     /**
+     * Set the auto increment value for generating ids
+     * 
+     * @var int
+     */
+    protected static $autoIncrementIdBy = 1;
+
+    /**
+     * Set the initial id value when collection is being created for first
+     * 
+     * @var int
+     */
+    protected static $initialId = 1;
+
+    /**
      * {@inheritDoc}
      */
     public static function boot()
@@ -175,8 +189,6 @@ abstract class Model extends BaseModel
         static::creating(function ($model) {
             if (!$model->id) {
                 $model->id = static::nextId();
-                // why am i generating this _id column ?!!
-                // $model->_id = sha1(time() . Str::random(40));
             }
         });
 
@@ -390,16 +402,18 @@ abstract class Model extends BaseModel
     {
         $newId = static::getNextId();
 
-        $lastId = $newId - 1;
+        $model = new static;
+
+        $lastId = $newId - static::$autoIncrementIdBy;
 
         $ids = DB::collection('ids');
 
-        $collection = (new static)->getTable();
+        $collection = $model->getTable();
 
         if (!$lastId) {
             $ids->insert([
                 'collection' => $collection,
-                'id' => $newId,
+                'id' => static::$initialId,
             ]);
         } else {
             $ids->where('collection', $collection)->update([
@@ -417,7 +431,7 @@ abstract class Model extends BaseModel
      */
     public static function getNextId(): int
     {
-        return static::lastInsertId() + 1;
+        return static::lastInsertId() + static::$autoIncrementIdBy;
     }
 
     /**

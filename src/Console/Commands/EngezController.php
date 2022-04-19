@@ -22,6 +22,7 @@ class EngezController extends EngezGeneratorCommand implements EngezInterface
     {--build=}
     {--auth=true}
     {--route=}
+    {--with-service=}
     {--type=all}
     ';
 
@@ -48,6 +49,8 @@ class EngezController extends EngezGeneratorCommand implements EngezInterface
      */
     protected $signature = 'engez:controller  {controller} 
                                                {--module=} 
+                                               {--serviceClass=} 
+                                               {--service=} 
                                                {--parent=} 
                                                {--repository=}' . EngezController::CONTROLLER_OPTIONS;
 
@@ -191,11 +194,12 @@ class EngezController extends EngezGeneratorCommand implements EngezInterface
             '{{ ControllerName }}' => $this->controllerName,
             // replace module name
             '{{ ModuleName }}' => $moduleName,
+            // service
+            '{{ serviceClass }}' => $this->optionHasValue('serviceClass') ? 'use ' . $this->option('serviceClass') . ';' : "''",
+            '{{ serviceName }}' => $this->option('service') ?: "''",
+            // repository
+            '{{ repositoryName }}' =>  $this->optionHasValue('repository') ? $this->repositoryName($this->option('repository')) : "''",
         ];
-
-        if ($repository = $this->option('repository')) {
-            $replaces['{{ repositoryName }}'] = $this->repositoryName($repository);
-        }
 
         // create the file
 

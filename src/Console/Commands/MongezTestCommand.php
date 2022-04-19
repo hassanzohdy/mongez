@@ -58,7 +58,9 @@ class MongezTestCommand extends Command
         $databaseTest = config('database.connections.testing.database');
 
         if (!$databaseTest) {
-            return $this->error('No database set in `database.connection.testing.database`');
+            echo $this->error('No database set in `database.connection.testing.database`');
+
+            return 1;
         }
 
         DB::purge('mongodb');

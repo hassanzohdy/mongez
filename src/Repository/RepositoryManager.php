@@ -15,16 +15,16 @@ use HZ\Illuminate\Mongez\Repository\Concerns\Listable;
 use HZ\Illuminate\Mongez\Repository\Concerns\Cacheable;
 use HZ\Illuminate\Mongez\Repository\Concerns\Deletable;
 use HZ\Illuminate\Mongez\Repository\RepositoryInterface;
-use HZ\Illuminate\Mongez\Repository\Concerns\RepositoryTrait;
+use HZ\Illuminate\Mongez\Traits\WithRepositoryAndService;
 use HZ\Illuminate\Mongez\Translation\Traits\Translatable;
 
 abstract class RepositoryManager implements RepositoryInterface
 {
     /**
-     * We're injecting the repository trait as it will be used
-     * for quick access to other repositories
+     * We're injecting the repository and service caller traits as it will be used
+     * for quick access to other repositories and services
      */
-    use RepositoryTrait;
+    use WithRepositoryAndService;
 
     /**
      * Data Saving Fillers

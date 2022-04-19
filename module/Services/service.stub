@@ -1,0 +1,27 @@
+<?php
+namespace App\Modules\{{ ModuleName }}\Services;
+
+use App\Modules\{{ ModuleName }}\Repositories\{{ RepositoryName }};
+use HZ\Illuminate\Mongez\Repository\Concerns\RepositoryTrait;
+
+class {{ ServiceName }}
+{
+    use RepositoryTrait;
+
+    /**
+     * Main Repository
+     * 
+     * @var {{ RepositoryName }}
+     */
+    protected ?{{ RepositoryName }} $repository;
+
+    /**
+     * Constructor
+
+     * @param {{ RepositoryName }} $repository
+     */
+     public function __construct({{ RepositoryName }} $repository)
+     {
+         $this->repository = $repository;
+     }
+}

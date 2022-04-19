@@ -82,13 +82,13 @@ class {{ RepositoryClass }} extends MongoDBRepositoryManager implements Reposito
     /**
      * Auto save uploads in this list
      *
-     * If it's an indexed array, in that case the request key will be as database column name
-     * If it's associated array, the key will be request key and the value will be the database column name 
+     * If it's an indexed array, in that case the request input will be as database column name
+     * If it's associated array, the input will be request input and the value will be the database column name
      *
      * It can be passed as well as an array of options, current options schema:
      * [
-     *    'key' => 'string', // the key that will be read from the request files, if not present, it will be same as $column key
-     *    'column' => 'string', // if not present, it will be same as $key key
+     *    'input' => 'string', // the input that will be read from the request files, if not present, it will be same as $column key
+     *    'column' => 'string', // if not present, it will be same as $input input
      *    'clearable' => 'bool', // if set to true, the column value will be set to empty if there is no file to be uploaded
      *    'arrayable' => 'bool', // if set to true, it will be stored as an array, if set to null it auto determined
      * ]

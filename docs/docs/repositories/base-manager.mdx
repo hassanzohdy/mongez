@@ -1,0 +1,149 @@
+---
+title: Repository Base Manager
+---
+
+## Introduction
+
+The Repository Base Manager is shipped with more facilities for better and faster usage for repositories.
+
+This is an abstract class, mostly inherited by `MYSQL` repository or `MongoDB` repository.
+
+The class handles all types of data manipulation and retrieval such as `Creating` `Updating` `Retrieving` and `Deleting` records from database.
+
+## Wrapping Model into resource instance
+
+As model data needs to be more customized, for instance defining the full image url, then can be done easily by using [Laravel Resources](https://laravel.com/docs/8.x/eloquent-resources).
+
+The repository model can be wrapped into the repository resource class using the wrap method
+
+```php title="App\Modules\Users\Controllers\Site\UsersControllers.php"
+<?php
+namespace App\Modules\Users\Controllers\Site;
+
+use HZ\Illuminate\Mongez\Managers\ApiController;
+
+class UsersControllers extends ApiController
+{
+    /**
+     * Repository name
+     * If provided, then the repository property will be the object of the repository
+     *
+     * @const string
+     */
+    public const REPOSITORY_NAME = 'users';
+
+    /**
+     * {@inheritDoc}
+     */
+    public function index(Request $request)
+    {
+        $user = $this->repository->getByModel('email', $rerquest->email);
+
+        if ($user) {
+            return $this->success([
+                'user' => $this->repository->wrap($user),
+            ]);
+        }
+
+        // rest of the code
+    }
+}
+```
+
+The wrap method will return an instance of `UsersResource` class.
+
+:::tip
+The `wrap` method can also accept an array of data, if that is the case, then the data will be passed to the repository model and creates new instance before sending it to the repository resource.
+:::
+
+## Wrapping collection of models
+
+This works exactly the same as the `wrap` method, except that it works with list of modesls.
+
+```php title="App\Modules\Users\Controllers\Site\UsersControllers.php"
+<?php
+namespace App\Modules\Users\Controllers\Site;
+
+use HZ\Illuminate\Mongez\Managers\ApiController;
+
+class UsersControllers extends ApiController
+{
+    /**
+     * Repository name
+     * If provided, then the repository property will be the object of the repository
+     *
+     * @const string
+     */
+    public const REPOSITORY_NAME = 'users';
+
+    /**
+     * {@inheritDoc}
+     */
+    public function index(Request $request)
+    {
+        $users = $this->repository->listModels([
+            'name' => $request->name,
+        ]);
+
+        return $this->success([
+            'users' => $this->wrapMany($users),
+        ]);
+    }
+}
+```
+
+The wrap method will return an list of `UsersResource` instances.
+
+:::info
+The previous example is for demonstration purposes only, you can use the `list` method which combines the `listModels` with `wrapMany` method.  
+:::
+
+## Create and wrap the model
+
+Once we created the record using `create` method, we may need to return it to the response by using the `wrap` method, there is a short method for creating and wraping the resource directly using `createWrap` method.
+
+```php
+/**
+ * Create new record in database
+ *
+ * @param  int $id
+ * @param  Request $request
+ * @return Response
+ */
+public function store(Request $request)
+{
+    // do your validation first
+
+    // later
+    return $this->success([
+        'user' => $this->repository->createWrap($request)
+    ]);
+}
+```
+
+This will first call the `create method` which will return an instance of the repository model, then it will be passed to the repository resource class.
+
+## Update and wrap the model
+
+Similar to the `createWrap` method but with the update
+
+```php
+/**
+ * Update the record for the given id
+ *
+ * @param  int $id
+ * @param  Request $request
+ * @return Response
+ */
+public function update($id, Request $request)
+{
+    // do your validation first
+
+    // later
+    return $this->success([
+        'user' => $this->repository->updateWrap($id, $request)
+    ]);
+}
+```
+
+This will first call the `create method` which will return an instance of the repository model, then it will be passed to the repository resource class.
