@@ -3,7 +3,6 @@
 namespace HZ\Illuminate\Mongez\Repository;
 
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\App;
 use HZ\Illuminate\Mongez\Database\Eloquent\MongoDB\Model;
 use HZ\Illuminate\Mongez\Database\Eloquent\MongoDB\Aggregation;
 
@@ -129,9 +128,9 @@ abstract class MongoDBRepositoryManager extends RepositoryManager implements Rep
      * 
      * @param array $options
      * @param string $sharedInfoMethod
-     * @return Collection
+     * @return array
      */
-    public function ListSharedInfo(array $options, string $sharedInfoMethod = 'sharedInfo')
+    public function listSharedInfo(array $options, string $sharedInfoMethod = 'sharedInfo')
     {
         return $this->listModels($options)->map(function ($model) use ($sharedInfoMethod) {
             return $model->$sharedInfoMethod();
