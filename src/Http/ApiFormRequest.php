@@ -2,10 +2,10 @@
 
 namespace HZ\Illuminate\Mongez\Http;
 
+use HZ\Illuminate\Mongez\Http\ApiResponse;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Validation\ValidationException;
-use HZ\Illuminate\Mongez\Http\ApiResponse;
 
 class ApiFormRequest extends FormRequest
 {
