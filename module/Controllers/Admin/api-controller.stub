@@ -12,6 +12,11 @@ class {{ ControllerName }} extends RestfulApiController
      */
     protected $controllerInfo = [
         'repository' => '{{ repositoryName }}',
+        'request' => [
+            'store' => '',
+            'update' => '',
+            'patch' => '',
+        ],
         'listOptions' => [
             'select' => [],
             'paginate' => null, // inherit by default
