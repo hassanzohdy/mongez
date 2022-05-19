@@ -3,6 +3,7 @@
 namespace HZ\Illuminate\Mongez\Http;
 
 use HZ\Illuminate\Mongez\Http\ApiResponse;
+use HZ\Illuminate\Mongez\Traits\WithRepositoryAndService;
 use HZ\Illuminate\Mongez\Translation\Traits\Translatable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
@@ -10,7 +11,7 @@ use Illuminate\Validation\ValidationException;
 
 class ApiFormRequest extends FormRequest
 {
-    use ApiResponse, Translatable;
+    use ApiResponse, WithRepositoryAndService, Translatable;
 
     /**
      * Handle a failed validation attempt.
