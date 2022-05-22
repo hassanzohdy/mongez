@@ -2,6 +2,7 @@
 
 namespace HZ\Illuminate\Mongez\Providers;
 
+use HZ\Illuminate\Mongez\Console\Commands\EngezRequest;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;
@@ -53,6 +54,7 @@ class MongezServiceProvider extends ServiceProvider
         PostmanCollection::class,
         MongezTestCommand::class,
         EngezTest::class,
+        EngezRequest::class,
     ];
 
     /**

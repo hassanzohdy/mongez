@@ -40,7 +40,7 @@ class EngezRequest extends EngezGeneratorCommand implements EngezInterface
         $this->validateArguments();
         $this->create();
 
-        $this->info('Resource has been created successfully');
+        $this->info('Request has been created successfully');
     }
 
     /**
@@ -68,7 +68,7 @@ class EngezRequest extends EngezGeneratorCommand implements EngezInterface
             // module name
             '{{ ModuleName }}' => $this->getModule(),
             // request class name
-            '{{ RequestName }}' => $this->requestName,
+            '{{ RequestClassName }}' => $this->requestName,
         ];
 
         $this->putFile("Requests/{$this->requestName}.php", $this->replaceStub('Requests/request', $replacements));
