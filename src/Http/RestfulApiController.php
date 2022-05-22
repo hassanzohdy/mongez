@@ -2,6 +2,7 @@
 
 namespace HZ\Illuminate\Mongez\Http;
 
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
@@ -91,6 +92,8 @@ abstract class RestfulApiController extends ApiController
      */
     public function store(Request $request)
     {
+        $request = $this->controllerInfo('request.store') ? App::make($this->controllerInfo('request.store')) : $request;
+
         $rules = array_merge_recursive($this->allValidation($request), $this->storeValidation($request));
 
         $validator = Validator::make($request->all(), $rules);
@@ -136,6 +139,8 @@ abstract class RestfulApiController extends ApiController
         if (!$model) {
             return $this->notFound();
         }
+
+        $request = $this->controllerInfo('request.update') ? App::make($this->controllerInfo('request.update')) : $request;
 
         $rules = array_merge_recursive($this->allValidation($request, $id), $this->updateValidation($id, $request));
 
@@ -196,6 +201,8 @@ abstract class RestfulApiController extends ApiController
         if (!$model) {
             return $this->notFound();
         }
+
+        $request = $this->controllerInfo('request.patch') ? App::make($this->controllerInfo('request.patch')) : $request;
 
         $rules = $this->allValidation($request, $id);
 
