@@ -386,6 +386,9 @@ abstract class Model extends BaseModel
 
                     foreach ($records as $record) {
                         $record->unset($clearingColumn);
+                        // Force saving again as the model in some is not triggering the update event
+                        // so we will force the update by updating the updatedAt column;
+                        $record->updatedAt = now();
                         $record->save();
                     }
                 }
