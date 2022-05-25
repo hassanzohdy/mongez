@@ -14,21 +14,21 @@ abstract class SeederManager extends Seeder
     use RepositoryTrait;
     /**
      * Repository name
-     * 
+     *
      * @var \Faker\Factory
      */
     protected $faker;
 
     /**
      * Repository name
-     * 
+     *
      * @var string
      */
     protected const REPOSITORY_NAME = '';
 
     /**
      * Total of records will be generated
-     * 
+     *
      * @var int
      */
     protected const TOTAL_RECORDS = 5;
@@ -37,7 +37,7 @@ abstract class SeederManager extends Seeder
      * name of seeds you need to generated with DOCUMENT_DATA from repository
      * [columnName => demoSeeder::class]
      * column Name must be the same name in the DOCUMENT_DATA
-     * 
+     *
      * @var array
      */
     protected const DOCUMENT_SEEDER = [];
@@ -46,28 +46,28 @@ abstract class SeederManager extends Seeder
      * name of seeds you need to generated with MULTI_DOCUMENT_DATA from repository
      * [columnName => demoSeeder::class]
      * column Name must be the same name in the MULTI_DOCUMENT_DATA
-     * 
+     *
      * @var array
      */
     protected const MULTI_DOCUMENT_SEEDER = [];
 
     /**
      * localization keys
-     * 
+     *
      * @var array
      */
     protected const LOCALIZED_DATA = [];
 
     /**
      * The default password will be used when key name is password
-     * 
+     *
      * @var string
      */
     protected const DEFAULT_PASSWORD = "123123123";
 
     /**
      * set default date format
-     * 
+     *
      * @var string
      */
     protected const DATE_FORMAT = 'd-m-Y h:i:s A';
@@ -99,7 +99,7 @@ abstract class SeederManager extends Seeder
 
     /**
      * Create new record
-     * 
+     *
      * @return Illuminate\Database\Eloquent\Model
      */
     public function generate()
@@ -126,7 +126,7 @@ abstract class SeederManager extends Seeder
 
     /**
      * set automatically data from repository
-     * 
+     *
      * @param object $this->data
      * @return void
      */
@@ -149,7 +149,7 @@ abstract class SeederManager extends Seeder
 
     /**
      * get model class from repository
-     * 
+     *
      * @return Illuminate\Database\Eloquent\Model
      */
     public function model()
@@ -160,8 +160,8 @@ abstract class SeederManager extends Seeder
     }
 
     /**
-     * Get value of constants from repository 
-     * 
+     * Get value of constants from repository
+     *
      * @param string $const
      * @return mixed
      */
@@ -172,7 +172,7 @@ abstract class SeederManager extends Seeder
 
     /**
      * Check column name is name
-     * 
+     *
      * @param string $column
      * @return bool
      */
@@ -214,7 +214,7 @@ abstract class SeederManager extends Seeder
 
     /**
      * Set boolean value from BOOLEAN_DATA
-     * 
+     *
      * @return void
      */
     protected function setBooleanData()
@@ -226,7 +226,7 @@ abstract class SeederManager extends Seeder
 
     /**
      * Set float value from FLOAT_DATA
-     * 
+     *
      * @return void
      */
     protected function setFloatData()
@@ -238,7 +238,7 @@ abstract class SeederManager extends Seeder
 
     /**
      * Set integer value from INTEGER_DATA
-     * 
+     *
      * @return void
      */
     protected function setIntData()
@@ -250,7 +250,7 @@ abstract class SeederManager extends Seeder
 
     /**
      * Set date value from DATE_DATA
-     * 
+     *
      * @return void
      */
     protected function setDateData()
@@ -264,7 +264,7 @@ abstract class SeederManager extends Seeder
 
     /**
      * Set date value from LOCALIZED_DATA
-     * 
+     *
      * @return void
      */
     protected function setLocalizedData()
@@ -297,51 +297,20 @@ abstract class SeederManager extends Seeder
     /**
      * Set date value from UPLOADS
      * automatically upload random image
-     * 
+     *
      * @return void
      */
     protected function uploads()
     {
-        $storageDirectory = $this->getUploadsStorageDirectoryName();
-
-        $storageDirectory .= '/' . $this->model()->getId();
-
-        // Check if the directory already exists
-        if (!is_dir($directory = public_path($storageDirectory))) {
-            // Directory does not exist, so lets create it
-            mkdir($directory, 0755, true);
-        }
-
         foreach ($this->getConst('UPLOADS') as $column) {
-            $fileName = $this->faker->image($directory, 640, 480, null, false);
 
-            $this->data->$column = $this->pathToUploadedFile(public_path($storageDirectory . '/' . $fileName));
+            $this->data->$column = UploadedFile::fake()->image('image.jpg');
         }
-    }
-
-    /**
-     * Get the uploads storage directory name
-     *
-     * @return string
-     */
-    protected function getUploadsStorageDirectoryName()
-    {
-        $baseDirectory = config('mongez.repository.uploads.uploadsDirectory', -1);
-
-        if ($baseDirectory === -1) {
-            $baseDirectory = 'data';
-        }
-
-        if ($baseDirectory) {
-            $baseDirectory .= '/';
-        }
-
-        return $baseDirectory . ($this->getConst('UPLOADS_DIRECTORY') ?: $this->getConst('NAME'));
     }
 
     /**
      * Set date value from DOCUMENT_DATA
-     * 
+     *
      * @return void
      */
     protected function setDocumentData()
@@ -360,7 +329,7 @@ abstract class SeederManager extends Seeder
 
     /**
      * Set date value from MULTI_DOCUMENTS_DATA
-     * 
+     *
      * @return void
      */
     protected function setMultiDocumentData()
@@ -381,32 +350,6 @@ abstract class SeederManager extends Seeder
 
             $this->data->$column = $ids;
         }
-    }
-
-    /**
-     * Create an UploadedFile object from absolute path 
-     *
-     * @param     string $path
-     * @param     bool $public default false
-     * @return    object(Symfony\Component\HttpFoundation\File\UploadedFile)
-     */
-    public function pathToUploadedFile($path)
-    {
-        $name = File::name($path);
-
-        $extension = File::extension($path);
-
-        $originalName = $name . '.' . $extension;
-
-        $mimeType = File::mimeType($path);
-
-        $error = UPLOAD_ERR_OK;
-
-        $test = true;
-
-        $object = new UploadedFile($path, $originalName, $mimeType, $error, $test);
-
-        return $object;
     }
 
     /**
