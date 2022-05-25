@@ -36,7 +36,7 @@ trait Fillers
     {
         // keep original request untouched, just clone it
         if (is_array($data)) {
-            $request = new request();
+            $request = new Request();
             $request->merge($data);
             // Merge files
             foreach ($data as $key => $file) {
