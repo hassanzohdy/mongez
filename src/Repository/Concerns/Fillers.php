@@ -36,7 +36,7 @@ trait Fillers
     {
         // keep original request untouched, just clone it
         if (is_array($data)) {
-            $request = clone request();
+            $request = new Request();
             $request->merge($data);
             // Merge files
             foreach ($data as $key => $file) {
@@ -242,7 +242,7 @@ trait Fillers
             $clearable = $options['clearable'] ?? false;
             $arrayable = $options['arrayable'] ?? null;
 
-            $file = $this->request->file($input);
+            $file = $this->request->{$input};
 
             if (is_null($arrayable)) {
                 $arrayable = is_array($file);
