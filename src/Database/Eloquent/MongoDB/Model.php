@@ -164,16 +164,16 @@ abstract class Model extends BaseModel
     /**
      * Set the auto increment value for generating ids
      * 
-     * @var int
+     * @var int|null
      */
-    protected static $autoIncrementIdBy = 1;
+    protected static $autoIncrementIdBy = null;
 
     /**
      * Set the initial id value when collection is being created for first
      * 
-     * @var int
+     * @var int|null
      */
-    protected static $initialId = 1;
+    protected static $initialId = null;
 
     /**
      * {@inheritDoc}
@@ -181,6 +181,10 @@ abstract class Model extends BaseModel
     public static function boot()
     {
         static::traitBoot();
+
+        if (!static::$autoIncrementIdBy) {
+            static::$autoIncrementIdBy = mt_rand(100, 999);
+        }
 
         // Create an auto increment id on creating new document
 
@@ -416,7 +420,7 @@ abstract class Model extends BaseModel
         if (!$lastId) {
             $ids->insert([
                 'collection' => $collection,
-                'id' => static::$initialId,
+                'id' => static::$initialId ?: mt_rand(100000, 999999),
             ]);
         } else {
             $ids->where('collection', $collection)->update([

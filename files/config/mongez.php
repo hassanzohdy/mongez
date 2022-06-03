@@ -50,6 +50,12 @@ return [
         'mysql' => [
             'defaultStringLength' => 191,
         ],
+        "mongodb" => [
+            "model" => [
+                "autoIncrement" => null, // will be auto generated randomly if null
+                "initialValue" => null, // will be auto generated randomly if null
+            ]
+        ],
         'prefix' => '',
         'updatesLogModel' => HZ\Illuminate\Mongez\Models\UpdateLog::class,
         'onModel' => [
