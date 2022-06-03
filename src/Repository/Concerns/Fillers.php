@@ -265,7 +265,7 @@ trait Fillers
                 $files = [];
 
                 foreach ($file as $index => $fileObject) {
-                    if (!$fileObject->isValid()) continue;
+                    if (!$fileObject instanceof UploadedFile || !$fileObject->isValid()) continue;
 
                     $files[$index] = $this->uploadFile($fileObject);
                 }
