@@ -8,6 +8,83 @@ class {{ ModelName }} extends Model
 {{ data }}
 
     /**
+     * This is a combination of ON_MODEL_CREATE & ON_MODEL_UPDATE & ON_MODEL_DELETE_UNSET
+     * Define list of other models that will be affected on creating|updating|deleting
+     *
+     * @example ModelClass::class => searchingColumn will be converted to ['searchingColumn['id']', 'columnName', 'sharedInfo']
+     * @example ModelClass::class => [searchingColumn, creatingColumn]
+     * @example ModelClass::class => [searchingColumn, creatingColumn, sharedInfoMethod]
+     *
+     * @const array
+     */
+    const MODEL_LINKS = [];
+
+    /**
+     * This is a combination of ON_MODEL_CREATE & ON_MODEL_UPDATE & ON_MODEL_DELETE
+     * The main difference between this constant and MODEL_LINKS is that this constant will delete the entire record 
+     * unlike MODEL_LINKS it will just unset the embedded document.
+     * Define list of other models that will be affected on creating|updating|deleting
+     *
+     * @example ModelClass::class => searchingColumn will be converted to ['searchingColumn['id']', 'columnName', 'sharedInfo']
+     * @example ModelClass::class => [searchingColumn, creatingColumn]
+     * @example ModelClass::class => [searchingColumn, creatingColumn, sharedInfoMethod]
+     *
+     * @const array
+     */
+    const MODEL_LINKS_DELETE = [];
+
+    /**
+     * This is a combination of ON_MODEL_CREATE_PUSH & ON_MODEL_UPDATE_ARRAY & ON_MODEL_DELETE_PULL
+     * Define list of other models that will be affected on creating|updating|deleting
+     *
+     * i.e [Country::class => 'cities'] current model is city, city is in Country model in `cities` key
+     * Once the city model is created it will be pushed to Country model in `cities`
+     *
+     * @example ModelClass::class => searchingColumn will be converted to ['searchingColumn['id']', 'columnName', 'sharedInfo']
+     * @example ModelClass::class => [searchingColumn, creatingColumn]
+     * @example ModelClass::class => [searchingColumn, creatingColumn, sharedInfoMethod]
+     *
+     * @const array
+     */
+    const MODEL_LINKS_ARRAY = [];
+
+    /**
+     * Define list of other models that will be affected as the current object is part of array
+     * as the current model is sub-document to it when it gets created
+     *
+     * @example ModelClass::class => searchingColumn will be converted to ['searchingColumn['id'], 'columnName', 'sharedInfo']
+     * @example ModelClass::class => [searchingColumn, creatingColumn]
+     * @example ModelClass::class => [searchingColumn, creatingColumn, sharedInfoMethod]
+     *
+     * @const array
+     */
+    const ON_MODEL_CREATE_PUSH = [];
+
+    /**
+     * Define list of other models that will be affected
+     * as the current model is sub-document to it when it gets created
+     *
+     * @example ModelClass::class => searchingColumn will be converted to ['searchingColumn['id']', 'columnName', 'sharedInfo']
+     * @example ModelClass::class => [searchingColumn, creatingColumn]
+     * @example ModelClass::class => [searchingColumn, creatingColumn, sharedInfoMethod]
+     *
+     * @const array
+     */
+    const ON_MODEL_CREATE = [];
+
+    /**
+     * Define list of other models that will be affected as the current object is part of array
+     * as the current model is sub-document to it when it gets created
+     *
+     * @example ModelClass::class => searchingColumn will be converted to ['searchingColumn['id'], 'columnName', 'sharedInfo']
+     * @example ModelClass::class => [searchingColumn, creatingColumn]
+     * @example ModelClass::class => [searchingColumn, creatingColumn, sharedInfoMethod]
+     *
+     * @const array
+     */
+    const ON_MODEL_CREATE_PUSH = [];
+
+    /**
      * Define list of other models that will be affected
      * as the current model is sub-document to it when it gets updated
      *  
