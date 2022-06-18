@@ -1,6 +1,6 @@
 <?php
 
-namespace HZ\Illuminate\Mongez\Database\Eloquent;
+namespace App\Modules\Users\Traits;
 
 use Illuminate\Support\Str;
 use HZ\Illuminate\Mongez\Database\Eloquent\MongoDB\Model;
@@ -301,7 +301,6 @@ trait ModelEvents
             switch (count($option)) {
                 case 1:
                     // resolves related (Model::class) namespace to camelCase model name (model)
-
                     $relationalModel = Str::camel(str_replace('Models\\', '', strstr(static::$modelClass, 'Models')));
 
                     // searching in the model attributes for key asymptotic to resolved (Model::class) name to get the searching key
@@ -338,26 +337,26 @@ trait ModelEvents
     {
         static::$modelOptions = [];
 
-        $options = static::getoptionsArray($options);
+        $options = static::getOptionsArray($options);
 
         collect($options)->each(function ($option) {
             $modelOptions['searchingColumn'] = "{$option[0]}.id";
 
             switch (count($option)) {
-                        case 1:
-                            $modelOptions['foreignColumn'] = $option[0];
-                            $modelOptions['sharedInfoMethod'] = static::$sharedInfoMethod;
+                case 1:
+                    $modelOptions['foreignColumn'] = $option[0];
+                    $modelOptions['sharedInfoMethod'] = static::$sharedInfoMethod;
 
-                            break;
-                        case 2:
-                            $modelOptions['foreignColumn'] = $option[1];
-                            $modelOptions['sharedInfoMethod'] = static::$sharedInfoMethod;
+                    break;
+                case 2:
+                    $modelOptions['foreignColumn'] = $option[1];
+                    $modelOptions['sharedInfoMethod'] = static::$sharedInfoMethod;
 
-                            break;
-                        case 3:
-                            $modelOptions['foreignColumn'] = $option[1];
-                            $modelOptions['sharedInfoMethod'] = $option[2];
-                    }
+                    break;
+                case 3:
+                    $modelOptions['foreignColumn'] = $option[1];
+                    $modelOptions['sharedInfoMethod'] = $option[2];
+            }
 
             static::$modelOptions[] = $modelOptions;
         });
