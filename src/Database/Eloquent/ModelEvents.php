@@ -5,7 +5,7 @@ namespace HZ\Illuminate\Mongez\Database\Eloquent;
 use Illuminate\Support\Str;
 use HZ\Illuminate\Mongez\Database\Eloquent\MongoDB\Model;
 
-trait EventsTrait
+trait ModelEvents
 {
     /**
      * @var string
@@ -23,6 +23,8 @@ trait EventsTrait
     public static string $sharedInfoMethod = 'sharedInfo';
 
     /**
+     * Handle model create events.
+     *
      * @param $model
      * @return void
      */
@@ -34,6 +36,8 @@ trait EventsTrait
     }
 
     /**
+     * Handle model update events.
+     *
      * @param $model
      * @return void
      */
@@ -45,6 +49,8 @@ trait EventsTrait
     }
 
     /**
+     * Handle model delete events.
+     *
      * @param $model
      * @return void
      */
@@ -58,6 +64,8 @@ trait EventsTrait
     }
 
     /**
+     * Handle create model record as single document in related models.
+     *
      * @param Model $model
      * @return void
      */
@@ -87,6 +95,8 @@ trait EventsTrait
     }
 
     /**
+     * Handle create model record as array of documents in related models.
+     *
      * @param $model
      * @return void
      */
@@ -114,6 +124,8 @@ trait EventsTrait
     }
 
     /**
+     * Handle update model record as single document in related models.
+     *
      * @param Model $model
      * @return void
      */
@@ -148,6 +160,8 @@ trait EventsTrait
     }
 
     /**
+     * Handle update model record as array of documents in related models.
+     *
      * @param Model $model
      * @return void
      */
@@ -180,6 +194,8 @@ trait EventsTrait
     }
 
     /**
+     * Handle unset model record as documents in related models.
+     *
      * @param $model
      * @return void
      */
@@ -211,6 +227,8 @@ trait EventsTrait
     }
 
     /**
+     * Handle pull model record as array of documents in related models.
+     *
      * @param $model
      * @return void
      */
@@ -238,6 +256,8 @@ trait EventsTrait
     }
 
     /**
+     * Handle delete related models of the model record.
+     *
      * @param $model
      * @return void
      */
@@ -265,38 +285,12 @@ trait EventsTrait
     }
 
     /**
+     * Set model options on create events.
+     *
+     * @param $model
      * @param $options
      * @return void
      */
-    public static function setModelOptions($options)
-    {
-        static::$modelOptions = [];
-
-        $options = static::getoptionsArray($options);
-
-        collect($options)->each(function ($option) {
-            $modelOptions['searchingColumn'] = "{$option[0]}.id";
-
-            switch (count($option)) {
-                        case 1:
-                            $modelOptions['foreignColumn'] = $option[0];
-                            $modelOptions['sharedInfoMethod'] = static::$sharedInfoMethod;
-
-                            break;
-                        case 2:
-                            $modelOptions['foreignColumn'] = $option[1];
-                            $modelOptions['sharedInfoMethod'] = static::$sharedInfoMethod;
-
-                            break;
-                        case 3:
-                            $modelOptions['foreignColumn'] = $option[1];
-                            $modelOptions['sharedInfoMethod'] = $option[2];
-                    }
-
-            static::$modelOptions[] = $modelOptions;
-        });
-    }
-
     public static function setCreateModelOptions($model, $options)
     {
         $options = static::getOptionsArray($options);
@@ -335,6 +329,43 @@ trait EventsTrait
     }
 
     /**
+     * Set model options on update and delete events.
+     *
+     * @param $options
+     * @return void
+     */
+    public static function setModelOptions($options)
+    {
+        static::$modelOptions = [];
+
+        $options = static::getoptionsArray($options);
+
+        collect($options)->each(function ($option) {
+            $modelOptions['searchingColumn'] = "{$option[0]}.id";
+
+            switch (count($option)) {
+                        case 1:
+                            $modelOptions['foreignColumn'] = $option[0];
+                            $modelOptions['sharedInfoMethod'] = static::$sharedInfoMethod;
+
+                            break;
+                        case 2:
+                            $modelOptions['foreignColumn'] = $option[1];
+                            $modelOptions['sharedInfoMethod'] = static::$sharedInfoMethod;
+
+                            break;
+                        case 3:
+                            $modelOptions['foreignColumn'] = $option[1];
+                            $modelOptions['sharedInfoMethod'] = $option[2];
+                    }
+
+            static::$modelOptions[] = $modelOptions;
+        });
+    }
+
+    /**
+     * Get model options as array of arrays.
+     *
      * @param $options
      * @return array|mixed
      */
@@ -353,16 +384,8 @@ trait EventsTrait
     }
 
     /**
-     * @param Model $model
-     * @param array $options
-     * @return mixed
-     */
-    public static function getRelatedModels(Model $model, array $options)
-    {
-        return static::$modelClass::query()->where($options['searchingColumn'], $model->id)->get();
-    }
-
-    /**
+     * Get related models records on create events.
+     *
      * @param Model $model
      * @param array $options
      * @return mixed
@@ -375,5 +398,17 @@ trait EventsTrait
             }, $model->{$options['searchingColumn']} ?: []) : null;
 
         return static::$modelClass::query()->whereIn('id', (array) $searchingId)->get();
+    }
+
+    /**
+     * Get related models records on update and delete events.
+     *
+     * @param Model $model
+     * @param array $options
+     * @return mixed
+     */
+    public static function getRelatedModels(Model $model, array $options)
+    {
+        return static::$modelClass::query()->where($options['searchingColumn'], $model->id)->get();
     }
 }

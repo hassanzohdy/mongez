@@ -2,7 +2,8 @@
 
 namespace HZ\Illuminate\Mongez\Database\Eloquent\MongoDB;
 
-use HZ\Illuminate\Mongez\Database\Eloquent\EventsTrait;
+use HZ\Illuminate\Mongez\Database\Eloquent\Associatable;
+use HZ\Illuminate\Mongez\Database\Eloquent\ModelEvents;
 use DateTime;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -11,7 +12,7 @@ use HZ\Illuminate\Mongez\Database\Eloquent\ModelTrait;
 
 abstract class Model extends BaseModel
 {
-    use RecycleBin, EventsTrait;
+    use RecycleBin, ModelEvents, Associatable;
 
     use ModelTrait {
         boot as traitBoot;
@@ -230,7 +231,7 @@ abstract class Model extends BaseModel
      * @param  mixed $state
      * @return Self
      */
-    public function triggerEvents($state)
+    public function triggerEvents($state): Self
     {
         $this->triggerEvents = $state;
 
@@ -271,7 +272,7 @@ abstract class Model extends BaseModel
 
         // When model create, detect whether there are any other models that
         // shall be created with it
-        static::creating(function ($model) {
+        static::created(function ($model) {
             if (!$model->canTrigger('create')) return;
 
             static::handleCreated($model);
@@ -448,99 +449,5 @@ abstract class Model extends BaseModel
     {
         $user = user();
         return $user ? $user->sharedInfo() : null;
-    }
-
-    /**
-     * Associate the given value to the given key
-     *
-     * @param mixed $modelInfo
-     * @param string $column
-     * @return this
-     */
-    public function associate($modelInfo, $column)
-    {
-        $listOfValues = $this->$column ?? [];
-
-        if ($modelInfo instanceof Model) {
-            $listOfValues[] = $modelInfo->sharedInfo();
-        } else {
-            $listOfValues[] = $modelInfo;
-        }
-
-        $this->setAttribute($column, $listOfValues);
-
-        return $this;
-    }
-
-    /**
-     * Re-associate the given document
-     *
-     * @param   mixed $modelInfo
-     * @param   string $column
-     * @param   string $searchingColumn
-     * @return $this
-     */
-    public function reassociate($modelInfo, string $column, string $searchingColumn = 'id')
-    {
-        $documents = $this->$column ?? [];
-
-        if ($modelInfo instanceof Model) {
-            $modelInfo = $modelInfo->sharedInfo();
-        }
-
-        $found = false;
-
-        foreach ($documents as $key => $document) {
-            if (is_scalar($document) && $document === $modelInfo) {
-                $documents[$key] = $modelInfo;
-                $found = true;
-                break;
-            } else {
-                $document = (array) $document;
-                if (isset($document[$searchingColumn]) && $document[$searchingColumn] == $modelInfo[$searchingColumn]) {
-                    $documents[$key] = $modelInfo;
-                    $found = true;
-                    break;
-                }
-            }
-        }
-
-        if (!$found) {
-            $documents[] = $modelInfo;
-        }
-
-        $this->setAttribute($column, $documents);
-
-        return $this;
-    }
-
-    /**
-     * Disassociate the given value to the given key
-     *
-     * @param mixed $modelInfo
-     * @param string $column
-     * @param string $searchBy
-     * @return this
-     */
-    public function disassociate($modelInfo, $column, $searchBy = 'id')
-    {
-        $array = $this->$column ?? [];
-
-        $newArray = [];
-
-        foreach ($array as $value) {
-            if (
-                is_scalar($modelInfo) && $modelInfo === $value ||
-                is_array($value) && isset($value[$searchBy]) && $value[$searchBy] == $modelInfo[$searchBy]
-            ) {
-                continue;
-            }
-
-            $newArray[] = $value;
-        }
-
-        $this->setAttribute($column, $newArray);
-
-        return $this;
     }
 }
