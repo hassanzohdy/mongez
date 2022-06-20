@@ -15,7 +15,7 @@ class EngezController extends EngezGeneratorCommand implements EngezInterface
 
     /**
      * Controller options
-     * 
+     *
      * @const string
      */
     public const CONTROLLER_OPTIONS = '
@@ -24,11 +24,12 @@ class EngezController extends EngezGeneratorCommand implements EngezInterface
     {--route=}
     {--with-service=}
     {--type=all}
+    {--request=}
     ';
 
     /**
      * Controller options list
-     * 
+     *
      * @const array
      */
     public const CONTROLLER_OPTIONS_LIST = [
@@ -36,7 +37,7 @@ class EngezController extends EngezGeneratorCommand implements EngezInterface
     ];
 
     /**
-     * The controller types 
+     * The controller types
      *
      * @var array
      */
@@ -62,15 +63,15 @@ class EngezController extends EngezGeneratorCommand implements EngezInterface
     protected $description = 'Make new controller into module';
 
     /**
-     * info used for creating controller 
-     * 
-     * @var array 
+     * info used for creating controller
+     *
+     * @var array
      */
     protected $info = [];
 
     /**
      * Controller name
-     * 
+     *
      * @var string
      */
     protected string $controllerName;
@@ -78,14 +79,14 @@ class EngezController extends EngezGeneratorCommand implements EngezInterface
     /**
      * Controller type
      * Available Values: site|admin|all
-     * 
+     *
      * @var string
      */
     protected string $controllerType;
 
     /**
      * The path of the generated controller
-     * 
+     *
      * @var string
      */
     protected string $controllerPath;
@@ -108,7 +109,7 @@ class EngezController extends EngezGeneratorCommand implements EngezInterface
 
     /**
      * Set controller info
-     * 
+     *
      * @return void
      */
     public function init()
@@ -118,10 +119,10 @@ class EngezController extends EngezGeneratorCommand implements EngezInterface
         $this->setModuleName($this->option('module'));
 
         $this->controllerName = $this->plural(
-            $this->studly(
-                str_replace('Controller', '', $this->argument('controller'))
-            )
-        ) . 'Controller';
+                $this->studly(
+                    str_replace('Controller', '', $this->argument('controller'))
+                )
+            ) . 'Controller';
 
         $this->controllerType = $this->option('type');
     }
@@ -153,7 +154,7 @@ class EngezController extends EngezGeneratorCommand implements EngezInterface
     }
 
     /**
-     * Create controller File. 
+     * Create controller File.
      *
      * @return void
      */
@@ -174,7 +175,7 @@ class EngezController extends EngezGeneratorCommand implements EngezInterface
 
     /**
      * Create a controller for the given type
-     * 
+     *
      * @param  string $controllerType
      * @return void
      */
@@ -189,8 +190,15 @@ class EngezController extends EngezGeneratorCommand implements EngezInterface
 
         $moduleName = $this->getModule();
 
+        if ($this->optionHasValue('request')) {
+            $requestOptions = $this->option('request');
+            $storeRequest = $requestOptions['store'];
+            $updateRequest = $requestOptions['update'];
+            $patchRequest = $requestOptions['patch'];
+        }
+
         $replaces = [
-            // replace the controller name 
+            // replace the controller name
             '{{ ControllerName }}' => $this->controllerName,
             // replace module name
             '{{ ModuleName }}' => $moduleName,
@@ -199,6 +207,9 @@ class EngezController extends EngezGeneratorCommand implements EngezInterface
             '{{ serviceName }}' => $this->option('service') ?: "''",
             // repository
             '{{ repositoryName }}' =>  $this->optionHasValue('repository') ? $this->repositoryName($this->option('repository')) : "''",
+            '{{ storeRequestName }}' => $storeRequest,
+            '{{ updateRequestName }}' => $updateRequest,
+            '{{ patchRequestName }}' => $patchRequest,
         ];
 
         // create the file
@@ -217,7 +228,7 @@ class EngezController extends EngezGeneratorCommand implements EngezInterface
     /**
      * Determine if current generated controller is admin controller
      * This is true when type is admin or all
-     * 
+     *
      * @return bool
      */
     protected function isAdminController(): bool
@@ -228,7 +239,7 @@ class EngezController extends EngezGeneratorCommand implements EngezInterface
     /**
      * Determine if current generated controller is site controller
      * This is true when type is site or all
-     * 
+     *
      * @return bool
      */
     protected function isSiteController(): bool
@@ -238,7 +249,7 @@ class EngezController extends EngezGeneratorCommand implements EngezInterface
 
     /**
      * Put the given content in the given path
-     * 
+     *
      * @param string $path
      * @param string $content
      * @return void

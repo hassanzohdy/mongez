@@ -2,6 +2,9 @@
 namespace App\Modules\{{ ModuleName }}\Controllers\Admin;
 
 use HZ\Illuminate\Mongez\Http\RestfulApiController;
+use App\Modules\{{ ModuleName }}\Requests\{{ storeRequestName }};
+use App\Modules\{{ ModuleName }}\Requests\{{ updateRequestName }};
+use App\Modules\{{ ModuleName }}\Requests\{{ patchRequestName }};
 
 class {{ ControllerName }} extends RestfulApiController
 {
@@ -13,9 +16,9 @@ class {{ ControllerName }} extends RestfulApiController
     protected $controllerInfo = [
         'repository' => '{{ repositoryName }}',
         'request' => [
-            'store' => '',
-            'update' => '',
-            'patch' => '',
+            'store' => {{ storeRequestName }}::class,
+            'update' => {{ updateRequestName }}::class,
+            'patch' => {{ patchRequestName }}::class,
         ],
         'listOptions' => [
             'select' => [],
