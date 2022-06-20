@@ -48,9 +48,9 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
                                        {--resource=}
                                        {--repository=}
                                        ' . EngezGeneratorCommand::DATA_TYPES_OPTIONS
-        . EngezModel::MODEL_OPTIONS
-        . EngezController::CONTROLLER_OPTIONS
-        . EngezGeneratorCommand::TABLE_INDEXES_OPTIONS;
+    . EngezModel::MODEL_OPTIONS
+    . EngezController::CONTROLLER_OPTIONS
+    . EngezGeneratorCommand::TABLE_INDEXES_OPTIONS;
 
     /**
      * The console command description.
@@ -61,7 +61,7 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
 
     /**
      * Determine whether to generate service class with the module
-     * 
+     *
      * @var bool
      */
     protected ?bool $withService;
@@ -189,6 +189,9 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
         $this->info('Creating tests file');
         $this->createTest();
 
+        $this->info('Creating requests...');
+        $this->createRequest();
+
         $this->markModuleAsInstalled();
     }
 
@@ -227,6 +230,11 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
             '--route' => $module,
             '--service' => $module . 'Service',
             '--serviceClass' => 'App\\Modules\\' . $module . '\\Services\\' . $module . 'Service',
+            '--request' => [
+                'store' => "Store{$this->singularModule()}Request",
+                'update' => "Update{$this->singularModule()}Request",
+                'patch' => "Patch{$this->singularModule()}Request",
+            ],
         ];
 
         if ($parent !== $module) {
@@ -313,7 +321,7 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
         $this->call(
             'engez:seeder',
             $repositoryOptions
-            // $this->withDataTypes($repositoryOptions)
+        // $this->withDataTypes($repositoryOptions)
         );
     }
 
@@ -357,7 +365,7 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
 
     /**
      * Create service module
-     * 
+     *
      * @return void
      */
     protected function createService()
@@ -441,6 +449,28 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
             'engez:filter',
             $modelOptions,
         );
+    }
+
+    /**
+     * Create request files.
+     *
+     * @return void
+     */
+    protected function createRequest()
+    {
+        $requestMethods = ['Store', 'Update', 'Patch'];
+
+        foreach ($requestMethods as $method) {
+            $modelOptions = [
+                'request' => $method . $this->singularModule() . 'Request',
+                '--module' => $this->getModule(),
+            ];
+
+            $this->call(
+                'engez:request',
+                $modelOptions,
+            );
+        }
     }
 
     /**
