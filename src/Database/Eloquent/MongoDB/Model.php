@@ -2,6 +2,8 @@
 
 namespace HZ\Illuminate\Mongez\Database\Eloquent\MongoDB;
 
+use HZ\Illuminate\Mongez\Database\Eloquent\Associatable;
+use HZ\Illuminate\Mongez\Database\Eloquent\ModelEvents;
 use DateTime;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -10,7 +12,7 @@ use HZ\Illuminate\Mongez\Database\Eloquent\ModelTrait;
 
 abstract class Model extends BaseModel
 {
-    use RecycleBin;
+    use RecycleBin, ModelEvents, Associatable;
 
     use ModelTrait {
         boot as traitBoot;
@@ -63,8 +65,8 @@ abstract class Model extends BaseModel
 
     /**
      * Shared info of the model
-     * This is used for getting simple info 
-     * 
+     * This is used for getting simple info
+     *
      * @const array
      */
     const SHARED_INFO = [];
@@ -83,7 +85,7 @@ abstract class Model extends BaseModel
 
     /**
      * This is a combination of ON_MODEL_CREATE & ON_MODEL_UPDATE & ON_MODEL_DELETE
-     * The main difference between this constant and MODEL_LINKS is that this constant will delete the entire record 
+     * The main difference between this constant and MODEL_LINKS is that this constant will delete the entire record
      * unlike MODEL_LINKS it will just unset the embedded document.
      * Define list of other models that will be affected on creating|updating|deleting
      *
@@ -137,11 +139,11 @@ abstract class Model extends BaseModel
     /**
      * Define list of other models that will be affected
      * as the current model is sub-document to it when it gets updated
-     *  
+     *
      * @example ModelClass::class => columnName will be converted to ['columnName.id', 'columnName', 'sharedInfo']
      * @example ModelClass::class => [searchingColumn, updatingColumn]
      * @example ModelClass::class => [searchingColumn, updatingColumn, sharedInfoMethod]
-     * 
+     *
      * @const array
      */
     const ON_MODEL_UPDATE = [];
@@ -149,11 +151,11 @@ abstract class Model extends BaseModel
     /**
      * Define list of other models that will be affected as the current object is part of array
      * as the current model is sub-document to it when it gets updated
-     *  
+     *
      * @example ModelClass::class => columnName will be converted to ['columnName.id', 'columnName', 'sharedInfo']
      * @example ModelClass::class => [searchingColumn, updatingColumn]
      * @example ModelClass::class => [searchingColumn, updatingColumn, sharedInfoMethod]
-     * 
+     *
      * @const array
      */
     const ON_MODEL_UPDATE_ARRAY = [];
@@ -161,9 +163,9 @@ abstract class Model extends BaseModel
     /**
      * Define list of other models that will clear the column from its records
      * A 1-1 relation
-     *  
+     *
      * Do not add the id, it will be appended automatically
-     * 
+     *
      * @example ModelClass::class => searchingColumn: string
      *
      * @const array
@@ -174,9 +176,9 @@ abstract class Model extends BaseModel
      * Define list of the models that have the current model as embedded document and pull it from the array
      *  A 1-n relation
      * Do not add the id, it will be appended automatically
-     * 
+     *
      * @example ModelClass::class => searchingColumn: string
-     * 
+     *
      * @const array
      */
     const ON_MODEL_DELETE_PULL = [];
@@ -185,12 +187,12 @@ abstract class Model extends BaseModel
      * Define list of other models that will be deleted
      * when this model is deleted
      * For example when a city is deleted, all related regions shall be deleted as well
-     * 
+     *
      * Do not add the id, it will be appended automatically
-     * 
+     *
      * @example Region::class => 'city'
      * @example ModelClass::class => searchingColumn: string
-     * 
+     *
      * @const array
      */
     const ON_MODEL_DELETE = [];
@@ -204,17 +206,48 @@ abstract class Model extends BaseModel
 
     /**
      * Set the auto increment value for generating ids
-     * 
+     *
      * @var int|null
      */
     protected static $autoIncrementIdBy = null;
 
     /**
      * Set the initial id value when collection is being created for first
-     * 
+     *
      * @var int|null
      */
     protected static $initialId = null;
+
+    /**
+     * Determine whether to trigger events or not on model create|update|delete
+     *
+     * @var true | false | `create`|`update`|`delete`
+     */
+    protected $triggerEvents = true;
+
+    /**
+     * Update Event State
+     *
+     * @param  mixed $state
+     * @return Self
+     */
+    public function triggerEvents($state): Self
+    {
+        $this->triggerEvents = $state;
+
+        return $this;
+    }
+
+    /**
+     * Determine if current model can trigger the given event type
+     *
+     * @param  string $eventType
+     * @return boolean
+     */
+    public function canTrigger(string $eventType)
+    {
+        return $this->triggerEvents === true || $this->triggerEvents === $eventType;
+    }
 
     /**
      * {@inheritDoc}
@@ -240,83 +273,9 @@ abstract class Model extends BaseModel
         // When model create, detect whether there are any other models that
         // shall be created with it
         static::created(function ($model) {
-            $singleModelsList = array_merge(
-                config('mongez.database.onModel.create.' . static::class, []),
-                !empty(static::ON_MODEL_CREATE) ? static::ON_MODEL_CREATE : [],
-                !empty(static::MODEL_LINKS) ? static::MODEL_LINKS : [],
-            );
+            if (!$model->canTrigger('create')) return;
 
-            foreach ($singleModelsList as $modelClass => $modelOptions) {
-                if (is_string($modelOptions)) {
-                    // resolves related (Model::class) namespace to camelCase model name (model)
-
-                    $relationalModel = Str::camel(str_replace('Models\\', '', strstr($modelClass, 'Models')));
-
-                    // searching in the model attributes for key asymptotic to resolved (Model::class) name to get the searching key
-                    $searchingKey = array_key_exists($relationalModel, $model->toArray()) ? $relationalModel :
-                        array_key_first(array_filter($model->toArray(), function ($key) use ($relationalModel) {
-                            return strpos($key, $relationalModel) !== false;
-                        }, ARRAY_FILTER_USE_KEY));
-
-                    $modelOptions = [$searchingKey, $modelOptions, 'sharedInfo'];
-                } elseif (count($modelOptions) === 2) {
-                    $modelOptions[] = 'sharedInfo';
-                }
-
-                [$searchingColumn, $creatingColumn, $sharedInfoMethod] = $modelOptions;
-
-                if (isset($model->$searchingColumn['id'])) {
-                    $records = $modelClass::query()->where('id', (int) $model->$searchingColumn['id'])->get();
-                } else {
-                    $searchingIds = array_map(function ($item) {
-                        return  (int) $item['id'];
-                    }, $model->$searchingColumn ?: []);
-                    $records = $modelClass::query()->whereIn('id', $searchingIds)->get();
-                }
-
-                foreach ($records as $record) {
-                    $record->$creatingColumn = $model->$sharedInfoMethod();
-                    $record->save();
-                }
-            }
-
-            $arrayModelsList = array_merge(
-                config('mongez.database.onModel.createArray.' . static::class, []),
-                !empty(static::ON_MODEL_CREATE_PUSH) ? static::ON_MODEL_CREATE_PUSH : [],
-                !empty(static::MODEL_LINKS_ARRAY) ? static::MODEL_LINKS_ARRAY : [],
-            );
-
-            foreach ($arrayModelsList as $modelClass => $modelOptions) {
-                if (is_string($modelOptions)) {
-                    // searching in the model attributes for key asymptotic to resolved (Model::class) name to get the searching key
-                    $relationalModel = Str::camel(str_replace('Models\\', '', strstr($modelClass, 'Models')));
-
-                    // searching in the model attributes for key asymptotic to resolved (Model::class) name to get the searching key
-                    $searchingKey = array_key_exists($relationalModel, $model->toArray()) ? $relationalModel :
-                        array_key_first(array_filter($model->toArray(), function ($key) use ($relationalModel) {
-                            return strpos($key, $relationalModel) !== false;
-                        }, ARRAY_FILTER_USE_KEY));
-
-                    $modelOptions = [$searchingKey, $modelOptions, 'sharedInfo'];
-                } elseif (count($modelOptions) === 2) {
-                    $modelOptions[] = 'sharedInfo';
-                }
-
-                [$searchingColumn, $creatingColumn, $sharedInfoMethod] = $modelOptions;
-
-                if (isset($model->$searchingColumn['id'])) {
-                    $records = $modelClass::query()->where('id', (int) $model->$searchingColumn['id'])->get();
-                } else {
-                    $searchingIds = array_map(function ($item) {
-                        return  (int) $item['id'];
-                    }, $model->$searchingColumn ?: []);
-                    $records = $modelClass::query()->whereIn('id', $searchingIds)->get();
-                }
-
-                foreach ($records as $record) {
-                    $record->reassociate($model->$sharedInfoMethod(), $creatingColumn)->save();
-                }
-            }
+            static::handleCreated($model);
         });
 
         static::updating(function ($model) {
@@ -326,126 +285,24 @@ abstract class Model extends BaseModel
         });
 
         // When model update, detect whether there are any other models that
-        // shall be updated with it        
+        // shall be updated with it
         static::updated(function ($model) {
-            $singleModelsList = array_merge(
-                config('mongez.database.onModel.update.' . static::class, []),
-                !empty(static::ON_MODEL_UPDATE) ? static::ON_MODEL_UPDATE : [],
-                !empty(static::MODEL_LINKS) ? static::MODEL_LINKS : [],
-            );
+            if (!$model->canTrigger('update')) return;
 
-            // the model options is can be an string or array
-            // the array can have up to 3 elements: search-column, updating field and shared info method
-            // if the model options is set to string, then it will be converted to
-            // $modelOptions.id, $modelOptions, sharedInfo 
-            foreach ($singleModelsList as $modelClass => $modelOptions) {
-                if (is_string($modelOptions)) {
-                    $modelOptions = [$modelOptions . '.id', $modelOptions, 'sharedInfo'];
-                } elseif (count($modelOptions) === 2) {
-                    $modelOptions[] = 'sharedInfo';
-                }
-
-                [$searchingColumn, $updatingColumn, $sharedInfoMethod] = $modelOptions;
-
-                $records = $modelClass::query()->where($searchingColumn, $model->id)->get();
-
-                foreach ($records as $record) {
-                    $record->$updatingColumn = $model->$sharedInfoMethod();
-
-                    $record->save();
-                }
-            }
-
-            $arrayModelsList = array_merge(
-                config('mongez.database.onModel.updateArray.' . static::class, []),
-                !empty(static::ON_MODEL_UPDATE_ARRAY) ? static::ON_MODEL_UPDATE_ARRAY : [],
-                !empty(static::MODEL_LINKS_ARRAY) ? static::MODEL_LINKS_ARRAY : [],
-            );
-
-            // the model options is can be an string or array
-            // the array can have up to 3 elements: search-column, updating field and shared info method
-            // if the model options is set to string, then it will be converted to
-            // $modelOptions.id, $modelOptions, sharedInfo 
-            foreach ($arrayModelsList as $modelClass => $modelOptions) {
-                if (is_string($modelOptions)) {
-                    $modelOptions = [$modelOptions . '.id', $modelOptions, 'sharedInfo'];
-                } elseif (count($modelOptions) === 2) {
-                    $modelOptions[] = 'sharedInfo';
-                }
-
-                [$searchingColumn, $updatingColumn, $sharedInfoMethod] = $modelOptions;
-
-                $records = $modelClass::query()->where($searchingColumn, $model->id)->get();
-
-                foreach ($records as $record) {
-                    $record->reassociate($model->$sharedInfoMethod(), $updatingColumn)->save();
-                }
-            }
+            static::handleUpdated($model);
         });
 
         // triggered when a model record is deleted from database
         static::deleted(function ($model) {
-            $singleModelsList = array_merge(
-                config('mongez.database.onModel.delete.' . static::class, []),
-                !empty(static::ON_MODEL_DELETE) ? static::ON_MODEL_DELETE : [],
-                !empty(static::MODEL_LINKS_DELETE) ? static::MODEL_LINKS_DELETE : [],
-            );
+            if (!$model->canTrigger('delete')) return;
 
-            foreach ($singleModelsList as $modelClass => $searchingColumn) {
-                if (is_string($searchingColumn)) {
-                    $records = $modelClass::where($searchingColumn . '.id', $model->id)->get();
-
-                    foreach ($records as $record) {
-                        $record->delete();
-                    }
-                }
-            }
-
-            $arrayModelsList = array_merge(
-                config('mongez.database.onModel.deletePull.' . static::class, []),
-                !empty(static::ON_MODEL_DELETE_PULL) ? static::ON_MODEL_DELETE_PULL : [],
-                !empty(static::MODEL_LINKS_ARRAY) ? static::MODEL_LINKS_ARRAY : [],
-            );
-
-            foreach ($arrayModelsList as $modelClass => $searchingColumn) {
-                if (is_string($searchingColumn)) {
-                    $records = $modelClass::where($searchingColumn . '.id', $model->id)->get();
-
-                    foreach ($records as $record) {
-                        $record->disassociate($model, $searchingColumn)->save();
-                    }
-                }
-            }
-
-            $singleModelsList = array_merge(
-                config('mongez.database.onModel.deleteUnset.' . static::class, []),
-                !empty(static::ON_MODEL_DELETE_UNSET) ? static::ON_MODEL_DELETE_UNSET : [],
-                !empty(static::MODEL_LINKS) ? static::MODEL_LINKS : [],
-            );
-
-            foreach ($singleModelsList as $modelClass => $unsetOptions) {
-                if (is_string($unsetOptions)) {
-                    $unsetOptions = [$unsetOptions, $unsetOptions];
-                }
-
-                [$searchingColumn, $clearingColumn] = $unsetOptions;
-
-                $records = $modelClass::where($searchingColumn . '.id', $model->id)->get();
-
-                foreach ($records as $record) {
-                    $record->unset($clearingColumn);
-                    // Force saving again as the model in some is not triggering the update event
-                    // so we will force the update by updating the updatedAt column;
-                    $record->updatedAt = now();
-                    $record->save();
-                }
-            }
+            static::handleDeleted($model);
         });
     }
 
     /**
      * Create and return new id for the current model
-     * 
+     *
      * @return int
      */
     public static function nextId(): int
@@ -476,7 +333,7 @@ abstract class Model extends BaseModel
 
     /**
      * Get next id
-     * 
+     *
      * @return int
      */
     public static function getNextId(): int
@@ -486,7 +343,7 @@ abstract class Model extends BaseModel
 
     /**
      * Get last insert id of the given collection name
-     * 
+     *
      * @return  int
      */
     public static function lastInsertId(): int
@@ -499,8 +356,8 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * Truncate the entire records and reset the auto increment 
-     * 
+     * Truncate the entire records and reset the auto increment
+     *
      * @return void
      */
     public static function truncate()
@@ -511,7 +368,7 @@ abstract class Model extends BaseModel
 
     /**
      * Reset auto increment
-     * 
+     *
      * @return void
      */
     public static function resetAutoIncrement()
@@ -521,7 +378,7 @@ abstract class Model extends BaseModel
 
     /**
      * This method should return the info of the document that will be stored in another document, default to full info
-     * 
+     *
      * @return array
      */
     public function sharedInfo(): array
@@ -538,7 +395,7 @@ abstract class Model extends BaseModel
 
     /**
      * Check if the given info data has date, then adjust it recursively
-     * 
+     *
      * @param  array $info
      * @return void
      */
@@ -555,7 +412,7 @@ abstract class Model extends BaseModel
 
     /**
      * Get shared info plus the given columns
-     * 
+     *
      * @param ...string $columns
      * @return array
      */
@@ -566,7 +423,7 @@ abstract class Model extends BaseModel
 
     /**
      * Get shared info except the given columns
-     * 
+     *
      * @param ...string $columns
      * @return array
      */
@@ -585,106 +442,12 @@ abstract class Model extends BaseModel
 
     /**
      * Get user by id that will be used with created by, updated by and deleted by
-     * 
+     *
      * @return mixed
      */
     protected function byUser()
     {
         $user = user();
         return $user ? $user->sharedInfo() : null;
-    }
-
-    /**
-     * Associate the given value to the given key
-     * 
-     * @param mixed $modelInfo
-     * @param string $column
-     * @return this
-     */
-    public function associate($modelInfo, $column)
-    {
-        $listOfValues = $this->$column ?? [];
-
-        if ($modelInfo instanceof Model) {
-            $listOfValues[] = $modelInfo->sharedInfo();
-        } else {
-            $listOfValues[] = $modelInfo;
-        }
-
-        $this->setAttribute($column, $listOfValues);
-
-        return $this;
-    }
-
-    /**
-     * Re-associate the given document
-     * 
-     * @param   mixed $modelInfo
-     * @param   string $column
-     * @param   string $searchingColumn
-     * @return $this
-     */
-    public function reassociate($modelInfo, string $column, string $searchingColumn = 'id')
-    {
-        $documents = $this->$column ?? [];
-
-        if ($modelInfo instanceof Model) {
-            $modelInfo = $modelInfo->sharedInfo();
-        }
-
-        $found = false;
-
-        foreach ($documents as $key => $document) {
-            if (is_scalar($document) && $document === $modelInfo) {
-                $documents[$key] = $modelInfo;
-                $found = true;
-                break;
-            } else {
-                $document = (array) $document;
-                if (isset($document[$searchingColumn]) && $document[$searchingColumn] == $modelInfo[$searchingColumn]) {
-                    $documents[$key] = $modelInfo;
-                    $found = true;
-                    break;
-                }
-            }
-        }
-
-        if (!$found) {
-            $documents[] = $modelInfo;
-        }
-
-        $this->setAttribute($column, $documents);
-
-        return $this;
-    }
-
-    /**
-     * Disassociate the given value to the given key
-     * 
-     * @param mixed $modelInfo
-     * @param string $column
-     * @param string $searchBy
-     * @return this
-     */
-    public function disassociate($modelInfo, $column, $searchBy = 'id')
-    {
-        $array = $this->$column ?? [];
-
-        $newArray = [];
-
-        foreach ($array as $value) {
-            if (
-                is_scalar($modelInfo) && $modelInfo === $value ||
-                is_array($value) && isset($value[$searchBy]) && $value[$searchBy] == $modelInfo[$searchBy]
-            ) {
-                continue;
-            }
-
-            $newArray[] = $value;
-        }
-
-        $this->setAttribute($column, $newArray);
-
-        return $this;
     }
 }
