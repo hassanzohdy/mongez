@@ -335,12 +335,10 @@ trait ModelEvents
      */
     public static function setModelOptions($options)
     {
-        static::$modelOptions = [];
-
         $options = static::getOptionsArray($options);
 
         collect($options)->each(function ($option) {
-            $modelOptions['searchingColumn'] = "{$option[0]}.id";
+            $modelOptions['searchingColumn'] = Str::contains('.id', $option[0]) ? $option[0] : "{$option[0]}.id";
 
             switch (count($option)) {
                 case 1:
@@ -370,6 +368,8 @@ trait ModelEvents
      */
     public static function getOptionsArray($options)
     {
+        static::$modelOptions = [];
+
         switch ($options) {
             case is_string($options):
                 $options = [(array) $options];
