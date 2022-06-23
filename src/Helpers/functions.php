@@ -152,3 +152,73 @@ if (!function_exists('str_remove_first')) {
         return Str::removeFirst($needle, $object);
     }
 }
+
+if (!function_exists('set_request_int_inputs')) {
+    /**
+     * Set int values from request inputs.
+     * Help to validate IDs by convert them to int values.
+     * If using ApiFormRequest class you have to pass the request to have the int values.
+     *
+     * @param array $inputs
+     * @param $request
+     * @return void
+     */
+    function set_request_int_inputs(array $inputs, $request = null): void
+    {
+        $request = $request ?? request();
+
+        $requestKeys = array_unique(array_map(function ($input) {
+            return str_contains($input, '.') ? explode('.', $input)[0] : $input;
+        }, $inputs));
+
+        $requestInputs = $request->only($requestKeys);
+
+        $requestInputsDotNotation = Arr::dot($requestInputs);
+
+        collect($requestInputsDotNotation)->each(function ($value, $key) use ($inputs, &$requestInputs) {
+            $keyArr = str_contains($key, '.') ? explode('.', $key) : [$key];
+
+            $filteredKeyArr = array_filter($keyArr, function ($item) {
+                return preg_match_all('!\d+!', $item) === 1;
+            });
+
+            $filteredKey = implode('.', array_diff_assoc($keyArr, $filteredKeyArr));
+
+            if (in_array($filteredKey, $inputs) && $value) {
+                Arr::set($requestInputs, $key, (int) $value);
+            }
+        })->toArray();
+
+        $request->merge($requestInputs);
+    }
+}
+
+
+if (!function_exists('get_user_repo')) {
+    /**
+     * @param string|null $userType
+     * @param bool $default
+     * @return string|array
+     * @throws Exception
+     */
+    function get_user_repo(string $userType = null, bool $default = true)
+    {
+        $userRepos = collect(config('mongez.userTypes'))->map(function ($userType) use ($default) {
+            return $default ? $userType.'Repo' : $userType;
+        })->toArray();
+
+        if (!$userType) {
+            return $userRepos;
+        }
+
+        $userType = strtolower(Str::singular($userType));
+
+        if (!array_key_exists($userType, $userRepos)) {
+            throw new Exception("${userType} is not in config\mongez.userTypes configurations.");
+        }
+
+        return $userRepos[$userType];
+    }
+}
+
+

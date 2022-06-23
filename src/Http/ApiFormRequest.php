@@ -24,6 +24,25 @@ class ApiFormRequest extends FormRequest
     }
 
     /**
+     * @var array
+     */
+    protected static array $intInputs = [];
+
+    /**
+     * Prepare request inputs before validation.
+     *
+     * @return void
+     */
+    public function prepareForValidation()
+    {
+        if (!static::$intInputs) {
+            return;
+        }
+
+        set_request_int_inputs(static::$intInputs, $this);
+    }
+
+    /**
      * Handle a failed validation attempt.
      *
      * @param  \Illuminate\Contracts\Validation\Validator  $validator
