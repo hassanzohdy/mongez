@@ -13,7 +13,8 @@ class EngezRequest extends EngezGeneratorCommand implements EngezInterface
      * @var string
      */
     protected $signature = 'engez:request {request}
-                                        {--module=}';
+                                        {--module=}
+                                        {--trait=}';
 
     /**
      * The console command description.
@@ -44,7 +45,9 @@ class EngezRequest extends EngezGeneratorCommand implements EngezInterface
     public function handle()
     {
         $this->init();
+
         $this->validateArguments();
+
         $this->create();
 
         $this->info('Request has been created successfully');
@@ -89,10 +92,22 @@ class EngezRequest extends EngezGeneratorCommand implements EngezInterface
             '{{ ModuleName }}' => $this->getModule(),
             // request class name
             '{{ RequestClassName }}' => $this->requestName,
-            '{{ CommonRulesTrait }}' => $this->traitName,
         ];
 
-        $this->putFile("Requests/{$this->requestName}.php", $this->replaceStub('Requests/request', $replacements));
+        $path = "Requests/{$this->requestName}.php";
+
+        switch (true) {
+            case isset($this->traitName):
+                $replacements['{{ CommonRulesTrait }}'] = $this->traitName;
+                $stubPath = 'Requests/WithTraits/request-with-common-rules';
+
+                break;
+            default:
+                $stubPath = 'Requests/request';
+        }
+
+        $this->putFile($path, $this->replaceStub($stubPath, $replacements));
+
     }
 
     /**
@@ -102,15 +117,20 @@ class EngezRequest extends EngezGeneratorCommand implements EngezInterface
      */
     public function createRequestTrait()
     {
+        if (!$this->option('trait')) {
+            return;
+        }
+
         $this->traitName = "With{$this->singularModule()}CommonRules";
 
         $modelOptions = [
             'trait' => $this->traitName,
             '--module' => $this->getModule(),
+            '--type' => $this->option('trait'),
         ];
 
         $this->call(
-            'engez:trait',
+            "engez:trait",
             $modelOptions,
         );
     }
