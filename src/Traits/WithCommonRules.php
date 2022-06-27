@@ -13,6 +13,6 @@ trait WithCommonRules
      */
     public function withCommonRules(array $rules = []): array
     {
-        return array_merge(method_exists($this, 'commonRules') ? $this->commonRules() : [], $rules);
+        return array_merge_recursive(method_exists($this, 'commonRules') ? $this->commonRules() : [], $rules);
     }
 }
