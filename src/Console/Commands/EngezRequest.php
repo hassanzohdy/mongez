@@ -12,8 +12,8 @@ class EngezRequest extends EngezGeneratorCommand implements EngezInterface
      *
      * @var string
      */
-    protected $signature = 'engez:request {request} 
-                                        {--module=} ';
+    protected $signature = 'engez:request {request}
+                                        {--module=}';
 
     /**
      * The console command description.
@@ -23,11 +23,18 @@ class EngezRequest extends EngezGeneratorCommand implements EngezInterface
     protected $description = 'Create new request to the given module';
 
     /**
-     * The resource name.
-     * 
+     * The request name.
+     *
      * @var string
      */
     protected string $requestName;
+
+    /**
+     * The trait name.
+     *
+     * @var string
+     */
+    protected string $traitName;
 
     /**
      * Execute the console command.
@@ -45,7 +52,7 @@ class EngezRequest extends EngezGeneratorCommand implements EngezInterface
 
     /**
      * Prepare data
-     * 
+     *
      * @return void
      */
     public function init()
@@ -55,22 +62,56 @@ class EngezRequest extends EngezGeneratorCommand implements EngezInterface
         $this->setModuleName($this->option('module'));
 
         $this->requestName = $this->argument('request');
+
     }
 
     /**
-     * Create Model 
+     * Create method.
      *
      * @return void
      */
     public function create()
+    {
+        $this->createRequestTrait();
+
+        $this->createRequest();
+    }
+
+    /**
+     * Create request.
+     *
+     * @return void
+     */
+    public function createRequest()
     {
         $replacements = [
             // module name
             '{{ ModuleName }}' => $this->getModule(),
             // request class name
             '{{ RequestClassName }}' => $this->requestName,
+            '{{ CommonRulesTrait }}' => $this->traitName,
         ];
 
         $this->putFile("Requests/{$this->requestName}.php", $this->replaceStub('Requests/request', $replacements));
+    }
+
+    /**
+     * Create request trait.
+     *
+     * @return void
+     */
+    public function createRequestTrait()
+    {
+        $this->traitName = "With{$this->singularModule()}CommonRules";
+
+        $modelOptions = [
+            'trait' => $this->traitName,
+            '--module' => $this->getModule(),
+        ];
+
+        $this->call(
+            'engez:trait',
+            $modelOptions,
+        );
     }
 }

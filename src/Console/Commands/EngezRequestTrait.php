@@ -5,7 +5,7 @@ namespace HZ\Illuminate\Mongez\Console\Commands;
 use HZ\Illuminate\Mongez\Console\EngezInterface;
 use HZ\Illuminate\Mongez\Console\EngezGeneratorCommand;
 
-class EngezTrait extends EngezGeneratorCommand implements EngezInterface
+class EngezRequestTrait extends EngezGeneratorCommand implements EngezInterface
 {
     /**
      * The name and signature of the console command.
@@ -53,8 +53,6 @@ class EngezTrait extends EngezGeneratorCommand implements EngezInterface
         parent::init();
 
         $this->setModuleName($this->option('module'));
-
-        $this->traitName = $this->argument('trait');
     }
 
     /**
@@ -64,13 +62,15 @@ class EngezTrait extends EngezGeneratorCommand implements EngezInterface
      */
     public function create()
     {
+        $traitName = $this->argument('trait');
+
         $replacements = [
             // module name
             '{{ ModuleName }}' => $this->getModule(),
             // trait name
-            '{{ TraitName }}' => $this->traitName,
+            '{{ TraitName }}' => $traitName,
         ];
 
-        $this->putFile("Traits/{$this->traitName}.php", $this->replaceStub('Traits/trait', $replacements));
+        $this->putFile("Traits/Validation/{$traitName}.php", $this->replaceStub('Traits/Validation/trait', $replacements));
     }
 }

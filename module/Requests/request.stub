@@ -2,10 +2,13 @@
 
 namespace App\Modules\{{ ModuleName }}\Requests;
 
+use App\Modules\{{ ModuleName }}\Traits\Validation\{{ CommonRulesTrait }};
 use HZ\Illuminate\Mongez\Http\ApiFormRequest;
 
 class {{ RequestClassName }} extends ApiFormRequest
 {
+    use {{ CommonRulesTrait }};
+
     /**
      * Get the validation rules that apply to the request.
      *
