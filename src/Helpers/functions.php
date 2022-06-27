@@ -176,13 +176,13 @@ if (!function_exists('set_request_int_inputs')) {
         $requestInputsDotNotation = Arr::dot($requestInputs);
 
         collect($requestInputsDotNotation)->each(function ($value, $key) use ($inputs, &$requestInputs) {
-            $keyArr = str_contains($key, '.') ? explode('.', $key) : [$key];
+            $keyArray = str_contains($key, '.') ? explode('.', $key) : [$key];
 
-            $filteredKeyArr = array_filter($keyArr, function ($item) {
+            $filteredKeyArray = array_filter($keyArray, function ($item) {
                 return preg_match_all('!\d+!', $item) === 1;
             });
 
-            $filteredKey = implode('.', array_diff_assoc($keyArr, $filteredKeyArr));
+            $filteredKey = implode('.', array_diff_assoc($keyArray, $filteredKeyArray));
 
             if (in_array($filteredKey, $inputs) && $value) {
                 Arr::set($requestInputs, $key, (int) $value);
@@ -193,31 +193,28 @@ if (!function_exists('set_request_int_inputs')) {
     }
 }
 
-
 if (!function_exists('get_user_repo')) {
     /**
+     * Get user repository name based on user type.
+     *
      * @param string|null $userType
-     * @param bool $default
+     * @param bool $appendRepositoryKeyword
      * @return string|array
      * @throws Exception
      */
-    function get_user_repo(string $userType = null, bool $default = true)
+    function get_user_repo(string $userType = null, bool $appendRepositoryKeyword = true)
     {
-        $userRepos = collect(config('mongez.userTypes'))->map(function ($userType) use ($default) {
-            return $default ? $userType.'Repo' : $userType;
-        })->toArray();
-
         if (!$userType) {
-            return $userRepos;
+            return config('mongez.userTypes');
         }
 
-        $userType = strtolower(Str::singular($userType));
+        $repository = config("mongez.userTypes.{$userType}");
 
-        if (!array_key_exists($userType, $userRepos)) {
-            throw new Exception("${userType} is not in config\mongez.userTypes configurations.");
+        if (!$repository) {
+            throw new Exception(sprintf('%s is not in config\mongez.userTypes configurations', $userType));
         }
 
-        return $userRepos[$userType];
+        return $appendRepositoryKeyword ? $repository . 'Repository' : $repository;
     }
 }
 
