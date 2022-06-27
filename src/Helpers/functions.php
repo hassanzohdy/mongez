@@ -153,46 +153,6 @@ if (!function_exists('str_remove_first')) {
     }
 }
 
-if (!function_exists('set_request_int_inputs')) {
-    /**
-     * Set int values from request inputs.
-     * Help to validate IDs by convert them to int values.
-     * If using ApiFormRequest class you have to pass the request to have the int values.
-     *
-     * @param array $inputs
-     * @param $request
-     * @return void
-     */
-    function set_request_int_inputs(array $inputs, $request = null): void
-    {
-        $request = $request ?? request();
-
-        $requestKeys = array_unique(array_map(function ($input) {
-            return str_contains($input, '.') ? explode('.', $input)[0] : $input;
-        }, $inputs));
-
-        $requestInputs = $request->only($requestKeys);
-
-        $requestInputsDotNotation = Arr::dot($requestInputs);
-
-        collect($requestInputsDotNotation)->each(function ($value, $key) use ($inputs, &$requestInputs) {
-            $keyArray = str_contains($key, '.') ? explode('.', $key) : [$key];
-
-            $filteredKeyArray = array_filter($keyArray, function ($item) {
-                return preg_match_all('!\d+!', $item) === 1;
-            });
-
-            $filteredKey = implode('.', array_diff_assoc($keyArray, $filteredKeyArray));
-
-            if (in_array($filteredKey, $inputs) && $value) {
-                Arr::set($requestInputs, $key, (int) $value);
-            }
-        })->toArray();
-
-        $request->merge($requestInputs);
-    }
-}
-
 if (!function_exists('get_user_repo')) {
     /**
      * Get user repository name based on user type.
