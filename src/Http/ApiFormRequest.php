@@ -2,6 +2,7 @@
 
 namespace HZ\Illuminate\Mongez\Http;
 
+use HZ\Illuminate\Mongez\Traits\WithCommonRules;
 use HZ\Illuminate\Mongez\Traits\WithRepositoryAndService;
 use HZ\Illuminate\Mongez\Translation\Traits\Translatable;
 use Illuminate\Foundation\Http\FormRequest;
@@ -11,7 +12,7 @@ use Illuminate\Validation\ValidationException;
 
 class ApiFormRequest extends FormRequest
 {
-    use ApiResponse, WithRepositoryAndService, Translatable;
+    use ApiResponse, WithRepositoryAndService, Translatable, WithCommonRules;
 
 //    /**
 //     * Define request inputs to cast to integer before validation.
