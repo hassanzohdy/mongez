@@ -138,7 +138,7 @@ class EngezTrait extends EngezGeneratorCommand implements EngezInterface
      *
      * @return bool
      */
-    protected function isGeneralTrait()
+    protected function isGeneralTrait(): bool
     {
         return $this->option('type') ===  static::TYPE_GENERAL;
     }
