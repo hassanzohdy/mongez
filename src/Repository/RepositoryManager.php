@@ -580,6 +580,8 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $this->save($model, $oldModel);
 
+        $this->forceIgnore = false;
+
         return $model;
     }
 
