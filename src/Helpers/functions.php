@@ -152,3 +152,30 @@ if (!function_exists('str_remove_first')) {
         return Str::removeFirst($needle, $object);
     }
 }
+
+if (!function_exists('get_user_repo')) {
+    /**
+     * Get user repository name based on user type.
+     *
+     * @param string|null $userType
+     * @param bool $appendRepositoryKeyword
+     * @return string|array
+     * @throws Exception
+     */
+    function get_user_repo(string $userType = null, bool $appendRepositoryKeyword = true)
+    {
+        if (!$userType) {
+            return config('mongez.userTypes');
+        }
+
+        $repository = config("mongez.userTypes.{$userType}");
+
+        if (!$repository) {
+            throw new Exception(sprintf('%s is not in config\mongez.userTypes configurations', $userType));
+        }
+
+        return $appendRepositoryKeyword ? $repository . 'Repository' : $repository;
+    }
+}
+
+

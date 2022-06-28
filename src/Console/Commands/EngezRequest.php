@@ -12,8 +12,9 @@ class EngezRequest extends EngezGeneratorCommand implements EngezInterface
      *
      * @var string
      */
-    protected $signature = 'engez:request {request} 
-                                        {--module=} ';
+    protected $signature = 'engez:request {request}
+                                        {--module=}
+                                        {--trait=}';
 
     /**
      * The console command description.
@@ -23,11 +24,18 @@ class EngezRequest extends EngezGeneratorCommand implements EngezInterface
     protected $description = 'Create new request to the given module';
 
     /**
-     * The resource name.
-     * 
+     * The request name.
+     *
      * @var string
      */
     protected string $requestName;
+
+    /**
+     * The trait name.
+     *
+     * @var string
+     */
+    protected string $traitName;
 
     /**
      * Execute the console command.
@@ -37,7 +45,9 @@ class EngezRequest extends EngezGeneratorCommand implements EngezInterface
     public function handle()
     {
         $this->init();
+
         $this->validateArguments();
+
         $this->create();
 
         $this->info('Request has been created successfully');
@@ -45,7 +55,7 @@ class EngezRequest extends EngezGeneratorCommand implements EngezInterface
 
     /**
      * Prepare data
-     * 
+     *
      * @return void
      */
     public function init()
@@ -55,14 +65,27 @@ class EngezRequest extends EngezGeneratorCommand implements EngezInterface
         $this->setModuleName($this->option('module'));
 
         $this->requestName = $this->argument('request');
+
     }
 
     /**
-     * Create Model 
+     * Create method.
      *
      * @return void
      */
     public function create()
+    {
+        $this->createRequestTrait();
+
+        $this->createRequest();
+    }
+
+    /**
+     * Create request.
+     *
+     * @return void
+     */
+    public function createRequest()
     {
         $replacements = [
             // module name
@@ -71,6 +94,40 @@ class EngezRequest extends EngezGeneratorCommand implements EngezInterface
             '{{ RequestClassName }}' => $this->requestName,
         ];
 
-        $this->putFile("Requests/{$this->requestName}.php", $this->replaceStub('Requests/request', $replacements));
+        $path = "Requests/{$this->requestName}.php";
+
+        $stubPath = 'Requests/request';
+
+        if (isset($this->traitName)) {
+            $replacements['{{ CommonRulesTrait }}'] = $this->traitName;
+            $stubPath = 'Requests/WithTraits/request-with-common-rules';
+        }
+
+        $this->putFile($path, $this->replaceStub($stubPath, $replacements));
+    }
+
+    /**
+     * Create request trait.
+     *
+     * @return void
+     */
+    public function createRequestTrait()
+    {
+        if (!$this->option('trait')) {
+            return;
+        }
+
+        $this->traitName = "With{$this->singularModule()}CommonRules";
+
+        $modelOptions = [
+            'trait' => $this->traitName,
+            '--module' => $this->getModule(),
+            '--type' => $this->option('trait'),
+        ];
+
+        $this->call(
+            "engez:trait",
+            $modelOptions,
+        );
     }
 }

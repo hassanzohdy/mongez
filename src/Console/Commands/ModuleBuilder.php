@@ -464,6 +464,7 @@ class ModuleBuilder extends EngezGeneratorCommand implements EngezInterface
             $modelOptions = [
                 'request' => $method . $this->singularModule() . 'Request',
                 '--module' => $this->getModule(),
+                '--trait' => 'request',
             ];
 
             $this->call(
