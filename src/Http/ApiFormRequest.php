@@ -2,7 +2,6 @@
 
 namespace HZ\Illuminate\Mongez\Http;
 
-use HZ\Illuminate\Mongez\Traits\WithCommonRules;
 use HZ\Illuminate\Mongez\Traits\WithRepositoryAndService;
 use HZ\Illuminate\Mongez\Translation\Traits\Translatable;
 use Illuminate\Foundation\Http\FormRequest;
@@ -12,7 +11,7 @@ use Illuminate\Validation\ValidationException;
 
 class ApiFormRequest extends FormRequest
 {
-    use ApiResponse, WithRepositoryAndService, Translatable, WithCommonRules;
+    use ApiResponse, WithRepositoryAndService, Translatable;
 
 //    /**
 //     * Define request inputs to cast to integer before validation.
@@ -41,6 +40,17 @@ class ApiFormRequest extends FormRequest
         }
 
         $this->setIntInputs($this->intInputs);
+    }
+
+    /**
+     * Merge the given rules with the common rules between store and update
+     *
+     * @param array $rules
+     * @return array
+     */
+    public function withCommonRules(array $rules = []): array
+    {
+        return array_merge_recursive(method_exists($this, 'commonRules') ? $this->commonRules() : [], $rules);
     }
 
     /**
