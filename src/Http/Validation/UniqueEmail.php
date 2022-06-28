@@ -15,6 +15,7 @@ class UniqueEmail implements Rule
      * @var RepositoryInterface
      */
     protected $repository;
+
     /**
      * Attribute name
      * 

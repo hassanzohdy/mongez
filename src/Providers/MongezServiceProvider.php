@@ -11,6 +11,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Artisan;
 use HZ\Illuminate\Mongez\Events\Events;
 use HZ\Illuminate\Mongez\Helpers\Mongez;
+use Illuminate\Support\Facades\Validator;
 use HZ\Illuminate\Mongez\Console\Commands\EngezTest;
 use HZ\Illuminate\Mongez\Console\Commands\EngezModel;
 use HZ\Illuminate\Mongez\Console\Commands\EngezSeeder;
@@ -29,7 +30,6 @@ use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use HZ\Illuminate\Mongez\Console\Commands\PostmanCollection;
 use HZ\Illuminate\Mongez\Console\Commands\CloneModuleBuilder;
 use HZ\Illuminate\Mongez\Console\Commands\MongezTestCommand;
-use Illuminate\Support\Facades\Validator;
 
 class MongezServiceProvider extends ServiceProvider
 {
@@ -134,11 +134,7 @@ class MongezServiceProvider extends ServiceProvider
     {
         $request = $this->app->request;
 
-        $localeCode = $request->header('LOCALE-CODE');
-
-        if (!$localeCode && ($request->localeCode || $request->langCode)) {
-            $localeCode = $request->localeCode ?: $request->langCode;
-        }
+        $localeCode = $request->header('LOCALE-CODE') ?: ($request->input('localeCode') ?: $request->input('acceptLanguage'));
 
         if ($localeCode) {
             $this->app->setLocale($localeCode);
