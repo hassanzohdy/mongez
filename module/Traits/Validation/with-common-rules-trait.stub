@@ -1,0 +1,39 @@
+<?php
+
+namespace App\Modules\{{ ModuleName }}\Traits\Validation;
+
+
+trait {{ TraitName }}
+{
+    /**
+     * Define request inputs to cast to integer before validation.
+     *
+     * @var array|string[]
+     */
+    public array $intInputs = [];
+
+    /**
+     * Define common Rules
+     *
+     * @return array
+     */
+    public function commonRules(): array
+    {
+        return [
+            //
+        ];
+    }
+
+    /**
+     * Define attributes localization.
+     *
+     * @return array
+     */
+    public function attributes(): array
+    {
+        return [
+            //
+        ];
+    }
+}
+
