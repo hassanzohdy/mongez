@@ -2,8 +2,6 @@
 
 namespace HZ\Illuminate\Mongez\Http;
 
-use HZ\Illuminate\Mongez\Http\ApiResponse;
-use HZ\Illuminate\Mongez\Traits\WithCommonRules;
 use HZ\Illuminate\Mongez\Traits\WithRepositoryAndService;
 use HZ\Illuminate\Mongez\Translation\Traits\Translatable;
 use Illuminate\Foundation\Http\FormRequest;
@@ -13,7 +11,7 @@ use Illuminate\Validation\ValidationException;
 
 class ApiFormRequest extends FormRequest
 {
-    use ApiResponse, WithRepositoryAndService, Translatable, WithCommonRules;
+    use ApiResponse, WithRepositoryAndService, Translatable;
 
 //    /**
 //     * Define request inputs to cast to integer before validation.
@@ -42,16 +40,6 @@ class ApiFormRequest extends FormRequest
         }
 
         $this->setIntInputs($this->intInputs);
-    }
-
-    /**
-     * Define the validation ryles.
-     *
-     * @return array
-     */
-    public function rules(): array
-    {
-        return $this->withCommonRules();
     }
 
     /**
