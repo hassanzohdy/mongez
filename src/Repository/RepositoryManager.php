@@ -681,7 +681,7 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     protected function save($model, $oldModel = null)
     {
-        if ($model->id) {
+        if ($oldModel) {
             $this->trigger("saving updating", $model, $this->request, $oldModel);
             $model->save();
             $this->trigger("save update", $model, $this->request, $oldModel);

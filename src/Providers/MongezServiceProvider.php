@@ -29,6 +29,7 @@ use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use HZ\Illuminate\Mongez\Console\Commands\PostmanCollection;
 use HZ\Illuminate\Mongez\Console\Commands\CloneModuleBuilder;
 use HZ\Illuminate\Mongez\Console\Commands\MongezTestCommand;
+use Illuminate\Support\Facades\Validator;
 
 class MongezServiceProvider extends ServiceProvider
 {
