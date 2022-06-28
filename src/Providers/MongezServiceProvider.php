@@ -73,6 +73,8 @@ class MongezServiceProvider extends ServiceProvider
     {
         $this->initializeLocalization();
 
+        $this->registerCustomValidationRules();
+
         if (!$this->app->runningInConsole()) {
             if ($this->app->request->method() == 'OPTIONS') {
                 die(json_encode([
@@ -92,6 +94,20 @@ class MongezServiceProvider extends ServiceProvider
 
         if (!Mongez::isInstalled()) {
             $this->prepareForFirstTime();
+        }
+    }
+
+    /**
+     * Register custom validation rules
+     * 
+     * @return void
+     */
+    protected function registerCustomValidationRules()
+    {
+        $rules = $this->config['validation']['rules'] ?? [];
+
+        foreach ($rules as $rule => $class) {
+            Validator::extend($rule, is_string($class) ? $class . '@passes' : $class[0] . '@' . $class[1]);
         }
     }
 

@@ -125,6 +125,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Validation
+    |--------------------------------------------------------------------------
+    |
+    | You can define your custom validation rules in the `rules` array by defining the rule name as array key
+    | and the value will be the rule class.
+    | If you want to specify which method to be called on validation, you can define the method name as array [class, methodName].
+    | Default method name is `passed`
+    |
+    */
+    'validation' => [
+        'rules' => [
+            'localized' => Localized::class,
+        ]
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Localization Mode
     |--------------------------------------------------------------------------
     | 
