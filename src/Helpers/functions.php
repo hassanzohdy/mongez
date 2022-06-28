@@ -6,6 +6,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\App;
 use HZ\Illuminate\Mongez\Events\Events;
+use HZ\Illuminate\Mongez\Repository\RepositoryManager;
 use HZ\Illuminate\Mongez\Repository\RepositoryInterface;
 use HZ\Illuminate\Mongez\Repository\NotFoundRepositoryException;
 
@@ -153,6 +154,19 @@ if (!function_exists('str_remove_first')) {
     }
 }
 
+if (!function_exists('user_repo')) {
+    /**
+     * Get user repository object
+     * 
+     * @param  string $accountType
+     * @return RepositoryManager
+     */
+    function user_repo(string $accountType)
+    {
+        return repo(get_user_repo($accountType, false));
+    }
+}
+
 if (!function_exists('get_user_repo')) {
     /**
      * Get user repository name based on user type.
@@ -177,5 +191,3 @@ if (!function_exists('get_user_repo')) {
         return $appendRepositoryKeyword ? $repository . 'Repository' : $repository;
     }
 }
-
-
