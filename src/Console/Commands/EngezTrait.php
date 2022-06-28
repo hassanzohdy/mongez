@@ -112,16 +112,12 @@ class EngezTrait extends EngezGeneratorCommand implements EngezInterface
             '{{ TraitName }}' => $traitName,
         ];
 
-        switch (true) {
-            case $this->isRequestTrait():
-                $path = "Traits/Validation/{$traitName}.php";
-                $stubPath = 'Traits/Validation/with-common-rules-trait';
-                break;
-
-            default:
-                $path = "Traits/{$traitName}.php";
-                $stubPath = 'Traits/trait';
-
+        if ($this->isRequestTrait()) {
+            $path = "Traits/Validation/{$traitName}.php";
+            $stubPath = 'Traits/Validation/with-common-rules-trait';
+        } else {
+            $path = "Traits/{$traitName}.php";
+            $stubPath = 'Traits/trait';
         }
 
         $this->putFile($path, $this->replaceStub($stubPath, $replacements));

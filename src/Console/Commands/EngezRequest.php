@@ -96,18 +96,14 @@ class EngezRequest extends EngezGeneratorCommand implements EngezInterface
 
         $path = "Requests/{$this->requestName}.php";
 
-        switch (true) {
-            case isset($this->traitName):
-                $replacements['{{ CommonRulesTrait }}'] = $this->traitName;
-                $stubPath = 'Requests/WithTraits/request-with-common-rules';
+        $stubPath = 'Requests/request';
 
-                break;
-            default:
-                $stubPath = 'Requests/request';
+        if (isset($this->traitName)) {
+            $replacements['{{ CommonRulesTrait }}'] = $this->traitName;
+            $stubPath = 'Requests/WithTraits/request-with-common-rules';
         }
 
         $this->putFile($path, $this->replaceStub($stubPath, $replacements));
-
     }
 
     /**
