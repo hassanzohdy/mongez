@@ -30,8 +30,6 @@ class Unique
     {
         $this->validateParameters($parameters);
 
-        $this->attribute = $attribute;
-
         $countCheck = !DB::table($this->parameters['table'])->where($this->parameters['column'], $value)->where($this->parameters['ignoreColumn'] ?? 'id', '!=', (int) $this->parameters['ignoreValue'])->count();
 
         if (!$countCheck) {
