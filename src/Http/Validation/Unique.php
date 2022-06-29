@@ -14,12 +14,7 @@ class Unique
     /**
      * @var array
      */
-    private array $parameters = ['table', 'column', 'ignoreValue'];
-
-    /**
-     * @var string
-     */
-    private string $attribute;
+    protected array $parameters = ['table', 'column', 'ignoreValue'];
 
     /**
      * Determine if the validation rule passes.
@@ -30,13 +25,21 @@ class Unique
      * @return bool
      * @throws Exception
      */
-    public function passes(string $attribute, $value, $parameters): bool
+    public function passes(string $attribute, $value, $parameters, Validator $validator): bool
     {
         $this->validateParameters($parameters);
 
         $this->attribute = $attribute;
 
-        return !DB::table($this->parameters['table'])->where($this->parameters['column'], $value)->where($this->parameters['ignoreColumn'] ?? 'id', '!=', (int) $this->parameters['ignoreValue'])->count();
+        $countCheck = !DB::table($this->parameters['table'])->where($this->parameters['column'], $value)->where($this->parameters['ignoreColumn'] ?? 'id', '!=', (int) $this->parameters['ignoreValue'])->count();
+
+        if (!$countCheck) {
+            $validator->errors()->add($attribute, trans('validation.unique', ['attribute' => $this->attribute]));
+
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -46,7 +49,7 @@ class Unique
      * @return void
      * @throws Exception
      */
-    public function validateParameters(array $parameters = [])
+    protected function validateParameters(array $parameters = [])
     {
         if (count($this->parameters) > count($parameters)) {
             throw new Exception('Theses parameters is missing ' . implode(',', array_diff_key($this->parameters,$parameters)));
@@ -57,15 +60,5 @@ class Unique
         }
 
         $this->parameters = array_combine($this->parameters, $parameters);
-    }
-
-    /**
-     * Get the validation error message.
-     *
-     * @return string
-     */
-    public function message(): string
-    {
-        return trans('validation.unique', ['attribute' => $this->attribute]);
     }
 }
