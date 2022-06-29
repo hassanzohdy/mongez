@@ -6,28 +6,15 @@ namespace HZ\Illuminate\Mongez\Http\Validation;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Validation\Validator;
+use Exception;
 
-class Unique implements Rule
+class Unique
 {
     /**
-     * @var string
+     * @var array
      */
-    private string $table;
-
-    /**
-     * @var string
-     */
-    private string $column;
-
-    /**
-     * @var
-     */
-    private $ignoreValue;
-
-    /**
-     * @var string
-     */
-    private string $ignoreColumn;
+    private array $parameters = ['table', 'column', 'ignoreValue'];
 
     /**
      * @var string
@@ -35,30 +22,42 @@ class Unique implements Rule
     private string $attribute;
 
     /**
-     * Create a new rule instance.
+     * Determine if the validation rule passes.
      *
-     * @return void
+     * @param string $attribute
+     * @param mixed $value
+     * @param $parameters
+     * @param Validator $validator
+     * @return bool
+     * @throws Exception
      */
-    public function __construct(string $table, string $column, $ignoreValue = null, string $ignoreColumn = 'id')
+    public function passes(string $attribute, $value, $parameters, Validator $validator): bool
     {
-        $this->table = $table;
-        $this->column = $column;
-        $this->ignoreValue = $ignoreValue;
-        $this->ignoreColumn = $ignoreColumn;
+        $this->validateParameters($parameters);
+
+        $this->attribute = $attribute;
+
+        return !DB::table($this->parameters['table'])->where($this->parameters['column'], $value)->where($this->parameters['ignoreColumn'] ?? 'id', '!=', (int) $this->parameters['ignoreValue'])->count();
     }
 
     /**
-     * Determine if the validation rule passes.
+     * Validate required parameters and combine the parameters.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @return bool
+     * @param array $parameters
+     * @return void
+     * @throws Exception
      */
-    public function passes($attribute, $value): bool
+    public function validateParameters(array $parameters = [])
     {
-        $this->attribute = $attribute;
+        if (count($this->parameters) > count($parameters)) {
+            throw new Exception('Theses parameters is missing ' . implode(',', array_diff_key($this->parameters,$parameters)));
+        }
 
-        return !DB::table($this->table)->where($this->column, $value)->where($this->ignoreColumn, '!=', $this->ignoreValue)->count();
+        if (isset($parameters[3])) {
+            $this->parameters[] = 'ignoreColumn';
+        }
+
+        $this->parameters = array_combine($this->parameters, $parameters);
     }
 
     /**
