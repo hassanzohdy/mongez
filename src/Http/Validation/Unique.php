@@ -22,6 +22,7 @@ class Unique
      * @param string $attribute
      * @param mixed $value
      * @param $parameters
+     * @param Validator $validator
      * @return bool
      * @throws Exception
      */
