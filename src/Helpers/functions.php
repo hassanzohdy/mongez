@@ -157,9 +157,10 @@ if (!function_exists('str_remove_first')) {
 if (!function_exists('user_repo')) {
     /**
      * Get user repository object
-     * 
-     * @param  string $accountType
+     *
+     * @param string $accountType
      * @return RepositoryManager
+     * @throws NotFoundRepositoryException
      */
     function user_repo(string $accountType)
     {
@@ -179,7 +180,12 @@ if (!function_exists('get_user_repo')) {
     function get_user_repo(string $userType = null, bool $appendRepositoryKeyword = true)
     {
         if (!$userType) {
-            return config('mongez.userTypes');
+            $repositories = config('mongez.userTypes');
+
+            return $appendRepositoryKeyword ? array_map(function ($repository) {
+                return $repository . 'Repository';
+            }, $repositories) : $repositories;
+
         }
 
         $repository = config("mongez.userTypes.{$userType}");

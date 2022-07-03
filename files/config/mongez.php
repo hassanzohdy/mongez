@@ -136,7 +136,8 @@ return [
     */
     'validation' => [
         'rules' => [
-            'localized' => Localized::class,
+            'localized' => \HZ\Illuminate\Mongez\Http\Validation\Localized::class,
+            'mongoUnique' => \HZ\Illuminate\Mongez\Http\Validation\Unique::class,
         ]
     ],
 
