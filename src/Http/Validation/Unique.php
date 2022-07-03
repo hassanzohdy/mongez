@@ -6,68 +6,58 @@ namespace HZ\Illuminate\Mongez\Http\Validation;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Validation\Validator;
+use Exception;
 
-class Unique implements Rule
+class Unique
 {
     /**
-     * @var string
+     * @var array
      */
-    private string $table;
-
-    /**
-     * @var string
-     */
-    private string $column;
-
-    /**
-     * @var
-     */
-    private $ignoreValue;
-
-    /**
-     * @var string
-     */
-    private string $ignoreColumn;
-
-    /**
-     * @var string
-     */
-    private string $attribute;
-
-    /**
-     * Create a new rule instance.
-     *
-     * @return void
-     */
-    public function __construct(string $table, string $column, $ignoreValue = null, string $ignoreColumn = 'id')
-    {
-        $this->table = $table;
-        $this->column = $column;
-        $this->ignoreValue = $ignoreValue;
-        $this->ignoreColumn = $ignoreColumn;
-    }
+    protected array $parameters = ['table', 'column', 'ignoreValue'];
 
     /**
      * Determine if the validation rule passes.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
+     * @param string $attribute
+     * @param mixed $value
+     * @param $parameters
+     * @param Validator $validator
      * @return bool
+     * @throws Exception
      */
-    public function passes($attribute, $value): bool
+    public function passes(string $attribute, $value, $parameters, Validator $validator): bool
     {
-        $this->attribute = $attribute;
+        $this->validateParameters($parameters);
 
-        return !DB::table($this->table)->where($this->column, $value)->where($this->ignoreColumn, '!=', $this->ignoreValue)->count();
+        $countCheck = !DB::table($this->parameters['table'])->where($this->parameters['column'], $value)->where($this->parameters['ignoreColumn'] ?? 'id', '!=', (int) $this->parameters['ignoreValue'])->count();
+
+        if (!$countCheck) {
+            $validator->errors()->add($attribute, trans('validation.unique', ['attribute' => $this->attribute]));
+
+            return false;
+        }
+
+        return true;
     }
 
     /**
-     * Get the validation error message.
+     * Validate required parameters and combine the parameters.
      *
-     * @return string
+     * @param array $parameters
+     * @return void
+     * @throws Exception
      */
-    public function message(): string
+    protected function validateParameters(array $parameters = [])
     {
-        return trans('validation.unique', ['attribute' => $this->attribute]);
+        if (count($this->parameters) > count($parameters)) {
+            throw new Exception('Theses parameters is missing ' . implode(',', array_diff_key($this->parameters,$parameters)));
+        }
+
+        if (isset($parameters[3])) {
+            $this->parameters[] = 'ignoreColumn';
+        }
+
+        $this->parameters = array_combine($this->parameters, $parameters);
     }
 }
