@@ -230,7 +230,7 @@ trait Listable
      * @param object $data
      * @return void
      */
-    protected function setPaginateInfo($data)
+    public function setPaginateInfo($data)
     {
         $this->paginationInfo = [
             'currentResults' => $data->count(),
