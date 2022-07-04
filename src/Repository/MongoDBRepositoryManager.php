@@ -95,11 +95,12 @@ abstract class MongoDBRepositoryManager extends RepositoryManager implements Rep
     /**
      * Get Aggregation framework
      * 
+     * @param  ?QueryBuilder $query
      * @return Aggregation
      */
-    public function aggregate()
+    public function aggregate($query = null)
     {
-        return new Aggregation($this->getQuery());
+        return new Aggregation($query ?: $this->getQuery());
     }
 
     /**
