@@ -6,6 +6,7 @@ namespace HZ\Illuminate\Mongez\Repository;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Model;
 use HZ\Illuminate\Mongez\Events\Events;
@@ -497,6 +498,17 @@ abstract class RepositoryManager implements RepositoryInterface
         $modelName = static::MODEL;
 
         return new $modelName($data);
+    }
+
+    /**
+     * create get an instance for the given class name
+     * 
+     * @param  string $className
+     * @return mixed
+     */
+    protected function make(string $className)
+    {
+        return App::make($className);
     }
 
     /**
