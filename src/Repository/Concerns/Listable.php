@@ -120,6 +120,9 @@ trait Listable
      */
     public function total(array $options)
     {
+        $options['paginate'] = false;
+        unset($option['page']);
+
         $this->initiateListing($options);
 
         return $this->query->count();
