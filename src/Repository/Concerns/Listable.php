@@ -121,7 +121,7 @@ trait Listable
     public function total(array $options)
     {
         $options['paginate'] = false;
-        unset($option['page']);
+        unset($options['page']);
 
         $this->initiateListing($options);
 
