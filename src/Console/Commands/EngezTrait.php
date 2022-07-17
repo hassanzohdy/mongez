@@ -54,7 +54,7 @@ class EngezTrait extends EngezGeneratorCommand implements EngezInterface
     {
         $this->init();
 
-        $this->validateArguments();
+        if ($this->validateArguments() === false) return;
 
         $this->create();
 
@@ -86,13 +86,15 @@ class EngezTrait extends EngezGeneratorCommand implements EngezInterface
         parent::validateArguments();
 
         if (!in_array($this->option('type'), [static::TYPE_GENERAL, static::TYPE_REQUEST])) {
-            return $this->missingRequiredOption('This controller type does not exits, Did you mean? ' . implode(PHP_EOL, static::TRAIT_TYPES));
+            return $this->missingRequiredOption('This trait type does not exits, Did you mean? ' . implode(PHP_EOL, static::TRAIT_TYPES));
         }
 
         $baseDir = $this->isRequestTrait() ? 'Traits/Validation' : 'Traits';
 
         if ($this->files->exists($this->modulePath("$baseDir/$this->traitName.php"))) {
-            return $this->info('You already have this trait');
+            $this->info('You already have this trait');
+
+            return false;
         }
     }
 
