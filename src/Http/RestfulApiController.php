@@ -248,11 +248,56 @@ abstract class RestfulApiController extends ApiController
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int $id
+     * @param  int|string $id
      * @return \Illuminate\Http\Response
      */
     public function destroy($id, Request $request)
     {
+        // Allow deleting multiple records at once by passing the ids separated by comma
+        // i.e DELETE /admin/users/1,2,3
+        if (Str::contains($id, ',')) {
+            $ids = explode(',', $id);
+
+            $errors = [];
+
+            $totalDeleted = 0;
+
+            foreach ($ids as $id) {
+                $model = $this->repository->getModel($id);
+
+                if (!$model) {
+                    $errors[] = [
+                        'key' => 'notFound',
+                        'value' => 'The record with id ' . $id . ' was not found.',
+                        'id' => $id
+                    ];
+
+                    continue;
+                }
+
+                if ($errors = $this->beforeDeleting($model, $request)) {
+                    $errors[] = [
+                        'key' => 'beforeDeleting',
+                        'value' => $errors,
+                        'id' => $id
+                    ];
+
+                    continue;
+                }
+
+                $this->repository->delete($model);
+
+                $totalDeleted++;
+            }
+
+            return $errors ? $this->badRequest([
+                'errors' => $errors,
+                'totalDeleted' => $totalDeleted
+            ]) : $this->success([
+                'totalDeleted' => $totalDeleted
+            ]);
+        }
+
         $model = $this->repository->getModel($id);
 
         if (!$model) {

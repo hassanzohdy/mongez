@@ -77,6 +77,18 @@ abstract class JsonResourceManager extends JsonResource
     public const LOCALIZED = [];
 
     /**
+     * Data that has multiple values based on locale codes and is transformed using resource
+     *
+     * @example ['banner' => UploadResource::class]
+     * @example ['banner' => [UploadResource::class, 'file']]
+     * If the locale is not set, then it will be sent as an array of objects, each object has 
+     * a localeCode and its text/file value will be sent to the resource to parse it
+     * 
+     * @const array
+     */
+    public const LOCALIZED_RESOURCE_DATA = [];
+
+    /**
      * List of assets that will have a full url if available
      *
      * @const array
@@ -178,6 +190,8 @@ abstract class JsonResourceManager extends JsonResource
         $this->collectObjectData(static::OBJECT_DATA);
 
         $this->collectLocalized(static::LOCALIZED);
+
+        $this->collectLocalizedResources(static::LOCALIZED_RESOURCE_DATA);
 
         $this->collectAssets(static::ASSETS);
 
@@ -428,6 +442,7 @@ abstract class JsonResourceManager extends JsonResource
         });
     }
 
+
     /**
      * Collect localized data
      *
@@ -440,6 +455,7 @@ abstract class JsonResourceManager extends JsonResource
             return $this->locale($column);
         });
     }
+
 
     /**
      * Get localized 
@@ -484,6 +500,102 @@ abstract class JsonResourceManager extends JsonResource
             return $valuesList ?: $value;
         } elseif ($localizationMode === 'object' && isset($value[$localeCode]) || isset($value[$localeCode])) {
             return (string) $value[$localeCode];
+        }
+
+        return $value;
+    }
+
+    /**
+     * Collect localized data as resource
+     *
+     * @param array $columns
+     * @return JsonResourceManager
+     */
+    protected function collectLocalizedResources(array $columns): JsonResourceManager
+    {
+        // 'banner' => BannerResource::class
+        foreach ($columns as $column => $resource) {
+            if ($this->ignoreEmptyColumn($column)) continue;
+
+            if (is_string($resource)) {
+                $resourceData = [
+                    'column' => $column,
+                    'resource' => $resource,
+                    'textKey' => 'text',
+                ];
+            } else {
+                $resourceData = [
+                    'column' => $column,
+                    'resource' => $resource[0],
+                    'textKey' => $resource[1] ?? 'text',
+                ];
+            }
+
+            $this->set($column, $this->localeResource($resourceData));
+        }
+    }
+
+    /**
+     * Get localized resource
+     *
+     * @return mixed
+     */
+    protected function localeResource($column)
+    {
+        $value = $this->value($column['column']);
+
+        if (empty($value)) return null;
+
+        if (is_string($value)) return $value;
+
+        if (!Mongez::requestHasLocaleCode()) {
+            if (is_array($value)) {
+                $resourceClass = $column['resource'];
+                $textKey = $column['textKey'];
+                $returnAllValue = [];
+                foreach ($value as  &$localizedValue) {
+                    $returnAllValue[] = [
+                        'localeCode' => $localizedValue['localeCode'],
+                        [$textKey] => $this->makeResource($localizedValue[$textKey], $resourceClass),
+                    ];
+                }
+
+                return $returnAllValue;
+            } else {
+                return $value;
+            }
+        }
+
+        $localeCode = Mongez::getRequestLocaleCode();
+
+        // get the localization mode
+        // it cn be an object or an array of objects
+        $localizationMode = config('mognez.localizationMode', 'array');
+
+        // the OR in the following if conditions is used as a fallback for the data that is 
+        // not matching the current localization mode 
+        // for example, if the data is stored as object and the localization mode is an array
+        // in that case it will be rendered as an array 
+
+        if ($localizationMode === 'array' && isset($value[0]) || isset($value[0])) {
+            $valuesList = [];
+            foreach ($value as $localizedValue) {
+                // check if it is an array of values
+                if (isset($localizedValue[0])) {
+                    foreach ($localizedValue as $subValue) {
+                        if ($subValue['localeCode'] === $localeCode) {
+                            return $this->makeResource($subValue[$column['textKey']], $column['resource']);
+                        }
+                    }
+                } else {
+                    if ($localizedValue['localeCode'] === $localeCode) {
+                        return $this->makeResource($localizedValue[$column['textKey']], $column['resource']);
+                    }
+                }
+            }
+            return $valuesList ?: $value;
+        } elseif ($localizationMode === 'object' && isset($value[$localeCode]) || isset($value[$localeCode])) {
+            return $this->makeResource($value[$localeCode], $column['resource']);
         }
 
         return $value;
@@ -612,7 +724,19 @@ abstract class JsonResourceManager extends JsonResource
     {
         $resourceData = $this->value($column);
 
-        return $this->set($column, $resourceData === null ? null : new $resourceClassName(new Fluent($resourceData)));
+        return $this->set($column, $this->makeResource($resourceClassName, $resourceData));
+    }
+
+    /**
+     * Make and return new resource class
+     * 
+     * @param  string $resourceClassName
+     * @param  mixed $resourceData
+     * @return mixed
+     */
+    protected function makeResource(string $resourceClassName, $resourceData)
+    {
+        return $resourceData === null ? null : new $resourceClassName(new Fluent($resourceData));
     }
 
     /**

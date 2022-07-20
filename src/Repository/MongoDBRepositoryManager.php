@@ -9,13 +9,6 @@ use HZ\Illuminate\Mongez\Database\Eloquent\MongoDB\Aggregation;
 abstract class MongoDBRepositoryManager extends RepositoryManager implements RepositoryInterface
 {
     /**
-     * Filter class.
-     *  
-     * @const string
-     */
-    const FILTER_CLASS = null;
-
-    /**
      * If set to true, the multiple uploads column paths will be json encoded while storing it in database.
      *
      * @const bool
@@ -76,8 +69,6 @@ abstract class MongoDBRepositoryManager extends RepositoryManager implements Rep
      */
     public function get(int $id)
     {
-        if (static::USING_CACHE) return $this->wrap($this->getCache($id));
-
         return $this->getBy('id', (int) $id);
     }
 
@@ -160,11 +151,26 @@ abstract class MongoDBRepositoryManager extends RepositoryManager implements Rep
      */
     public function getBy($column, $value)
     {
-        $resource = static::RESOURCE;
+        if ($this->isCachable()) {
+            $cacheKey = static::NAME . '_' . $column . '_' . (string) $value;
+            $record = $this->getCache($cacheKey);
 
-        $object = $this->getByModel($column, $value);
+            if (!$record) {
+                $record = $this->getByModel($column, $value);
 
-        return $object ? new $resource($object) : null;
+                if (!$record) return null;
+
+                $this->setCache($$cacheKey, $record->toArray());
+            } else {
+                $record = $this->newModel($record);
+            }
+
+            return $this->wrap($record);
+        }
+
+        $record = $this->getByModel($column, $value);
+
+        return $record ? $this->wrap($record) : null;
     }
 
     /**

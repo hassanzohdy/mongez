@@ -63,4 +63,14 @@ trait Cacheable
     {
         return static::NAME . $key;
     }
+
+    /**
+     * Determine if caching is enabled
+     * 
+     * @return bool
+     */
+    protected function isCachable(): bool
+    {
+        return static::USING_CACHE;
+    }
 }

@@ -73,18 +73,6 @@ class {{ ModelName }} extends Model
     const ON_MODEL_CREATE = [];
 
     /**
-     * Define list of other models that will be affected as the current object is part of array
-     * as the current model is sub-document to it when it gets created
-     *
-     * @example ModelClass::class => searchingColumn will be converted to ['searchingColumn['id'], 'columnName', 'sharedInfo']
-     * @example ModelClass::class => [searchingColumn, creatingColumn]
-     * @example ModelClass::class => [searchingColumn, creatingColumn, sharedInfoMethod]
-     *
-     * @const array
-     */
-    const ON_MODEL_CREATE_PUSH = [];
-
-    /**
      * Define list of other models that will be affected
      * as the current model is sub-document to it when it gets updated
      *  

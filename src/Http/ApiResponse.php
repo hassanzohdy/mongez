@@ -87,6 +87,7 @@ trait ApiResponse
         if (($eventResponse = events()->trigger('response.badRequest', $data)) && is_array($eventResponse)) {
             $data = $eventResponse;
         }
+
         return $this->send($data, Response::HTTP_BAD_REQUEST);
     }
 

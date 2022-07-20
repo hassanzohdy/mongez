@@ -263,8 +263,7 @@ trait Listable
     public function wrap($model): JsonResource
     {
         if (is_array($model)) {
-            $modelName = static::MODEL;
-            $model = new $modelName($model);
+            $model = $this->newModel($model);
         }
 
         $resource = $this->getResourceClass();

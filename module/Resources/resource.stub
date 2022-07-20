@@ -70,6 +70,18 @@ class {{ ResourceName }} extends JsonResourceManager
     const LOCALIZED = {{ locale }};
     
     /**
+     * Data that has multiple values based on locale codes and is transformed using resource
+     *
+     * @example ['banner' => UploadResource::class]
+     * @example ['banner' => [UploadResource::class, 'file']]
+     * If the locale is not set, then it will be sent as an array of objects, each object has 
+     * a localeCode and its text/file value will be sent to the resource to parse it
+     * 
+     * @const array
+     */
+    public const LOCALIZED_RESOURCE_DATA = [];
+
+    /**
      * List of assets that will have a full url if available
      *
      * if the key is not found, an empty string '' will be returned.

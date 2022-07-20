@@ -150,7 +150,7 @@ class {{ RepositoryClass }} extends MongoDBRepositoryManager implements Reposito
      *
      * @const array  
      */
-    const PATCHABLE_DATA = [];
+    const PATCHABLE_DATA = ['published'];
 
     /**
      * Determine wether to use pagination in the `list` method
