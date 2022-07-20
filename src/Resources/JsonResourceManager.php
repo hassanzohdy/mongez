@@ -509,9 +509,9 @@ abstract class JsonResourceManager extends JsonResource
      * Collect localized data as resource
      *
      * @param array $columns
-     * @return JsonResourceManager
+     * @return void
      */
-    protected function collectLocalizedResources(array $columns): JsonResourceManager
+    protected function collectLocalizedResources(array $columns)
     {
         // 'banner' => BannerResource::class
         foreach ($columns as $column => $resource) {
