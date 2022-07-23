@@ -115,8 +115,9 @@ abstract class JsonResourceManager extends JsonResource
 
     /**
      * Data that should be returned if exists
-     *
-     * @const array
+     * 
+     * If set to true, then all data that is not present in the resource's model will not be present in the response
+     * @const array|true
      */
     public const WHEN_AVAILABLE = [];
 
@@ -710,7 +711,11 @@ abstract class JsonResourceManager extends JsonResource
 
         if (in_array($value, [0, false], true)) return false;
 
-        return empty($value) && in_array($column, static::WHEN_AVAILABLE);
+        if (!empty($value) || is_array($value)) return false;
+
+        if (static::WHEN_AVAILABLE === true) return true;
+
+        return in_array($column, static::WHEN_AVAILABLE);
     }
 
     /**

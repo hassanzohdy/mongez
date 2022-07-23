@@ -115,10 +115,9 @@ class {{ ResourceName }} extends JsonResourceManager
     
     /**
      * Data that should be returned if exists
-     * If the key is set in this list and it doesn't exist in the resource
-     * then it will not be sent to response
      * 
-     * @const array
+     * If set to true, then all data that is not present in the resource's model will not be present in the response
+     * @const array|true
      */
-    const WHEN_AVAILABLE = [];    
+    public const WHEN_AVAILABLE = true;    
 }
