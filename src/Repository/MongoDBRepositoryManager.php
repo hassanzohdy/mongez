@@ -106,13 +106,7 @@ abstract class MongoDBRepositoryManager extends RepositoryManager implements Rep
             return $id;
         }
 
-        if (is_array($id)) {
-            $id = array_map('intval', $id);
-        } else {
-            $id = (int) $id;
-        }
-
-        return $this->getByModel('id', $id);
+        return $this->getByModel('id', (int) $id);
     }
 
     /**
@@ -132,14 +126,15 @@ abstract class MongoDBRepositoryManager extends RepositoryManager implements Rep
     /**
      * Get shared info for the given id
      * 
-     * @param int $id
+     * @param  int $id
+     * @param  string $sharedInfoMethod
      * @return mixed
      */
-    public function sharedInfo($id)
+    public function sharedInfo($id, string $sharedInfoMethod = 'sharedInfo')
     {
         $model = $this->getModel($id);
 
-        return $model ? $model->sharedInfo() : null;
+        return $model ? $model->$sharedInfoMethod() : null;
     }
 
     /**
@@ -253,15 +248,17 @@ abstract class MongoDBRepositoryManager extends RepositoryManager implements Rep
             if ($this->isIgnorable($column)) continue;
 
             if (is_array($documentModelClass)) {
-                list($class, $method) = $documentModelClass;
+                list($class, $sharedInfoMethod) = $documentModelClass;
                 $documentModelClass = $class;
             } else {
-                $method = 'sharedInfo';
+                $sharedInfoMethod = 'sharedInfo';
             }
 
-            $documentModel = $documentModelClass::find((int) $this->input($column));
+            $value = $this->input($column);
 
-            $model->$column = $documentModel ? $documentModel->{$method}() : null;
+            $documentModel = $value instanceof Model ? $value : $documentModelClass::find((int) $value);
+
+            $model->$column = $documentModel ? $documentModel->{$sharedInfoMethod}() : null;
         }
     }
 
