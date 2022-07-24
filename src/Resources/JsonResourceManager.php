@@ -28,35 +28,35 @@ abstract class JsonResourceManager extends JsonResource
 
     /**
      * String Data
-     * 
+     *
      * @const array
      */
     public const STRING_DATA = [];
 
     /**
      * Boolean Data
-     * 
+     *
      * @const array
      */
     public const BOOLEAN_DATA = [];
 
     /**
      * Integer Data
-     * 
+     *
      * @const array
      */
     public const INTEGER_DATA = [];
 
     /**
      * Float Data
-     * 
+     *
      * @const array
      */
     public const FLOAT_DATA = [];
 
     /**
      * Object Data
-     * 
+     *
      * @const array
      */
     public const OBJECT_DATA = [];
@@ -81,9 +81,9 @@ abstract class JsonResourceManager extends JsonResource
      *
      * @example ['banner' => UploadResource::class]
      * @example ['banner' => [UploadResource::class, 'file']]
-     * If the locale is not set, then it will be sent as an array of objects, each object has 
+     * If the locale is not set, then it will be sent as an array of objects, each object has
      * a localeCode and its text/file value will be sent to the resource to parse it
-     * 
+     *
      * @const array
      */
     public const LOCALIZED_RESOURCE_DATA = [];
@@ -115,16 +115,15 @@ abstract class JsonResourceManager extends JsonResource
 
     /**
      * Data that should be returned if exists
-     * 
-     * If set to true, then all data that is not present in the resource's model will not be present in the response
-     * @const array|true
+     *
+     * @const array
      */
     public const WHEN_AVAILABLE = [];
 
     /**
      * Set the float round value
      * Defaults to 2
-     * 
+     *
      * @const int
      */
     public const FLOAT_ROUND = 2;
@@ -230,7 +229,7 @@ abstract class JsonResourceManager extends JsonResource
 
     /**
      * Remove value from being sent to response
-     * 
+     *
      * @param string $keys
      * @return void
      */
@@ -345,7 +344,7 @@ abstract class JsonResourceManager extends JsonResource
 
     /**
      * Set the given columns data
-     * 
+     *
      * @param array $columns
      * @param callable $valueCallback
      * @return $this
@@ -365,7 +364,7 @@ abstract class JsonResourceManager extends JsonResource
 
     /**
      * if the output key is numeric, then we'll return the column instead
-     * 
+     *
      * @param  int|string $outputKey
      * @param string $column
      * @return string
@@ -459,7 +458,7 @@ abstract class JsonResourceManager extends JsonResource
 
 
     /**
-     * Get localized 
+     * Get localized
      *
      * @return mixed
      */
@@ -477,10 +476,10 @@ abstract class JsonResourceManager extends JsonResource
         // it cn be an object or an array of objects
         $localizationMode = config('mognez.localizationMode', 'array');
 
-        // the OR in the following if conditions is used as a fallback for the data that is 
-        // not matching the current localization mode 
+        // the OR in the following if conditions is used as a fallback for the data that is
+        // not matching the current localization mode
         // for example, if the data is stored as object and the localization mode is an array
-        // in that case it will be rendered as an array 
+        // in that case it will be rendered as an array
 
         if ($localizationMode === 'array' && isset($value[0]) || isset($value[0])) {
             $valuesList = [];
@@ -555,9 +554,10 @@ abstract class JsonResourceManager extends JsonResource
                 $textKey = $column['textKey'];
                 $returnAllValue = [];
                 foreach ($value as  &$localizedValue) {
+
                     $returnAllValue[] = [
                         'localeCode' => $localizedValue['localeCode'],
-                        [$textKey] => $this->makeResource($localizedValue[$textKey], $resourceClass),
+                        $textKey => $this->makeResource($resourceClass, $localizedValue[$textKey]),
                     ];
                 }
 
@@ -573,10 +573,10 @@ abstract class JsonResourceManager extends JsonResource
         // it cn be an object or an array of objects
         $localizationMode = config('mognez.localizationMode', 'array');
 
-        // the OR in the following if conditions is used as a fallback for the data that is 
-        // not matching the current localization mode 
+        // the OR in the following if conditions is used as a fallback for the data that is
+        // not matching the current localization mode
         // for example, if the data is stored as object and the localization mode is an array
-        // in that case it will be rendered as an array 
+        // in that case it will be rendered as an array
 
         if ($localizationMode === 'array' && isset($value[0]) || isset($value[0])) {
             $valuesList = [];
@@ -585,18 +585,20 @@ abstract class JsonResourceManager extends JsonResource
                 if (isset($localizedValue[0])) {
                     foreach ($localizedValue as $subValue) {
                         if ($subValue['localeCode'] === $localeCode) {
-                            return $this->makeResource($subValue[$column['textKey']], $column['resource']);
+
+                            return $this->makeResource($column['resource'], $subValue[$column['textKey']]);
                         }
                     }
                 } else {
                     if ($localizedValue['localeCode'] === $localeCode) {
-                        return $this->makeResource($localizedValue[$column['textKey']], $column['resource']);
+
+                        return $this->makeResource($column['resource'], $localizedValue[$column['textKey']]);
                     }
                 }
             }
             return $valuesList ?: $value;
         } elseif ($localizationMode === 'object' && isset($value[$localeCode]) || isset($value[$localeCode])) {
-            return $this->makeResource($value[$localeCode], $column['resource']);
+            return $this->makeResource($column['resource'], $value[$localeCode]);
         }
 
         return $value;
@@ -701,7 +703,7 @@ abstract class JsonResourceManager extends JsonResource
 
     /**
      * Determine whether to ignore the empty data for the given column
-     * 
+     *
      * @param string $column
      * @return bool
      */
@@ -711,16 +713,12 @@ abstract class JsonResourceManager extends JsonResource
 
         if (in_array($value, [0, false], true)) return false;
 
-        if (!empty($value) || is_array($value)) return false;
-
-        if (static::WHEN_AVAILABLE === true) return true;
-
-        return in_array($column, static::WHEN_AVAILABLE);
+        return empty($value) && in_array($column, static::WHEN_AVAILABLE);
     }
 
     /**
      * Set resource value
-     * 
+     *
      * @param  string $column
      * @param  string $resourceClassName
      * @return $this
@@ -734,7 +732,7 @@ abstract class JsonResourceManager extends JsonResource
 
     /**
      * Make and return new resource class
-     * 
+     *
      * @param  string $resourceClassName
      * @param  mixed $resourceData
      * @return mixed
@@ -782,7 +780,7 @@ abstract class JsonResourceManager extends JsonResource
 
     /**
      * Get value from resource
-     * 
+     *
      * @param  string $column
      * @param  mixed $default
      * @return mixed
@@ -794,7 +792,7 @@ abstract class JsonResourceManager extends JsonResource
 
     /**
      * Set date
-     * 
+     *
      * @param string $column
      * @param mixed $value
      * @return void
@@ -847,7 +845,7 @@ abstract class JsonResourceManager extends JsonResource
 
     /**
      * Get a localized date based on current locale code
-     * 
+     *
      * @param  DateTime $date
      * @return string
      */
@@ -929,7 +927,6 @@ abstract class JsonResourceManager extends JsonResource
 
         $this->set($column, $resources);
     }
-
 
     /**
      * Extend data with more complex returned values
