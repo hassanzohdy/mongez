@@ -713,7 +713,11 @@ abstract class JsonResourceManager extends JsonResource
 
         if (in_array($value, [0, false], true)) return false;
 
-        return empty($value) && in_array($column, static::WHEN_AVAILABLE);
+        if (!empty($value) || is_array($value)) return false;
+
+        if (static::WHEN_AVAILABLE === true) return true;
+
+        return in_array($column, static::WHEN_AVAILABLE);
     }
 
     /**
