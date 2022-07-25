@@ -535,7 +535,7 @@ abstract class JsonResourceManager extends JsonResource
 
                 if (!$resource) continue;
 
-                if ($resource instanceof JsonResourceManager && $resource->canBeEmbeded($this) === false) continue;
+                if ($resource instanceof JsonResourceManager && $resource->canBeEmbedded($this) === false) continue;
 
                 $collectionResources[] = $resource;
             }
@@ -574,7 +574,7 @@ abstract class JsonResourceManager extends JsonResource
 
             $resource = $this->localeResource($resourceData);
 
-            if ($resource instanceof JsonResourceManager && $resource->canBeEmbeded($this) === false) return;
+            if ($resource instanceof JsonResourceManager && $resource->canBeEmbedded($this) === false) return;
 
             $this->set($column, $resource);
         }
@@ -601,7 +601,7 @@ abstract class JsonResourceManager extends JsonResource
                 foreach ($value as  &$localizedValue) {
                     $resource = $this->makeResource($resourceClass, $localizedValue[$textKey]);
 
-                    if ($resource instanceof JsonResourceManager && $resource->canBeEmbeded($this) === false) continue;
+                    if ($resource instanceof JsonResourceManager && $resource->canBeEmbedded($this) === false) continue;
 
                     $returnAllValue[] = [
                         'localeCode' => $localizedValue['localeCode'],
@@ -759,7 +759,11 @@ abstract class JsonResourceManager extends JsonResource
 
         if (in_array($value, [0, false], true)) return false;
 
-        return empty($value) && in_array($column, static::WHEN_AVAILABLE);
+        if (!empty($value) || is_array($value)) return false;
+
+        if (static::WHEN_AVAILABLE === true) return true;
+
+        return in_array($column, static::WHEN_AVAILABLE);
     }
 
     /**
@@ -775,7 +779,7 @@ abstract class JsonResourceManager extends JsonResource
 
         $resource = $this->makeResource($resourceClassName, $resourceData);
 
-        if ($resource instanceof JsonResourceManager && $resource->canBeEmbeded($this) === false) {
+        if ($resource instanceof JsonResourceManager && $resource->canBeEmbedded($this) === false) {
             return $this;
         }
 
@@ -947,7 +951,7 @@ abstract class JsonResourceManager extends JsonResource
         }
 
         $resources = $resource::collection($collection)->filter(function (JsonResourceManager $resource) {
-            return $resource->canBeEmbeded($this);
+            return $resource->canBeEmbedded($this);
         });
 
         $this->set($column, $resources);
@@ -969,7 +973,7 @@ abstract class JsonResourceManager extends JsonResource
      * @param  JsonResourceManager $parentResource
      * @return bool
      */
-    public function canBeEmbeded(JsonResourceManager $parentResource): bool
+    public function canBeEmbedded(JsonResourceManager $parentResource): bool
     {
         return true;
     }
