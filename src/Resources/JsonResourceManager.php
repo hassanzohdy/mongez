@@ -89,6 +89,18 @@ abstract class JsonResourceManager extends JsonResource
     public const LOCALIZED_RESOURCE_DATA = [];
 
     /**
+     * Collection of localized data, the localized's data is a resource that needs to be transformed
+     *
+     * @example ['banner' => UploadResource::class]
+     * @example ['banner' => [UploadResource::class, 'file']]
+     * If the locale is not set, then it will be sent as an array of objects, each object has 
+     * a localeCode and its text/file value will be sent to the resource to parse it
+     * 
+     * @const array
+     */
+    public const LOCALIZED_COLLECTABLE_DATA = [];
+
+    /**
      * List of assets that will have a full url if available
      *
      * @const array
@@ -173,33 +185,33 @@ abstract class JsonResourceManager extends JsonResource
     {
         $this->request = $request;
 
-        if (!$this->assetsUrlFunction) {
-            $this->assetsUrlFunction = static::assetsFunction();
-        }
+        $this->assetsUrlFunction = $this->assetsUrlFunction ?: static::assetsFunction();
 
-        $this->collectData(static::DATA);
+        static::DATA && $this->collectData(static::DATA);
 
-        $this->collectStringData(static::STRING_DATA);
+        static::STRING_DATA && $this->collectStringData(static::STRING_DATA);
 
-        $this->collectIntegerData(static::INTEGER_DATA);
+        static::INTEGER_DATA && $this->collectIntegerData(static::INTEGER_DATA);
 
-        $this->collectFloatData(static::FLOAT_DATA);
+        static::FLOAT_DATA && $this->collectFloatData(static::FLOAT_DATA);
 
-        $this->collectBooleanData(static::BOOLEAN_DATA);
+        static::BOOLEAN_DATA && $this->collectBooleanData(static::BOOLEAN_DATA);
 
-        $this->collectObjectData(static::OBJECT_DATA);
+        static::OBJECT_DATA && $this->collectObjectData(static::OBJECT_DATA);
 
-        $this->collectLocalized(static::LOCALIZED);
+        static::LOCALIZED && $this->collectLocalized(static::LOCALIZED);
 
-        $this->collectLocalizedResources(static::LOCALIZED_RESOURCE_DATA);
+        static::LOCALIZED_RESOURCE_DATA && $this->collectLocalizedResources(static::LOCALIZED_RESOURCE_DATA);
 
-        $this->collectAssets(static::ASSETS);
+        static::LOCALIZED_COLLECTABLE_DATA && $this->collectLocalizedCollection(static::LOCALIZED_COLLECTABLE_DATA);
 
-        $this->collectCollectables(static::COLLECTABLE);
+        static::ASSETS && $this->collectAssets(static::ASSETS);
 
-        $this->collectResources(static::RESOURCES);
+        static::COLLECTABLE && $this->collectCollectables(static::COLLECTABLE);
 
-        $this->collectDates(static::DATES);
+        static::RESOURCES && $this->collectResources(static::RESOURCES);
+
+        static::DATES && $this->collectDates(static::DATES);
 
         $this->extend($request);
 
@@ -216,12 +228,6 @@ abstract class JsonResourceManager extends JsonResource
                     unset($this->data[$key]);
                 }
             }
-        }
-
-        if (isset($this->data['accessTokens'])) {
-            $token = $this->data['accessTokens'][0]['token'];
-            unset($this->data['accessTokens']);
-            $this->data['accessToken'] = $token;
         }
 
         return $this->data;
@@ -363,18 +369,6 @@ abstract class JsonResourceManager extends JsonResource
     }
 
     /**
-     * if the output key is numeric, then we'll return the column instead
-     *
-     * @param  int|string $outputKey
-     * @param string $column
-     * @return string
-     */
-    // protected function outputKey($outputKey, string $column): string
-    // {
-    //     return is_numeric($outputKey) ? $column : $outputKey;
-    // }
-
-    /**
      * Collect String Data
      *
      * @param array $columns
@@ -506,6 +500,51 @@ abstract class JsonResourceManager extends JsonResource
     }
 
     /**
+     * Collect localized collections data as resource
+     *
+     * @param array $columns
+     * @return void
+     */
+    protected function collectLocalizedCollection(array $columns)
+    {
+        // 'images' => Upload::class
+        foreach ($columns as $column => $resource) {
+            if ($this->ignoreEmptyColumn($column)) continue;
+
+            if (is_string($resource)) {
+                $resourceData = [
+                    'column' => $column,
+                    'resource' => $resource,
+                    'textKey' => 'text',
+                ];
+            } else {
+                $resourceData = [
+                    'column' => $column,
+                    'resource' => $resource[0],
+                    'textKey' => $resource[1] ?? 'text',
+                ];
+            }
+
+            $collectionData = $this->value($column, []);
+
+            $collectionResources = [];
+
+            foreach ($collectionData as $item) {
+                $resourceData['value'] = $item;
+                $resource = $this->localeResource($resourceData);
+
+                if (!$resource) continue;
+
+                if ($resource instanceof JsonResourceManager && $resource->canBeEmbeded($this) === false) continue;
+
+                $collectionResources[] = $resource;
+            }
+
+            $this->set($column, $collectionResources);
+        }
+    }
+
+    /**
      * Collect localized data as resource
      *
      * @param array $columns
@@ -531,7 +570,13 @@ abstract class JsonResourceManager extends JsonResource
                 ];
             }
 
-            $this->set($column, $this->localeResource($resourceData));
+            $resourceData['value'] = $this->value($column['column']);
+
+            $resource = $this->localeResource($resourceData);
+
+            if ($resource instanceof JsonResourceManager && $resource->canBeEmbeded($this) === false) return;
+
+            $this->set($column, $resource);
         }
     }
 
@@ -542,7 +587,7 @@ abstract class JsonResourceManager extends JsonResource
      */
     protected function localeResource($column)
     {
-        $value = $this->value($column['column']);
+        $value = $column['value'];
 
         if (empty($value)) return null;
 
@@ -554,10 +599,13 @@ abstract class JsonResourceManager extends JsonResource
                 $textKey = $column['textKey'];
                 $returnAllValue = [];
                 foreach ($value as  &$localizedValue) {
+                    $resource = $this->makeResource($resourceClass, $localizedValue[$textKey]);
+
+                    if ($resource instanceof JsonResourceManager && $resource->canBeEmbeded($this) === false) continue;
 
                     $returnAllValue[] = [
                         'localeCode' => $localizedValue['localeCode'],
-                        $textKey => $this->makeResource($resourceClass, $localizedValue[$textKey]),
+                        $textKey => $resource,
                     ];
                 }
 
@@ -585,18 +633,16 @@ abstract class JsonResourceManager extends JsonResource
                 if (isset($localizedValue[0])) {
                     foreach ($localizedValue as $subValue) {
                         if ($subValue['localeCode'] === $localeCode) {
-
                             return $this->makeResource($column['resource'], $subValue[$column['textKey']]);
                         }
                     }
                 } else {
                     if ($localizedValue['localeCode'] === $localeCode) {
-
                         return $this->makeResource($column['resource'], $localizedValue[$column['textKey']]);
                     }
                 }
             }
-            return $valuesList ?: $value;
+            return $value;
         } elseif ($localizationMode === 'object' && isset($value[$localeCode]) || isset($value[$localeCode])) {
             return $this->makeResource($column['resource'], $value[$localeCode]);
         }
@@ -713,11 +759,7 @@ abstract class JsonResourceManager extends JsonResource
 
         if (in_array($value, [0, false], true)) return false;
 
-        if (!empty($value) || is_array($value)) return false;
-
-        if (static::WHEN_AVAILABLE === true) return true;
-
-        return in_array($column, static::WHEN_AVAILABLE);
+        return empty($value) && in_array($column, static::WHEN_AVAILABLE);
     }
 
     /**
@@ -731,7 +773,13 @@ abstract class JsonResourceManager extends JsonResource
     {
         $resourceData = $this->value($column);
 
-        return $this->set($column, $this->makeResource($resourceClassName, $resourceData));
+        $resource = $this->makeResource($resourceClassName, $resourceData);
+
+        if ($resource instanceof JsonResourceManager && $resource->canBeEmbeded($this) === false) {
+            return $this;
+        }
+
+        return $this->set($column, $resource);
     }
 
     /**
@@ -898,36 +946,9 @@ abstract class JsonResourceManager extends JsonResource
             });
         }
 
-        $resourceDetails = null;
-
-        if (is_array($resource) && isset($resource['resource'])) {
-            $resourceDetails = $resource;
-            $resource = $resourceDetails['resource'];
-        }
-
-        $resources = $resource::collection($collection);
-
-        if ($resourceDetails) {
-            $resources->collection = $resources->collection->map(function (JsonResourceManager $resource) use ($resourceDetails) {
-                if (!empty($resourceDetails['append'])) {
-                    foreach ((array) $resourceDetails['append'] as $type => $columns) {
-                        switch ($type) {
-                            case 'data':
-                                $resource->collectData($columns);
-                                break;
-                            case 'dates':
-                                $resource->collectDates($columns);
-                                break;
-                            case 'assets':
-                                $resource->collectAssets($columns);
-                                break;
-                        }
-                    }
-                }
-
-                return $resource;
-            });
-        }
+        $resources = $resource::collection($collection)->filter(function (JsonResourceManager $resource) {
+            return $resource->canBeEmbeded($this);
+        });
 
         $this->set($column, $resources);
     }
@@ -940,5 +961,16 @@ abstract class JsonResourceManager extends JsonResource
      */
     protected function extend($request)
     {
+    }
+
+    /**
+     * Determine whether the current resource can be embedded in the givenparent resource
+     * 
+     * @param  JsonResourceManager $parentResource
+     * @return bool
+     */
+    public function canBeEmbeded(JsonResourceManager $parentResource): bool
+    {
+        return true;
     }
 }
