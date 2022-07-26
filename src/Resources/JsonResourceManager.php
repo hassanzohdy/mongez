@@ -950,7 +950,9 @@ abstract class JsonResourceManager extends JsonResource
             });
         }
 
-        $resources = $resource::collection($collection)->filter(function (JsonResourceManager $resource) {
+        $resources = $resource::collection($collection);
+
+        $resources->collection = $resources->collection->filter(function (JsonResourceManager $resource) {
             return $resource->canBeEmbedded($this);
         });
 

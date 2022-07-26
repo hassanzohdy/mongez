@@ -110,16 +110,16 @@ trait RoutesAdapter
             '{{ methodName }}' => 'apiResource',
         ];
 
-        if (\config('mongez.admin.patchable', false)) {
+        if (config('mongez.admin.patchable', false)) {
             $replacements['{{ methodName }}'] = 'restfulApi';
         } else {
             $replacements['{{ methodName }}'] = 'apiResource';
         }
 
-        $authIsEnabled = $this->optionHasValue('auth') ? $this->option('auth') : $this->config('router.auth.enabled', true);
+        $authIsEnabled = $this->optionHasValue('auth') ? $this->option('auth') : $this->config('controller.auth.enabled', true);
 
         if ($authIsEnabled) {
-            $authMiddlewareName = $this->config('router.auth.middleware', 'authorized');
+            $authMiddlewareName = $this->config('controller.auth.middleware', 'authorized');
 
             $replacements['{{ authMiddleware }}'] = $this->tabWith(
                 "'middleware' => ['$authMiddlewareName'],"
