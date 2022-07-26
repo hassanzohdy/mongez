@@ -570,7 +570,7 @@ abstract class JsonResourceManager extends JsonResource
                 ];
             }
 
-            $resourceData['value'] = $this->value($column['column']);
+            $resourceData['value'] = $this->value($resourceData['column']);
 
             $resource = $this->localeResource($resourceData);
 
