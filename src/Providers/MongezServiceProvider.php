@@ -141,6 +141,12 @@ class MongezServiceProvider extends ServiceProvider
         if ($localeCode) {
             $this->app->setLocale($localeCode);
             Mongez::setRequestLocaleCode($localeCode);
+            $timezones = config('mongez.timezones');
+            if (isset($timezones[$localeCode])) {
+                $timezone = $timezones[$localeCode];
+                date_default_timezone_set($timezone);
+                config(['app.timezone' => $timezone]);
+            }
         }
     }
 

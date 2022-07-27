@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
+use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\App;
 use HZ\Illuminate\Mongez\Events\Events;
-use HZ\Illuminate\Mongez\Repository\RepositoryManager;
 use HZ\Illuminate\Mongez\Repository\RepositoryInterface;
 use HZ\Illuminate\Mongez\Repository\NotFoundRepositoryException;
 
@@ -154,46 +154,19 @@ if (!function_exists('str_remove_first')) {
     }
 }
 
-if (!function_exists('user_repo')) {
-    /**
-     * Get user repository object
-     *
-     * @param string $accountType
-     * @return RepositoryManager
-     * @throws NotFoundRepositoryException
-     */
-    function user_repo(string $accountType)
+
+/**
+ * A wrapper around Carbon to set timezone correctly
+ * 
+ * @param  mixed $time
+ * @param  mixed $timezone
+ * @return Carbon
+ */
+if (!function_exists('carbon')) {
+    function carbon($time = null, $tz = null)
     {
-        return repo(get_user_repo($accountType, false));
-    }
-}
+        $timezone = new \DateTimeZone($tz ?: config('app.timezone'));
 
-if (!function_exists('get_user_repo')) {
-    /**
-     * Get user repository name based on user type.
-     *
-     * @param string|null $userType
-     * @param bool $appendRepositoryKeyword
-     * @return string|array
-     * @throws Exception
-     */
-    function get_user_repo(string $userType = null, bool $appendRepositoryKeyword = true)
-    {
-        if (!$userType) {
-            $repositories = config('mongez.userTypes');
-
-            return $appendRepositoryKeyword ? array_map(function ($repository) {
-                return $repository . 'Repository';
-            }, $repositories) : $repositories;
-
-        }
-
-        $repository = config("mongez.userTypes.{$userType}");
-
-        if (!$repository) {
-            throw new Exception(sprintf('%s is not in config\mongez.userTypes configurations', $userType));
-        }
-
-        return $appendRepositoryKeyword ? $repository . 'Repository' : $repository;
+        return (new Carbon($time))->setTimezone($timezone);
     }
 }

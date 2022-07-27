@@ -598,7 +598,7 @@ abstract class JsonResourceManager extends JsonResource
                 $resourceClass = $column['resource'];
                 $textKey = $column['textKey'];
                 $returnAllValue = [];
-                foreach ($value as  &$localizedValue) {
+                foreach ($value as $index =>  $localizedValue) {
                     $resource = $this->makeResource($resourceClass, $localizedValue[$textKey]);
 
                     if ($resource instanceof JsonResourceManager && $resource->canBeEmbedded($this) === false) continue;
@@ -864,8 +864,6 @@ abstract class JsonResourceManager extends JsonResource
 
         if ($value instanceof UTCDateTime) {
             $value = $value->toDateTime();
-            $timezone = new \DateTimeZone(config('app.timezone'));
-            $value->setTimezone($timezone);
         } elseif (is_numeric($value)) {
             $value = new DateTime("@{$value}");
         } elseif (is_array($value) && isset($value['date'])) {
@@ -875,6 +873,9 @@ abstract class JsonResourceManager extends JsonResource
         } elseif (!$value instanceof DateTime) {
             return;
         }
+
+        $timezone = new \DateTimeZone(config('app.timezone'));
+        $value->setTimezone($timezone);
 
         if (!$options['humanTime'] && !$options['timestamp']) {
             $this->set($column, $options['intl'] ? $this->getLocalizedDate($value) : $value->format($options['format']));
@@ -888,7 +889,7 @@ abstract class JsonResourceManager extends JsonResource
             }
 
             if ($options['humanTime']) {
-                $values['humanTime'] = Carbon::createFromTimeStamp($value->getTimestamp())->diffForHumans();
+                $values['humanTime'] = carbon($value->getTimestamp())->diffForHumans();
             }
 
             if ($options['intl']) {
