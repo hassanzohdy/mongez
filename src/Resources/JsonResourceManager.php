@@ -3,7 +3,6 @@
 namespace HZ\Illuminate\Mongez\Resources;
 
 use DateTime;
-use Carbon\Carbon;
 use IntlDateFormatter;
 use Illuminate\Support\Arr;
 use MongoDB\BSON\UTCDateTime;
@@ -53,6 +52,13 @@ abstract class JsonResourceManager extends JsonResource
      * @const array
      */
     public const FLOAT_DATA = [];
+
+    /**
+     * Location Data
+     *
+     * @const array
+     */
+    public const LOCATION_DATA = [];
 
     /**
      * Object Data
@@ -194,6 +200,8 @@ abstract class JsonResourceManager extends JsonResource
         static::INTEGER_DATA && $this->collectIntegerData(static::INTEGER_DATA);
 
         static::FLOAT_DATA && $this->collectFloatData(static::FLOAT_DATA);
+
+        static::LOCATION_DATA && $this->collectLocationData(static::LOCATION_DATA);
 
         static::BOOLEAN_DATA && $this->collectBooleanData(static::BOOLEAN_DATA);
 
@@ -407,6 +415,25 @@ abstract class JsonResourceManager extends JsonResource
                 (float) $this->value($column, 0),
                 static::FLOAT_ROUND
             );
+        });
+    }
+
+    /**
+     * Collect location Data
+     *
+     * @param array $columns
+     * @return JsonResourceManager
+     */
+    protected function collectLocationData(array $columns): JsonResourceManager
+    {
+        return $this->setData($columns, function ($column) {
+            $location = (array) $this->value($column);
+
+            return (object) [
+                'address' => $location['address'] ?? '',
+                'lat' => $location['lat'] ?? ($location['coordinates'][0] ?? 0),
+                'lng' => $location['lng'] ?? ($location['coordinates'][1] ?? 0),
+            ];
         });
     }
 
