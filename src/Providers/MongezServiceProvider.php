@@ -2,8 +2,7 @@
 
 namespace HZ\Illuminate\Mongez\Providers;
 
-use HZ\Illuminate\Mongez\Console\Commands\EngezRequest;
-use HZ\Illuminate\Mongez\Console\Commands\EngezTrait;
+use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;
@@ -13,8 +12,10 @@ use Illuminate\Support\Facades\Artisan;
 use HZ\Illuminate\Mongez\Events\Events;
 use HZ\Illuminate\Mongez\Helpers\Mongez;
 use Illuminate\Support\Facades\Validator;
+use HZ\Illuminate\Mongez\Console\Commands\EngezTrait;
 use HZ\Illuminate\Mongez\Console\Commands\EngezTest;
 use HZ\Illuminate\Mongez\Console\Commands\EngezModel;
+use HZ\Illuminate\Mongez\Console\Commands\EngezRequest;
 use HZ\Illuminate\Mongez\Console\Commands\EngezSeeder;
 use HZ\Illuminate\Mongez\Console\Commands\EngezFilter;
 use Illuminate\Database\Query\Builder as QueryBuilder;
@@ -141,12 +142,6 @@ class MongezServiceProvider extends ServiceProvider
         if ($localeCode) {
             $this->app->setLocale($localeCode);
             Mongez::setRequestLocaleCode($localeCode);
-            $timezones = config('mongez.timezones');
-            if (isset($timezones[$localeCode])) {
-                $timezone = $timezones[$localeCode];
-                date_default_timezone_set($timezone);
-                config(['app.timezone' => $timezone]);
-            }
         }
     }
 

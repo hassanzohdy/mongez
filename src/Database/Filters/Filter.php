@@ -24,10 +24,14 @@ class Filter
         'notInInt' => 'filterNotInInt',
         'null' => 'filterNull',
         'notNull' => 'filterNotNull',
+        'date' => 'filterDate',
+        'date:=' => 'filterDate',
         'date:<' => 'filterDate',
         'date:<=' => 'filterDate',
         'date:>' => 'filterDate',
         'date:>=' => 'filterDate',
+        'dateTime' => 'filterDateTime',
+        'dateTime:=' => 'filterDateTime',
         'dateTime:<' => 'filterDateTime',
         'dateTime:<=' => 'filterDateTime',
         'dateTime:>' => 'filterDateTime',
@@ -180,7 +184,7 @@ class Filter
      * @param string $operator
      * @return void
      */
-    public function filterDate($columns, $value, $operator)
+    public function filterDate($columns, $value, $operator = '=')
     {
         $operator = str_replace('date:', '', $operator);
         foreach ($columns as $column) {
@@ -195,9 +199,9 @@ class Filter
      * @param string $operator
      * @return void
      */
-    public function filterDateTime($columns, $value, $operator)
+    public function filterDateTime($columns, $value, $operator = '=')
     {
-        $operator = str_replace('dateTime:','', $operator);
+        $operator = str_replace('dateTime:', '', $operator);
         foreach ($columns as $column) {
             $this->query->where($column, $operator, Carbon::parse($value));
         }
