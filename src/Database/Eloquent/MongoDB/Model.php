@@ -230,7 +230,7 @@ abstract class Model extends BaseModel
      * 
      * @var string
      */
-    protected string $tableName = '';
+    protected static string $tableName = '';
 
     /**
      * Get table name and cache it
