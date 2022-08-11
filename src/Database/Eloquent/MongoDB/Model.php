@@ -226,6 +226,28 @@ abstract class Model extends BaseModel
     protected $triggerEvents = true;
 
     /**
+     * Cached table name
+     * 
+     * @var string
+     */
+    protected string $tableName = '';
+
+    /**
+     * Get table name and cache it
+     * 
+     * @return string
+     */
+    public static function tableName()
+    {
+        if (static::$tableName === null) {
+            $model = new static;
+            static::$tableName = ($model)->getTable();
+        }
+
+        return static::$tableName;
+    }
+
+    /**
      * Update Event State
      *
      * @param  mixed $state
@@ -307,15 +329,13 @@ abstract class Model extends BaseModel
      */
     public static function nextId(): int
     {
-        $newId = static::getNextId();
+        $lastId = static::lastInsertId();
 
-        $model = new static;
+        $newId = $lastId + static::$autoIncrementIdBy;
 
-        $lastId = $newId - static::$autoIncrementIdBy;
+        $collection = static::tableName();
 
         $ids = DB::collection('ids');
-
-        $collection = $model->getTable();
 
         if (!$lastId) {
             $ids->insert([
@@ -350,9 +370,19 @@ abstract class Model extends BaseModel
     {
         $ids = DB::collection('ids');
 
-        $info = $ids->where('collection', (new static)->getTable())->first();
+        $info = $ids->where('collection', static::tableName())->first();
 
         return $info ? $info['id'] : 0;
+    }
+
+    /**
+     * Reset auto increment
+     *
+     * @return void
+     */
+    public static function resetAutoIncrement()
+    {
+        DB::collection('ids')->where('collection', static::tableName())->delete();
     }
 
     /**
@@ -364,16 +394,6 @@ abstract class Model extends BaseModel
     {
         static::delete();
         static::resetAutoIncrement();
-    }
-
-    /**
-     * Reset auto increment
-     *
-     * @return void
-     */
-    public static function resetAutoIncrement()
-    {
-        DB::collection('ids')->where('collection', (new static)->getTable())->delete();
     }
 
     /**
