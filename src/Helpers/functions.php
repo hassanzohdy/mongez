@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\App;
@@ -160,13 +161,20 @@ if (!function_exists('str_remove_first')) {
  * 
  * @param  mixed $time
  * @param  mixed $timezone
+ * @param  boolean $immutable
  * @return Carbon
  */
 if (!function_exists('carbon')) {
-    function carbon($time = null, $tz = null)
+    function carbon($time = null, $tz = null, bool $immutable = true)
     {
         $timezone = new \DateTimeZone($tz ?: config('app.timezone'));
 
-        return (new Carbon($time))->setTimezone($timezone);
+        if ($immutable) {
+            $date = CarbonImmutable::parse($time);
+        } else {
+            $date = Carbon::parse($time);
+        }
+
+        return $date->setTimezone($timezone);
     }
 }

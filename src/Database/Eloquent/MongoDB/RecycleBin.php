@@ -2,7 +2,6 @@
 
 namespace HZ\Illuminate\Mongez\Database\Eloquent\MongoDB;
 
-use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -23,7 +22,7 @@ trait RecycleBin
             'primaryId' => $primaryId,
             'record' => $recordInfo,
             'deletedBy' => ($user = user()) ? $user->sharedInfo() : null,
-            'deletedAt' => Carbon::now(),
+            'deletedAt' => now(),
         ]);
 
         parent::delete();

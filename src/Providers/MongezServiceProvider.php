@@ -2,9 +2,10 @@
 
 namespace HZ\Illuminate\Mongez\Providers;
 
-use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
@@ -79,6 +80,8 @@ class MongezServiceProvider extends ServiceProvider
 
         $this->registerCustomValidationRules();
 
+        $this->makeCarbonImmutable();
+
         if (!$this->app->runningInConsole()) {
             if ($this->app->request->method() == 'OPTIONS') {
                 die(json_encode([
@@ -99,6 +102,22 @@ class MongezServiceProvider extends ServiceProvider
         if (!Mongez::isInstalled()) {
             $this->prepareForFirstTime();
         }
+    }
+
+    /**
+     * Make carbon instances immutable
+     * 
+     * @return void
+     */
+    protected function makeCarbonImmutable()
+    {
+        $carbonImmutable = $this->config['misc']['carbonImmutable'] ?? true;
+
+        if (!$carbonImmutable) {
+            return;
+        }
+
+        Date::use(CarbonImmutable::class);
     }
 
     /**

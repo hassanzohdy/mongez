@@ -2,7 +2,7 @@
 
 namespace HZ\Illuminate\Mongez\Database\Filters;
 
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Date;
 
 class Filter
 {
@@ -188,7 +188,7 @@ class Filter
     {
         $operator = str_replace('date:', '', $operator);
         foreach ($columns as $column) {
-            $this->query->where($column, $operator, Carbon::parse($value)->endOfDay());
+            $this->query->where($column, $operator, Date::parse($value)->endOfDay());
         }
     }
     /**
@@ -203,7 +203,7 @@ class Filter
     {
         $operator = str_replace('dateTime:', '', $operator);
         foreach ($columns as $column) {
-            $this->query->where($column, $operator, Carbon::parse($value));
+            $this->query->where($column, $operator, Date::parse($value));
         }
     }
 

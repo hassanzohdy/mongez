@@ -2,11 +2,11 @@
 
 namespace HZ\Illuminate\Mongez\Repository\Concerns;
 
-use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\File;
 use HZ\Illuminate\Mongez\Services\Images\ImageResize;
 
@@ -442,7 +442,7 @@ trait Fillers
 
             if (!$date) continue;
 
-            $this->setToModel($model, $column, Carbon::parse($date));
+            $this->setToModel($model, $column, Date::parse($date));
         }
     }
 

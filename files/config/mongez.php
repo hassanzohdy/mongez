@@ -155,6 +155,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Misc options
+    |--------------------------------------------------------------------------
+    | 
+    | Carbon Immutable
+    | By setting it to true, all carbon instances from `now()` will be immutable, 
+    | this means whenever you call the `now()` with any appended methods, it will return a new instance of carbon 
+    | defaults to true starting from v2.15.0
+    | i.e Carbon::now()->addDays(1) will return a new instance of carbon
+    | 
+    */
+    'misc' => [
+        'carbonImmutable' => true,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Admin options
     |--------------------------------------------------------------------------
     |
