@@ -3,6 +3,7 @@
 namespace HZ\Illuminate\Mongez\Resources;
 
 use DateTime;
+use DateTimeInterface;
 use IntlDateFormatter;
 use Illuminate\Support\Arr;
 use MongoDB\BSON\UTCDateTime;
@@ -897,7 +898,7 @@ abstract class JsonResourceManager extends JsonResource
             $value = new DateTime($value['date']);
         } elseif (is_string($value)) {
             $value = new DateTime($value);
-        } elseif (!$value instanceof DateTime) {
+        } elseif (!$value instanceof DateTimeInterface) {
             return;
         }
 
