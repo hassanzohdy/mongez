@@ -4,8 +4,7 @@ namespace HZ\Illuminate\Mongez\Database\Eloquent\MongoDB;
 
 use HZ\Illuminate\Mongez\Database\Eloquent\Associatable;
 use HZ\Illuminate\Mongez\Database\Eloquent\ModelEvents;
-use DateTime;
-use Illuminate\Support\Str;
+use DateTimeInterface;
 use Illuminate\Support\Facades\DB;
 use Jenssegers\Mongodb\Eloquent\Model as BaseModel;
 use HZ\Illuminate\Mongez\Database\Eloquent\ModelTrait;
@@ -422,7 +421,7 @@ abstract class Model extends BaseModel
     public function adjustDateInSharedInfo(&$info)
     {
         foreach ($info as &$value) {
-            if ($value instanceof DateTime) {
+            if ($value instanceof DateTimeInterface) {
                 $value = $value->getTimestamp();
             } elseif (is_array($value)) {
                 $this->adjustDateInSharedInfo($value);

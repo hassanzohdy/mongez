@@ -931,7 +931,7 @@ abstract class JsonResourceManager extends JsonResource
     /**
      * Get a localized date based on current locale code
      *
-     * @param  DateTime $date
+     * @param  DateTimeInterface $date
      * @return string
      */
     protected function getLocalizedDate($date): string
