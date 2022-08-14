@@ -24,8 +24,10 @@ class Filter
         'notInInt' => 'filterNotInInt',
         'null' => 'filterNull',
         'notNull' => 'filterNotNull',
-        'date' => 'filterDate',
-        'date:=' => 'filterDate',
+        'date' => 'filterExactDate',
+        'date:=' => 'filterExactDate',
+        'date:between' => 'filterDateBetween',
+        'date:<>' => 'filterDateBetween',
         'date:<' => 'filterDate',
         'date:<=' => 'filterDate',
         'date:>' => 'filterDate',
@@ -36,6 +38,8 @@ class Filter
         'dateTime:<=' => 'filterDateTime',
         'dateTime:>' => 'filterDateTime',
         'dateTime:>=' => 'filterDateTime',
+        'dateTime:between' => 'filterDateBetween',
+        'dateTime:<>' => 'filterDateBetween',
     ];
 
     /**
@@ -188,9 +192,42 @@ class Filter
     {
         $operator = str_replace('date:', '', $operator);
         foreach ($columns as $column) {
-            $this->query->where($column, $operator, Date::parse($value)->endOfDay());
+            $this->query->where($column, $operator, Date::parse($value)->startOfDay());
         }
     }
+
+    /**
+     * Filter with exact date
+     * 
+     * @param array $columns
+     * @param string $value
+     * @return void
+     */
+    public function filterExactDate($columns, $value)
+    {
+        foreach ($columns as $column) {
+            $startOfDay = Date::parse($value)->startOfDay();
+            $endOfDay = $startOfDay->copy()->endOfDay();
+            $this->query->whereBetween($column, [$startOfDay, $endOfDay]);
+        }
+    }
+
+    /**
+     * Filter with exact datetime
+     * 
+     * @param array $columns
+     * @param array $dates
+     * @return void
+     */
+    public function filterDateBetween($columns, array $dates)
+    {
+        foreach ($columns as $column) {
+            $startDate = Date::parse($dates[0]);
+            $endDate = Date::parse($dates[1]);
+            $this->query->whereBetween($column, [$startDate, $endDate]);
+        }
+    }
+
     /**
      * Filter With Date and Time
      *
