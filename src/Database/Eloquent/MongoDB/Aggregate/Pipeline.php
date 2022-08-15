@@ -18,7 +18,7 @@ class Pipeline
     /**
      * Aggregation Framework Handler
      * 
-     * @var Aggregation
+     * @var Aggregate
      */
     protected $aggregationFramework;
 
@@ -45,7 +45,7 @@ class Pipeline
     /**
      * {@inheritDoc}
      */
-    public function __construct(Aggregation $aggregationFramework, string $name)
+    public function __construct(Aggregate $aggregationFramework, string $name)
     {
         $this->name = $name;
         $this->aggregationFramework = $aggregationFramework;
