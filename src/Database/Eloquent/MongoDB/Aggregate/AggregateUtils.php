@@ -60,7 +60,7 @@ class AggregateUtils
      * @param  string $returnAs
      * @return Expression
      */
-    public function sum(string $column, string $returnAs = ''): Expression
+    public function sum(string $column = '', string $returnAs = ''): Expression
     {
         return $this->expression('$sum', $column, $returnAs);
     }
@@ -83,7 +83,7 @@ class AggregateUtils
      * @param  string $returnAs
      * @return Expression
      */
-    public function avg(string $column, string $returnAs = ''): Expression
+    public function avg(string $column = '', string $returnAs = ''): Expression
     {
         return $this->expression('$avg', $column, $returnAs);
     }
@@ -95,7 +95,7 @@ class AggregateUtils
      * @param  string $returnAs
      * @return Expression
      */
-    public function multiple(string $column, string $returnAs = ''): Expression
+    public function multiple(string $column = '', string $returnAs = ''): Expression
     {
         return $this->expression('$multiply', $column, $returnAs);
     }
@@ -107,7 +107,7 @@ class AggregateUtils
      * @param  string $returnAs
      * @return Expression
      */
-    public function divide(string $column, string $returnAs = ''): Expression
+    public function divide(string $column = '', string $returnAs = ''): Expression
     {
         return $this->expression('$divide', $column, $returnAs);
     }
@@ -119,7 +119,7 @@ class AggregateUtils
      * @param  string $returnAs
      * @return Expression
      */
-    public function max(string $column, string $returnAs = ''): Expression
+    public function max(string $column = '', string $returnAs = ''): Expression
     {
         return $this->expression('$max', $column, $returnAs);
     }
@@ -131,7 +131,7 @@ class AggregateUtils
      * @param  string $returnAs
      * @return Expression
      */
-    public function min(string $column, string $returnAs = ''): Expression
+    public function min(string $column = '', string $returnAs = ''): Expression
     {
         return $this->expression('$min', $column, $returnAs);
     }
@@ -143,7 +143,7 @@ class AggregateUtils
      * @param  string $returnAs
      * @return Expression
      */
-    public function first(string $column, string $returnAs = ''): Expression
+    public function first(string $column = '', string $returnAs = ''): Expression
     {
         return $this->expression('$first', $column, $returnAs);
     }
@@ -155,7 +155,7 @@ class AggregateUtils
      * @param  string $returnAs
      * @return Expression
      */
-    public function last(string $column, string $returnAs = ''): Expression
+    public function last(string $column = '', string $returnAs = ''): Expression
     {
         return $this->expression('$last', $column, $returnAs);
     }
