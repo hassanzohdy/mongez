@@ -1,7 +1,7 @@
 <?php
 
 
-namespace HZ\Illuminate\Mongez\Database\Eloquent\MongoDB;
+namespace HZ\Illuminate\Mongez\Database\Eloquent\MongoDB\Aggregate;
 
 use DateTimeInterface;
 use MongoDB\BSON\UTCDateTime;
@@ -14,13 +14,13 @@ class Pipeline
      * @var string
      */
     public $name;
+
     /**
      * Aggregation Framework Handler
      * 
      * @var Aggregation
      */
     protected $aggregationFramework;
-
 
     /**
      * Pipeline Data

@@ -1,12 +1,12 @@
 <?php
 
 
-namespace HZ\Illuminate\Mongez\Database\Eloquent\MongoDB;
+namespace HZ\Illuminate\Mongez\Database\Eloquent\MongoDB\Aggregate;
 
 use \MongoDB\BSON\Regex;
 use Illuminate\Support\Str;
 
-class Aggregation
+class Aggregate
 {
     // TODO: Sort
     // TODO: Limit
@@ -358,5 +358,15 @@ class Aggregation
         }
 
         return call_user_func_array([$this->currentPipeline, $name], $arguments);
+    }
+
+    /**
+     * Get aggregate framework utilities
+     * 
+     * @return AggregateUtils
+     */
+    public function utils(): AggregateUtils
+    {
+        return new AggregateUtils($this);
     }
 }

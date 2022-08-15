@@ -4,7 +4,7 @@ namespace HZ\Illuminate\Mongez\Repository;
 
 use Illuminate\Support\Collection;
 use HZ\Illuminate\Mongez\Database\Eloquent\MongoDB\Model;
-use HZ\Illuminate\Mongez\Database\Eloquent\MongoDB\Aggregation;
+use HZ\Illuminate\Mongez\Database\Eloquent\MongoDB\Aggregate\Aggregate;
 
 abstract class MongoDBRepositoryManager extends RepositoryManager implements RepositoryInterface
 {
@@ -87,11 +87,11 @@ abstract class MongoDBRepositoryManager extends RepositoryManager implements Rep
      * Get Aggregation framework
      * 
      * @param  ?QueryBuilder $query
-     * @return Aggregation
+     * @return Aggregate
      */
     public function aggregate($query = null)
     {
-        return new Aggregation($query ?: $this->getQuery());
+        return new Aggregate($query ?: $this->getQuery());
     }
 
     /**
