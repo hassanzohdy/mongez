@@ -12,13 +12,6 @@ class AggregateUtils
     protected $aggregate;
 
     /**
-     * Data that will be mapped
-     * 
-     * @var array
-     */
-    protected $data = [];
-
-    /**
      * Constructor
      * 
      * @param Aggregate $aggregate
@@ -35,118 +28,148 @@ class AggregateUtils
      */
     public function map(): array
     {
-        $data = $this->data;
-        $this->data = [];
+        $expressions = func_get_args();
+
+        if (count($expressions) === 1 && is_array($expressions[0])) {
+            $expressions = $expressions[0];
+        }
+
+        $data = [];
+
+        foreach ($expressions as $expression) {
+            $data[] = $expression->parse();
+        }
+
         return $data;
     }
 
     /**
-     * Alias to map method
+     * returnAs to map method
      * 
      * @return array
      */
     public function toArray(): array
     {
-        return $this->map();
+        return $this->map(func_get_args());
     }
 
     /**
-     * Get sum operator
+     * Get sum expression
      * 
      * @param  string $column
-     * @param  string $alias
-     * @return AggregateUtils
+     * @param  string $returnAs
+     * @return Expression
      */
-    public function sum(string $column, string $alias = null): AggregateUtils
+    public function sum(string $column, string $returnAs = ''): Expression
     {
-        $returnAs = $alias ?? $column;
-
-        $this->data[] = [
-            $returnAs => [
-                '$sum' => '$' . $column,
-            ],
-        ];
-
-        return $this;
+        return $this->expression('$sum', $column, $returnAs);
     }
 
     /**
-     * Get avg operator
+     * Get count expression
      * 
-     * @param  string $column
-     * @param  string $alias
-     * @return AggregateUtils
+     * @param  string $returnAs
+     * @return Expression
      */
-    public function avg(string $column, string $alias = null): AggregateUtils
+    public function count(string $returnAs = ''): Expression
     {
-        $returnAs = $alias ?? $column;
-
-        $this->data[] = [
-            $returnAs => [
-                '$avg' => '$' . $column,
-            ],
-        ];
-
-        return $this;
+        return $this->expression('$sum', 1, $returnAs);
     }
 
     /**
-     * Get max operator
+     * Get avg expression
      * 
      * @param  string $column
-     * @param  string $alias
-     * @return AggregateUtils
+     * @param  string $returnAs
+     * @return Expression
      */
-    public function max(string $column, string $alias = null): AggregateUtils
+    public function avg(string $column, string $returnAs = ''): Expression
     {
-        $returnAs = $alias ?? $column;
-
-        $this->data[] = [
-            $returnAs => [
-                '$max' => '$' . $column,
-            ],
-        ];
-
-        return $this;
+        return $this->expression('$avg', $column, $returnAs);
     }
 
     /**
-     * Get min operator
+     * Get multiple expression
      * 
      * @param  string $column
-     * @param  string $alias
-     * @return AggregateUtils
+     * @param  string $returnAs
+     * @return Expression
      */
-    public function min(string $column, string $alias = null): AggregateUtils
+    public function multiple(string $column, string $returnAs = ''): Expression
     {
-        $returnAs = $alias ?? $column;
-
-        $this->data[] = [
-            $returnAs => [
-                '$min' => '$' . $column,
-            ],
-        ];
-
-        return $this;
+        return $this->expression('$multiply', $column, $returnAs);
     }
 
     /**
-     * Get count operator
+     * Get divide expression
      * 
      * @param  string $column
-     * @param  string $alias
-     * @return AggregateUtils
+     * @param  string $returnAs
+     * @return Expression
      */
-    public function count(string $column, string $alias = null): AggregateUtils
+    public function divide(string $column, string $returnAs = ''): Expression
     {
-        $returnAs = $alias ?? $column;
+        return $this->expression('$divide', $column, $returnAs);
+    }
 
-        $this->data[] = [
-            $returnAs => [
-                '$sum' => 1,
-            ],
-        ];
+    /**
+     * Get max expression
+     * 
+     * @param  string $column
+     * @param  string $returnAs
+     * @return Expression
+     */
+    public function max(string $column, string $returnAs = ''): Expression
+    {
+        return $this->expression('$max', $column, $returnAs);
+    }
 
-        return $this;
+    /**
+     * Get min expression
+     * 
+     * @param  string $column
+     * @param  string $returnAs
+     * @return Expression
+     */
+    public function min(string $column, string $returnAs = ''): Expression
+    {
+        return $this->expression('$min', $column, $returnAs);
+    }
+
+    /**
+     * Get first of value
+     * 
+     * @param  string $column
+     * @param  string $returnAs
+     * @return Expression
+     */
+    public function first(string $column, string $returnAs = ''): Expression
+    {
+        return $this->expression('$first', $column, $returnAs);
+    }
+
+    /**
+     * Get last of value
+     * 
+     * @param  string $column
+     * @param  string $returnAs
+     * @return Expression
+     */
+    public function last(string $column, string $returnAs = ''): Expression
+    {
+        return $this->expression('$last', $column, $returnAs);
+    }
+
+    /**
+     * Create new Expression
+     * 
+     * @param  string $operator
+     * @param  mixed $column
+     * @param  string $returnAs
+     * @return Expression
+     */
+    public function expression(string $operator, $column, string $returnAs = ''): Expression
+    {
+        return new Expression($operator, $column, $returnAs);
     }
 }
