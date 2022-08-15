@@ -8,7 +8,7 @@
     "builder"
   ],
   "license": "MIT",
-  "version": "2.17.4",
+  "version": "2.17.5",
   "require": {
     "php": ">=7.4",
     "cocur/slugify": "^4.0",
