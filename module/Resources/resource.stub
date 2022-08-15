@@ -47,6 +47,13 @@ class {{ ResourceName }} extends JsonResourceManager
     const FLOAT_DATA = {{ float }};
     
     /**
+     * Location Data
+     *
+     * @const array
+     */
+    public const LOCATION_DATA = [];
+
+    /**
      * Set that columns that will be formatted as dates
      * it could be numeric array or associated array to set the date format for certain columns
      * 
@@ -74,12 +81,24 @@ class {{ ResourceName }} extends JsonResourceManager
      *
      * @example ['banner' => UploadResource::class]
      * @example ['banner' => [UploadResource::class, 'file']]
+     * If the locale is not set, then it will be sent as an array of objects, each object has
+     * a localeCode and its text/file value will be sent to the resource to parse it
+     *
+     * @const array
+     */
+    public const LOCALIZED_RESOURCE_DATA = [];
+
+    /**
+     * Collection of localized data, the localized's data is a resource that needs to be transformed
+     *
+     * @example ['banners' => UploadResource::class]
+     * @example ['banners' => [UploadResource::class, 'file']]
      * If the locale is not set, then it will be sent as an array of objects, each object has 
      * a localeCode and its text/file value will be sent to the resource to parse it
      * 
      * @const array
      */
-    public const LOCALIZED_RESOURCE_DATA = [];
+    public const LOCALIZED_COLLECTABLE_DATA = [];
 
     /**
      * List of assets that will have a full url if available

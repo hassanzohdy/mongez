@@ -98,8 +98,8 @@ abstract class JsonResourceManager extends JsonResource
     /**
      * Collection of localized data, the localized's data is a resource that needs to be transformed
      *
-     * @example ['banner' => UploadResource::class]
-     * @example ['banner' => [UploadResource::class, 'file']]
+     * @example ['banners' => UploadResource::class]
+     * @example ['banners' => [UploadResource::class, 'file']]
      * If the locale is not set, then it will be sent as an array of objects, each object has 
      * a localeCode and its text/file value will be sent to the resource to parse it
      * 
