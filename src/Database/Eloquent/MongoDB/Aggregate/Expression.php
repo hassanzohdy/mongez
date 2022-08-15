@@ -96,10 +96,8 @@ class Expression
             $column = $column->parse();
         }
 
-        return [
-            $returnAs => [
-                $this->operator => $column,
-            ]
-        ];
+        return [$returnAs, [
+            $this->operator => $column,
+        ]];
     }
 }

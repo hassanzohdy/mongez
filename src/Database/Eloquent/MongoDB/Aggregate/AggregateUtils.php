@@ -37,7 +37,8 @@ class AggregateUtils
         $data = [];
 
         foreach ($expressions as $expression) {
-            $data[] = $expression->parse();
+            [$returnAs, $expressionColumns] = $expression->parse();
+            $data[$returnAs] = $expressionColumns;
         }
 
         return $data;
