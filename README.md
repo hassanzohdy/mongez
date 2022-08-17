@@ -50,6 +50,10 @@ class MyClass
 
 ## Change Log
 
+- 2.18.0 (17 Aug 2022)
+  - Added `date_response` to format the given date to `timestamp` `humanTime` `text` and `format` outputs.
+  - Added `localized_date` to convert the given date into formatted date based on the locale code.
+  - Used `date_response` in the resource manager to collect dates.
 - 2.17.0 (15 Aug 2022)
   - Added Aggregate Utilities
 - 2.16.0 (14 Aug 2022)

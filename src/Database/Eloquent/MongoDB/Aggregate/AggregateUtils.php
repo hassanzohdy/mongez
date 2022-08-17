@@ -90,6 +90,42 @@ class AggregateUtils
     }
 
     /**
+     * Get week expression
+     * 
+     * @param  string $column
+     * @param  string $returnAs
+     * @return Expression
+     */
+    public function week(string $column = '', string $returnAs = ''): Expression
+    {
+        return $this->expression('$week', $column, $returnAs);
+    }
+
+    /**
+     * Get month expression
+     * 
+     * @param  string $column
+     * @param  string $returnAs
+     * @return Expression
+     */
+    public function month(string $column = '', string $returnAs = ''): Expression
+    {
+        return $this->expression('$month', $column, $returnAs);
+    }
+
+    /**
+     * Get year expression
+     * 
+     * @param  string $column
+     * @param  string $returnAs
+     * @return Expression
+     */
+    public function year(string $column = '', string $returnAs = ''): Expression
+    {
+        return $this->expression('$year ', $column, $returnAs);
+    }
+
+    /**
      * Get multiple expression
      * 
      * @param  string $column

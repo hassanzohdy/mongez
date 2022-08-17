@@ -55,7 +55,7 @@ abstract class JsonResourceManager extends JsonResource
     public const FLOAT_DATA = [];
 
     /**
-     * Location Data
+     * Geo Location Data
      *
      * @const array
      */
@@ -890,61 +890,7 @@ abstract class JsonResourceManager extends JsonResource
             'intl' => config('mongez.resources.date.intl', true),
         ], $options);
 
-        if ($value instanceof UTCDateTime) {
-            $value = $value->toDateTime();
-        } elseif (is_numeric($value)) {
-            $value = new DateTime("@{$value}");
-        } elseif (is_array($value) && isset($value['date'])) {
-            $value = new DateTime($value['date']);
-        } elseif (is_string($value)) {
-            $value = new DateTime($value);
-        } elseif (!$value instanceof DateTimeInterface) {
-            return;
-        }
-
-        $timezone = new \DateTimeZone(config('app.timezone'));
-        $value->setTimezone($timezone);
-
-        if (!$options['humanTime'] && !$options['timestamp']) {
-            $this->set($column, $options['intl'] ? $this->getLocalizedDate($value) : $value->format($options['format']));
-        } else {
-            $values = [
-                'format' => $value->format($options['format']),
-            ];
-
-            if ($options['timestamp']) {
-                $values['timestamp'] = $value->getTimestamp();
-            }
-
-            if ($options['humanTime']) {
-                $values['humanTime'] = carbon($value->getTimestamp())->diffForHumans();
-            }
-
-            if ($options['intl']) {
-                $values['text'] = $this->getLocalizedDate($value);
-            }
-
-            $this->set($column, $values);
-        }
-    }
-
-    /**
-     * Get a localized date based on current locale code
-     *
-     * @param  DateTimeInterface $date
-     * @return string
-     */
-    protected function getLocalizedDate($date): string
-    {
-        if (!class_exists(IntlDateFormatter::class)) return '';
-
-        $formatter = new IntlDateFormatter(
-            Mongez::getRequestLocaleCode() ?: App::getLocale(),
-            IntlDateFormatter::FULL,
-            IntlDateFormatter::SHORT,
-        );
-
-        return $formatter->format($date);
+        $this->set($column, date_response($value, $options));
     }
 
     /**

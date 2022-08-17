@@ -1,6 +1,5 @@
 <?php
 
-
 namespace HZ\Illuminate\Mongez\Database\Eloquent\MongoDB\Aggregate;
 
 use DateTimeInterface;
