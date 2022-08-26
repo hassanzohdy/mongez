@@ -6,6 +6,8 @@ use ReflectionClass;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use HZ\Illuminate\Mongez\Providers\ModuleServiceProviderInterface;
+use Illuminate\Contracts\Foundation\CachesConfiguration;
+use Illuminate\Contracts\Foundation\CachesRoutes;
 
 abstract class ModuleServiceProvider extends ServiceProvider implements ModuleServiceProviderInterface
 {
@@ -76,6 +78,8 @@ abstract class ModuleServiceProvider extends ServiceProvider implements ModuleSe
         if (static::TRANSLATION_PREFIX) {
             $this->loadTranslationsFrom($this->moduleBaseDirectory . '/lang', static::TRANSLATION_PREFIX);
         }
+
+        $this->mergeConfigurations();
     }
 
     /**
@@ -85,7 +89,7 @@ abstract class ModuleServiceProvider extends ServiceProvider implements ModuleSe
      */
     public function mapRoutes()
     {
-        if (!$this->app->routesAreCached()) {
+        if (!($this->app instanceof CachesRoutes && $this->app->routesAreCached())) {
             $this->mapRoutesList();
         }
     }
@@ -117,6 +121,37 @@ abstract class ModuleServiceProvider extends ServiceProvider implements ModuleSe
                 ->namespace($this->namespace)
                 ->name($routeType . '.')
                 ->group($routeFilePath);
+        }
+    }
+
+    /**
+     * Merge configurations list from config directory to the main config files
+     */
+    public function mergeConfigurations()
+    {
+        if (!($this->app instanceof CachesConfiguration && $this->app->configurationIsCached())) {
+            $configDirectory = $this->moduleBaseDirectory . '/config';
+
+            // get all config files
+            $configFilesList = [];
+
+            if (!is_dir($configDirectory)) {
+                return;
+            }
+
+            $configFilesList = scandir($configDirectory);
+
+            foreach ($configFilesList as $configFile) {
+                if ($configFile == '.' || $configFile == '..') {
+                    continue;
+                }
+
+                $configFile = str_replace('.php', '', $configFile);
+                $config = $this->app->make('config');
+
+                // merge config recursively
+                $config->set($configFile, array_merge_recursive($config->get($configFile, []), require $configDirectory . '/' . $configFile . '.php'));
+            }
         }
     }
 }

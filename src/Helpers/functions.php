@@ -263,6 +263,24 @@ if (!function_exists('localized_date')) {
     }
 }
 
+
+if (!function_exists('get_localized_value')) {
+    /**
+     * Get localized string from localized array based on locale code.
+     *
+     * @param array|string $localized
+     * @param string $localeCode
+     * @return mixed
+     */
+    function get_localized_value($localized, string $localeCode, string $textColumn = 'text')
+    {
+        if (!$localized || is_string($localized)) return $localized;
+
+        return collect($localized)->where('localeCode', $localeCode)->first()[$textColumn];
+    }
+}
+
+
 if (!function_exists('carbon')) {
     /**
      * A wrapper around Carbon to set timezone correctly
