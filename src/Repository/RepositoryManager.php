@@ -488,17 +488,6 @@ abstract class RepositoryManager implements RepositoryInterface
     }
 
     /**
-     * Get only one record based on the given options
-     * 
-     * @param array $options
-     * @return Model|null
-     */
-    public function find(array $options): ?Model
-    {
-        return $this->listModels($options)->first();
-    }
-
-    /**
      * Get table name of the primary model of the repo
      *
      * @return string

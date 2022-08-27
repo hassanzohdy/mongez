@@ -49,30 +49,6 @@ abstract class MongoDBRepositoryManager extends RepositoryManager implements Rep
     }
 
     /**
-     * Adjust records that were fetched from database
-     *
-     * @param \Illuminate\Support\Collection $records
-     * @return \Illuminate\Support\Collection
-     */
-    protected function records(Collection $records): Collection
-    {
-        return $records->map(function ($record) {
-            if ($this->option('as-model', false) === true) return $record;
-
-            $resource = static::RESOURCE;
-            return new $resource((object) $record);
-        });
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function get(int $id)
-    {
-        return $this->getBy('id', (int) $id);
-    }
-
-    /**
      * Pare the given arrayed value
      *
      * @param array $value
@@ -92,21 +68,6 @@ abstract class MongoDBRepositoryManager extends RepositoryManager implements Rep
     public function aggregate($query = null)
     {
         return new Aggregate($query ?: $this->getQuery());
-    }
-
-    /**
-     * Get model for the given id
-     * 
-     * @param  int|array|Model $id
-     * @return mixed
-     */
-    public function getModel($id)
-    {
-        if ($id instanceof Model) {
-            return $id;
-        }
-
-        return $this->getByModel('id', (int) $id);
     }
 
     /**
@@ -135,51 +96,6 @@ abstract class MongoDBRepositoryManager extends RepositoryManager implements Rep
         $model = $this->getModel($id);
 
         return $model ? $model->$sharedInfoMethod() : null;
-    }
-
-    /**
-     * Get by the given column name
-     * 
-     * @param  string $column
-     * @param  mixed value
-     * @return mixed
-     */
-    public function getBy($column, $value)
-    {
-        if ($this->isCachable()) {
-            $cacheKey = static::NAME . '_' . $column . '_' . (string) $value;
-            $record = $this->getCache($cacheKey);
-
-            if (!$record) {
-                $record = $this->getByModel($column, $value);
-
-                if (!$record) return null;
-
-                $this->setCache($$cacheKey, $record->toArray());
-            } else {
-                $record = $this->newModel($record);
-            }
-
-            return $this->wrap($record);
-        }
-
-        $record = $this->getByModel($column, $value);
-
-        return $record ? $this->wrap($record) : null;
-    }
-
-    /**
-     * Get the current model by the given column name and value
-     * 
-     * @param  string $column
-     * @param  mixed value
-     * @return mixed
-     */
-    public function getByModel($column, $value)
-    {
-        $model = static::MODEL;
-
-        return is_array($value) ? $model::whereIn($column, $value)->get() : $model::where($column, $value)->first();
     }
 
     /**

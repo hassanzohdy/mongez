@@ -4,6 +4,7 @@ namespace HZ\Illuminate\Mongez\Repository\Concerns;
 
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Model;
 use HZ\Illuminate\Mongez\Repository\Select;
 use Illuminate\Http\Resources\Json\JsonResource;
 use HZ\Illuminate\Mongez\Database\Filters\FilterManager;
@@ -92,11 +93,9 @@ trait Listable
      * @param  array $otherOptions
      * @return mixed
      */
-    public function first(int $id, array $otherOptions = [])
+    public function find(int $id)
     {
-        $otherOptions['id'] = $id;
-
-        return $this->list($otherOptions)->first();
+        return $this->getModel($id);
     }
 
     /**
@@ -247,9 +246,20 @@ trait Listable
     /**
      * Get pagination info
      *
+     * @deprecated use getPaginationInfo instead
      * @return array $paginationInfo
      */
     public function getPaginateInfo(): array
+    {
+        return $this->paginationInfo;
+    }
+
+    /**
+     * Get pagination info
+     *
+     * @return array $paginationInfo
+     */
+    public function getPaginationInfo(): array
     {
         return $this->paginationInfo;
     }
@@ -327,25 +337,6 @@ trait Listable
     }
 
     /**
-     * Adjust records that were fetched from database
-     *
-     * @param \Illuminate\Support\Collection $records
-     * @return \Illuminate\Support\Collection
-     */
-    protected function records(Collection $records): Collection
-    {
-        return $records->map(function ($record) {
-            if (!empty(static::ARRAYBLE_DATA)) {
-                foreach (static::ARRAYBLE_DATA as $column) {
-                    $record[$column] = json_encode($record[$column]);
-                }
-            }
-
-            return $record;
-        });
-    }
-
-    /**
      * Set options list
      *
      * @param array $options
@@ -389,6 +380,17 @@ trait Listable
     {
         return defined('static::PUBLISHED_COLUMN') ? static::PUBLISHED_COLUMN :
             config('mongez.repository.publishedColumn', static::DEFAULT_PUBLISHED_COLUMN);
+    }
+
+    /**
+     * Get only one record based on the given options
+     * 
+     * @param array $options
+     * @return Model|null
+     */
+    public function first(array $options): ?Model
+    {
+        return $this->listModels($options)->first();
     }
 
     /**
@@ -449,5 +451,95 @@ trait Listable
         }
 
         return $this;
+    }
+
+    /**
+     * Adjust records that were fetched from database
+     *
+     * @param \Illuminate\Support\Collection $records
+     * @return \Illuminate\Support\Collection
+     */
+    protected function records(Collection $records): Collection
+    {
+        return $records->map(function ($record) {
+            if (!empty(static::ARRAYBLE_DATA)) {
+                foreach (static::ARRAYBLE_DATA as $column) {
+                    $record[$column] = json_encode($record[$column]);
+                }
+            }
+
+            if ($this->option('as-model', false) === true) return $record;
+
+            $resource = static::RESOURCE;
+            return new $resource((object) $record);
+        });
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function get(int $id)
+    {
+        return $this->getBy('id', (int) $id);
+    }
+
+    /**
+     * Get model for the given id
+     * 
+     * @param  int|array|Model $id
+     * @return mixed
+     */
+    public function getModel($id)
+    {
+        if ($id instanceof Model) {
+            return $id;
+        }
+
+        return $this->getByModel('id', (int) $id);
+    }
+
+    /**
+     * Get by the given column name
+     * 
+     * @param  string $column
+     * @param  mixed value
+     * @return mixed
+     */
+    public function getBy($column, $value)
+    {
+        if ($this->isCachable()) {
+            $cacheKey = static::NAME . '_' . $column . '_' . (string) $value;
+            $record = $this->getCache($cacheKey);
+
+            if (!$record) {
+                $record = $this->getByModel($column, $value);
+
+                if (!$record) return null;
+
+                $this->setCache($$cacheKey, $record->toArray());
+            } else {
+                $record = $this->newModel($record);
+            }
+
+            return $this->wrap($record);
+        }
+
+        $record = $this->getByModel($column, $value);
+
+        return $record ? $this->wrap($record) : null;
+    }
+
+    /**
+     * Get the current model by the given column name and value
+     * 
+     * @param  string $column
+     * @param  mixed value
+     * @return mixed
+     */
+    public function getByModel($column, $value)
+    {
+        $model = static::MODEL;
+
+        return is_array($value) ? $model::whereIn($column, $value)->get() : $model::where($column, $value)->first();
     }
 }
