@@ -322,6 +322,24 @@ abstract class RepositoryManager implements RepositoryInterface
      */
     protected $user;
 
+
+    /**
+     * Save action type
+     * Can be used with the `setData` method to determine the action type
+     * 
+     * @var string
+     */
+    public string $saveActionType = '';
+
+    /**
+     * Save action types
+     * 
+     * @const string
+     */
+    const CREATE_ACTION = 'create';
+    const UPDATE_ACTION = 'update';
+    const PATCH_ACTION = 'patch';
+
     /**
      * Query Builder Object
      *
@@ -350,6 +368,8 @@ abstract class RepositoryManager implements RepositoryInterface
      * @var Model
      */
     protected $oldModel;
+
+
 
     /**
      * Constructor
@@ -529,6 +549,8 @@ abstract class RepositoryManager implements RepositoryInterface
     {
         $model = $this->newModel();
 
+        $this->saveActionType = static::CREATE_ACTION;
+
         $this->request = $this->getRequestWithData($data);
 
         $this->setAutoData($model);
@@ -561,6 +583,8 @@ abstract class RepositoryManager implements RepositoryInterface
 
         if (!$model) return null;
 
+        $this->saveActionType = static::UPDATE_ACTION;
+
         $oldModel = clone $model;
 
         $this->oldModel = $oldModel;
@@ -588,6 +612,8 @@ abstract class RepositoryManager implements RepositoryInterface
         $model = $this->getModel($id);
 
         if (!$model) return null;
+
+        $this->saveActionType = static::PATCH_ACTION;
 
         $oldModel = clone $model;
 
@@ -713,6 +739,8 @@ abstract class RepositoryManager implements RepositoryInterface
             $model->save();
             $this->trigger("save create", $model, $this->request);
         }
+
+        $this->saveActionType = '';
 
         if (static::USING_CACHE) $this->setCache($model->id, $model);
     }
