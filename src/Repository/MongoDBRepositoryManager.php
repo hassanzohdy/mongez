@@ -2,7 +2,6 @@
 
 namespace HZ\Illuminate\Mongez\Repository;
 
-use Illuminate\Support\Collection;
 use HZ\Illuminate\Mongez\Database\Eloquent\MongoDB\Model;
 use HZ\Illuminate\Mongez\Database\Eloquent\MongoDB\Aggregate\Aggregate;
 

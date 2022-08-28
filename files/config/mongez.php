@@ -1,5 +1,6 @@
 <?php
 
+use Carbon\CarbonInterface;
 use HZ\Illuminate\Mongez\Testing\Rules\EqualRule;
 use HZ\Illuminate\Mongez\Testing\Rules\IsArrayRule;
 use HZ\Illuminate\Mongez\Testing\Rules\IsBooleanRule;
@@ -155,18 +156,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Misc options
+    | Date options
     |--------------------------------------------------------------------------
     | 
     | Carbon Immutable
-    | By setting it to true, all carbon instances from `now()` will be immutable, 
+    | By setting it to true, all carbon instances from `now()` and `today()` will be immutable, 
     | this means whenever you call the `now()` with any appended methods, it will return a new instance of carbon 
     | defaults to true starting from v2.15.0
-    | i.e Carbon::now()->addDays(1) will return a new instance of carbon
+    | i.e Date::now()->addDays(1) will return a new instance of carbon
+    | It's highly recommended to use \Illuminate\Support\Facades\Date instead of Carbon
     | 
+    | Week Starts At and Ends at are useful to set the week start and end days
+    | 
+    | Defaults to: week_starts_at = Saturday, week_ends_at = Friday
     */
-    'misc' => [
-        'carbonImmutable' => true,
+    'date' => [
+        'immutable' => true,
+        'week_starts_at' => CarbonInterface::SATURDAY,
+        'week_ends_at' => CarbonInterface::FRIDAY,
     ],
 
     /*

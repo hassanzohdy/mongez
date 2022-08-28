@@ -5,6 +5,7 @@ namespace HZ\Illuminate\Mongez\Providers;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
@@ -111,7 +112,9 @@ class MongezServiceProvider extends ServiceProvider
      */
     protected function makeCarbonImmutable()
     {
-        $carbonImmutable = $this->config['misc']['carbonImmutable'] ?? true;
+        Date::setWeekStartsAt($this->config['date']['week_starts_at'] ?? CarbonInterface::SATURDAY);
+        Date::setWeekEndsAt($this->config['date']['week_ends_at'] ?? CarbonInterface::FRIDAY);
+        $carbonImmutable = $this->config['date']['immutable'] ?? true;
 
         if (!$carbonImmutable) {
             return;
