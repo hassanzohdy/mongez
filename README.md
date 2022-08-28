@@ -50,6 +50,17 @@ class MyClass
 
 ## Change Log
 
+- 2.22.0 (28 Aug 2022)
+  - Changed `misc` key in `config/mongez.php` to `date`.
+  - Changed `CarbonImmutable` to `immutable` in `config/mongez.php` under `date` key.
+  - Added `week_starts_at` and defaults to `Saturday`.
+  - Added `week_ends_at` and defaults to `Friday`.
+- 2.21.0 (27 Aug 2022)
+  - Added `getPaginationInfo` in the repository manager.
+  - `getPaginateInfo` now is deprecated and will be removed in **V3.0**.
+  - Added `first` method to return the first matched element, takes the same array options as `listModels` and return one model.
+- 2.20.0 (27 Aug 2022)
+  - Added `saveActionType` property to the repository, it can be used in `setData`, and its value will depend on the current action, `static::CREATE_ACTION` | `static::UPDATE_ACTION` | `static::PATCH_ACTION`.
 - 2.18.0 (17 Aug 2022)
   - Added `date_response` to format the given date to `timestamp` `humanTime` `text` and `format` outputs.
   - Added `localized_date` to convert the given date into formatted date based on the locale code.
