@@ -468,7 +468,7 @@ trait Listable
         return $records->map(function ($record) {
             if (!empty(static::ARRAYBLE_DATA)) {
                 foreach (static::ARRAYBLE_DATA as $column) {
-                    $record[$column] = json_encode($record[$column]);
+                    $record[$column] = $this->decodeArray($record[$column]);
                 }
             }
 
@@ -477,6 +477,22 @@ trait Listable
             $resource = static::RESOURCE;
             return new $resource((object) $record);
         });
+    }
+
+    /**
+     * Decode the array, which should be a string if you're working with mysql
+     * or just an array if you work with NO-SQL database
+     * 
+     * @param  mixed $data
+     * @return array
+     */
+    protected function decodeArray($data): array
+    {
+        if (is_string($data)) {
+            return json_decode($data, true);
+        }
+
+        return $data;
     }
 
     /**

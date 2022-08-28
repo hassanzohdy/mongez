@@ -196,17 +196,6 @@ trait Fillers
     }
 
     /**
-     * Pare the given arrayed value
-     *
-     * @param array $value
-     * @return mixed
-     */
-    protected function handleArrayableValue(array $value)
-    {
-        return json_encode($value);
-    }
-
-    /**
      * Set uploads data automatically from the DATA array
      *
      * @param  \Model $model
