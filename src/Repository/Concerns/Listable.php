@@ -283,12 +283,16 @@ trait Listable
     /**
      * Wrap the given collection into collection of resources
      *
-     * @param \Illuminate\Support\Collection $collection
+     * @param \Illuminate\Support\Collection|array $collection
      * @return \Illuminate\Http\Resources\Json\JsonResource
      */
     public function wrapMany($collection)
     {
-        $collection = collect($collection)->map(function ($item) {
+        $collection = collect($collection);
+
+        if ($collection->isEmpty()) return [];
+
+        $collection = $collection->map(function ($item) {
             if (is_array($item)) {
                 $modelName = static::MODEL;
                 $item = new $modelName($item);

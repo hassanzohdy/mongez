@@ -50,6 +50,8 @@ class MyClass
 
 ## Change Log
 
+- 2.22.1 (28 Aug 2022)
+  - `RepositoryManager.wrapMany` will return empty array without passing the collection to the resource if teh given array|collection is empty.
 - 2.22.0 (28 Aug 2022)
   - `config/mongez.php` config
   - Changed `misc` key to `date`.
