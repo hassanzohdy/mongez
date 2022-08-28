@@ -51,8 +51,9 @@ class MyClass
 ## Change Log
 
 - 2.22.0 (28 Aug 2022)
-  - Changed `misc` key in `config/mongez.php` to `date`.
-  - Changed `CarbonImmutable` to `immutable` in `config/mongez.php` under `date` key.
+  - `config/mongez.php` config
+  - Changed `misc` key to `date`.
+  - Changed `CarbonImmutable` to `immutable` under `date` key.
   - Added `week_starts_at` and defaults to `Saturday`.
   - Added `week_ends_at` and defaults to `Friday`.
 - 2.21.0 (27 Aug 2022)
