@@ -489,10 +489,10 @@ trait Listable
     protected function decodeArray($data): array
     {
         if (is_string($data)) {
-            return json_decode($data, true);
+            return json_decode($data, true) ?: [];
         }
 
-        return $data;
+        return $data ?: [];
     }
 
     /**
