@@ -112,15 +112,14 @@ class MongezServiceProvider extends ServiceProvider
      */
     protected function makeCarbonImmutable()
     {
-        Date::setWeekStartsAt($this->config['date']['week_starts_at'] ?? CarbonInterface::SATURDAY);
-        Date::setWeekEndsAt($this->config['date']['week_ends_at'] ?? CarbonInterface::FRIDAY);
         $carbonImmutable = $this->config['date']['immutable'] ?? true;
 
         if (!$carbonImmutable) {
-            return;
+            Date::use(CarbonImmutable::class);
         }
 
-        Date::use(CarbonImmutable::class);
+        Date::setWeekStartsAt($this->config['date']['week_starts_at'] ?? CarbonInterface::SATURDAY);
+        Date::setWeekEndsAt($this->config['date']['week_ends_at'] ?? CarbonInterface::FRIDAY);
     }
 
     /**
