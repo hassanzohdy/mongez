@@ -114,7 +114,7 @@ class MongezServiceProvider extends ServiceProvider
     {
         $carbonImmutable = $this->config['date']['immutable'] ?? true;
 
-        if (!$carbonImmutable) {
+        if ($carbonImmutable) {
             Date::use(CarbonImmutable::class);
         }
 
