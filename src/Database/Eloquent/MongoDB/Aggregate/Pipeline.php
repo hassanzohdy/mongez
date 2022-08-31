@@ -2,8 +2,10 @@
 
 namespace HZ\Illuminate\Mongez\Database\Eloquent\MongoDB\Aggregate;
 
+use Carbon\CarbonInterface;
 use DateTimeInterface;
 use MongoDB\BSON\UTCDateTime;
+use Illuminate\Support\Facades\Date;
 
 class Pipeline
 {
@@ -49,7 +51,6 @@ class Pipeline
         $this->name = $name;
         $this->aggregationFramework = $aggregationFramework;
     }
-
 
     /**
      * Sum the given column name 
@@ -174,7 +175,7 @@ class Pipeline
         }
 
         if ($value instanceof DateTimeInterface) {
-            $value = new UTCDateTime($value->format('Uv'));
+            $value = $this->praseDate($value);
         }
 
         $this->data($column, [
@@ -254,11 +255,11 @@ class Pipeline
     public function whereBetween($column, $minValue, $maxValue): Pipeline
     {
         if ($minValue instanceof DateTimeInterface) {
-            $minValue = new UTCDateTime($minValue->format('Uv'));
+            $minValue = $this->praseDate($minValue);
         }
 
         if ($maxValue instanceof DateTimeInterface) {
-            $maxValue = new UTCDateTime($maxValue->format('Uv'));
+            $maxValue = $this->praseDate($maxValue);
         }
 
         $this->data($column, [
@@ -292,22 +293,16 @@ class Pipeline
         return $this;
     }
 
-    // /**
-    //  * Unwind the given column
-    //  * 
-    //  * @param string $column
-    //  * @return $this
-    //  */
-    // public function unwind($column)
-    // {
-    //     if ($this->name !== 'unwind') {
-    //         return $this->aggregationFramework->unwind($column);
-    //     }
-
-    //     $this->data = $column;
-
-    //     return $this;
-    // }
+    /**
+     * Parse date into proper UTCDateTime format
+     * 
+     * @param  DateTimeInterface $date
+     * @return UTCDateTime
+     */
+    protected function praseDate(DateTimeInterface $date)
+    {
+        return new UTCDateTime($date->format('Uv'));
+    }
 
     /**
      * Return the final name of the pipeline

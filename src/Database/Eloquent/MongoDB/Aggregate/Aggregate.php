@@ -73,7 +73,7 @@ class Aggregate
     public function groupByDay($column): Pipeline
     {
         return $this->pipeline('group')->data('_id', [
-            'day' => ['$dayOfMonth' => '$' . $column],
+            'day' => ['$dayOfMonth' => $this->prepareGroupByDateColumn($column)],
         ]);
     }
 
@@ -85,10 +85,12 @@ class Aggregate
      */
     public function groupByDate($column): Pipeline
     {
+        $preparedColumn = $this->prepareGroupByDateColumn($column);
+
         return $this->pipeline('group')->data('_id', [
-            'day' => ['$dayOfMonth' => '$' . $column],
-            'month' => ['$month' => '$' . $column],
-            'year' => ['$year' => '$' . $column],
+            'day' => ['$dayOfMonth' => $preparedColumn],
+            'month' => ['$month' => $preparedColumn],
+            'year' => ['$year' => $preparedColumn],
         ]);
     }
 
@@ -100,8 +102,10 @@ class Aggregate
      */
     public function groupByMonth($column): Pipeline
     {
+        $preparedColumn = $this->prepareGroupByDateColumn($column);
+
         return $this->pipeline('group')->data('_id', [
-            'month' => ['$month' => '$' . $column],
+            'month' => ['$month' => $preparedColumn],
         ]);
     }
 
@@ -113,8 +117,10 @@ class Aggregate
      */
     public function groupByWeek($column): Pipeline
     {
+        $preparedColumn = $this->prepareGroupByDateColumn($column);
+
         return $this->pipeline('group')->data('_id', [
-            'week' => ['$week' => '$' . $column],
+            'week' => ['$week' => $preparedColumn],
         ]);
     }
 
@@ -126,9 +132,38 @@ class Aggregate
      */
     public function groupByYear($column): Pipeline
     {
+        $preparedColumn = $this->prepareGroupByDateColumn($column);
+
         return $this->pipeline('group')->data('_id', [
-            'year' => ['$year' => '$' . $column],
+            'year' => ['$year' => $preparedColumn],
         ]);
+    }
+
+    /**
+     * Prepare group by column for date
+     * 
+     * @param string $column
+     * @return mixed
+     */
+    public function prepareGroupByDateColumn($column)
+    {
+        return [
+            'date' => '$' . $column,
+            'timezone' => date_default_timezone_get(),
+        ];
+
+        $properColumn = $column . '_proper_date';
+
+        $this->pipeline('project')->data([
+            $properColumn => [
+                '$dateToParts' => [
+                    'date' => '$' . $column,
+                    'timezone' => date_default_timezone_get(),
+                ]
+            ],
+        ]);
+
+        return '$' . $properColumn;
     }
 
     /**
@@ -324,6 +359,7 @@ class Aggregate
             $options = [
                 'typeMap' => ['root' => 'array', 'document' => 'array'],
             ];
+
             return $query->aggregate($pipelines, $options);
         }));
     }
