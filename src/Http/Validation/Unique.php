@@ -33,7 +33,7 @@ class Unique
         $countCheck = DB::table($this->parameters['table'])->where($this->parameters['column'], $value)->where($this->parameters['ignoreColumn'] ?? 'id', '!=', (int) $this->parameters['ignoreValue'])->count();
 
         if ($countCheck) {
-            $validator->errors()->add($attribute, trans('validation.unique', ['attribute' => $attribute]));
+            $validator->errors()->add($attribute, trans('validation.unique', ['attribute' => trans("validation.attributes.${attribute}")]));
 
             return false;
         }
