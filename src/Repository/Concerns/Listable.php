@@ -474,7 +474,8 @@ trait Listable
 
             if ($this->option('as-model', false) === true) return $record;
 
-            $resource = static::RESOURCE;
+            $resource = $this->getResourceClass();
+
             return new $resource((object) $record);
         });
     }
