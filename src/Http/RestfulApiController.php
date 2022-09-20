@@ -44,7 +44,12 @@ abstract class RestfulApiController extends ApiController
         parent::__construct();
 
         if (!empty($this->controllerInfo['repository'])) {
-            $this->repository = repo($this->controllerInfo['repository']);
+            $this->repository = $repository = repo($this->controllerInfo['repository']);
+
+            if(defined(get_class($repository) . '::ADMIN_RESOURCE')) {
+                $repository->useResource($repository::ADMIN_RESOURCE);
+
+            }
         }
     }
 

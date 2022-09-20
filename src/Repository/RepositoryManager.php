@@ -359,6 +359,12 @@ abstract class RepositoryManager implements RepositoryInterface
     protected $oldModel;
 
 
+    /**
+     * Define repository admin resource.
+     *
+     * @const string
+     */
+    const ADMIN_RESOURCE = '';
 
     /**
      * Constructor

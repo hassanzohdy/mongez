@@ -47,7 +47,7 @@ class {{ ControllerName }} extends ApiController
         $record = $this->repository->getPublished($id);
 
         if (! $record) {
-            return $this->notFound('notFoundRecord');
+            return $this->notFound();
         }
 
         return $this->success([
