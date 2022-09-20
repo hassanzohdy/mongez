@@ -38,7 +38,14 @@ trait Listable
      * 
      * @var string
      */
-    private $currentResource;
+    protected $currentResource;
+
+    /**
+     * Current used resource
+     * 
+     * @var string
+     */
+    protected static $currentDefaultResource = '';
 
     /**
      * {@inheritDoc}
@@ -68,6 +75,17 @@ trait Listable
     }
 
     /**
+     * Set current used resource
+     * 
+     * @param  string $resourceClass
+     * @return void
+     */
+    public static function setCurrentResource(string $resourceClass)
+    {
+        static::$currentDefaultResource = $resourceClass;
+    }
+
+    /**
      * Get current used resource class name
      * 
      * @return string
@@ -76,13 +94,9 @@ trait Listable
     {
         if ($this->currentResource) return $this->currentResource;
 
-        if (!empty(static::APPS_RESOURCES)) {
-            $appType = config('app.type');
+        if (static::$currentDefaultResource) return static::$currentDefaultResource;
 
-            if (!empty(static::APPS_RESOURCES[$appType])) return static::APPS_RESOURCES[$appType];
-        }
-
-        return $this->currentResource ?: static::RESOURCE;
+        return static::RESOURCE;
     }
 
     /**

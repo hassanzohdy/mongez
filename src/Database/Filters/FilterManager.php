@@ -67,6 +67,8 @@ class FilterManager
                 $filterFunction = $filtersList[$option['operator']];
 
                 foreach ($option['columns'] as $column) {
+                    if (empty($column['filteredColumns'])) continue;
+
                     call_user_func_array([$filterObject, $filterFunction], [$column['filteredColumns'], $column['value'], $option['operator']]);
                 }
             }
