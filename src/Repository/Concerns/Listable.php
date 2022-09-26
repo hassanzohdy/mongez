@@ -177,11 +177,11 @@ trait Listable
      * @param int $id
      * @return Model|null
      */
-    public function getPublishedModel($id)
+    public function getPublishedModel($id): ?Model
     {
         $model = $this->getModel($id);
 
-        if (!$model->{$this->getPublishedColumn()}) return null;
+        if (!$model || !$model->{$this->getPublishedColumn()}) return null;
 
         return $model;
     }
