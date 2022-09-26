@@ -605,9 +605,9 @@ abstract class RepositoryManager implements RepositoryInterface
 
         $this->setData($model, $this->request);
 
-        $this->save($model, $oldModel);
-
         $this->forceIgnore = false;
+
+        $this->save($model, $oldModel);
 
         return $model;
     }
