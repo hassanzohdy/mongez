@@ -194,11 +194,11 @@ trait Listable
      */
     public function getPublished($id)
     {
-        $item = $this->get((int) $id);
+        $record = $this->getPublishedModel($id);
 
-        if (!$item || !$item->{$this->getPublishedColumn()}) return null;
+        if (!$record) return null;
 
-        return $item;
+        return $this->wrap($record);
     }
 
     /**
@@ -575,6 +575,6 @@ trait Listable
     {
         $model = static::MODEL;
 
-        return is_array($value) ? $model::whereIn($column, $value)->get() : $model::where($column, $value)->first();
+        return $model::where($column, $value)->first();
     }
 }

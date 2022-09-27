@@ -32,8 +32,8 @@ class {{ ControllerName }} extends ApiController
             'records' => $this->repository->listPublished($options),
         ];
 
-        if ($this->repository->getPaginateInfo()) {
-            $response['paginationInfo'] = $this->repository->getPaginateInfo();
+        if ($pagination = $this->repository->getPaginationInfo()) {
+            $json['paginationInfo'] = $pagination;
         }
 
         return $this->success($response);

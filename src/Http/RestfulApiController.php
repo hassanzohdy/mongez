@@ -58,8 +58,8 @@ abstract class RestfulApiController extends ApiController
     {
         $json['records'] = $this->repository->list($this->listOptions($request));
 
-        if ($this->repository->getPaginateInfo()) {
-            $json['paginationInfo'] = $this->repository->getPaginateInfo();
+        if ($pagination = $this->repository->getPaginationInfo()) {
+            $json['paginationInfo'] = $pagination;
         }
 
         return $this->success($json);

@@ -63,8 +63,8 @@ abstract class AdminUIController
     {
         $data['records'] = $this->repository->list($this->listOptions($request));
 
-        if ($this->repository->getPaginateInfo()) {
-            $data['paginationInfo'] = $this->repository->getPaginateInfo();
+        if ($pagination = $this->repository->getPaginationInfo()) {
+            $json['paginationInfo'] = $pagination;
         }
 
         return $this->render('index', $data);
