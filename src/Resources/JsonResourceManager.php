@@ -927,9 +927,10 @@ abstract class JsonResourceManager extends JsonResource
 
         $resources = $resource::collection($collection);
 
+        // the ->values() is needed to make sure it is a valid array syntax not an object
         $resources->collection = $resources->collection->filter(function (JsonResourceManager $resource) {
             return $resource->canBeEmbedded($this);
-        });
+        })->values();
 
         $this->set($column, $resources);
     }

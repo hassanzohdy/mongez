@@ -50,6 +50,8 @@ class MyClass
 
 ## Change Log
 
+- 2.23.3 (22 Oct 2022)
+  - Fixed collectables to return proper array syntax instead of objects.
 - 2.22.2 (28 Aug 2022)
   - Fixed `ARRAYABLE_DATA` on listing as it is encoded to json.
 - 2.22.1 (28 Aug 2022)
