@@ -50,6 +50,8 @@ class MyClass
 
 ## Change Log
 
+- 2.23.4 (22 Oct 2022)
+  - Fixed defining the class namespace of `UTCDateTime` in `functions.php` file.
 - 2.23.3 (22 Oct 2022)
   - Fixed collectables to return proper array syntax instead of objects.
 - 2.22.2 (28 Aug 2022)

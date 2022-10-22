@@ -7,6 +7,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\App;
+use MongoDB\BSON\UTCDateTime;
 use HZ\Illuminate\Mongez\Events\Events;
 use HZ\Illuminate\Mongez\Helpers\Mongez;
 use HZ\Illuminate\Mongez\Repository\RepositoryInterface;
@@ -177,8 +178,13 @@ if (!function_exists('date_response')) {
             $date = $date->toDateTime();
         } elseif (is_numeric($date)) {
             $date = new DateTime("@{$date}");
-        } elseif (is_array($date) && isset($date['date'])) {
-            $date = new DateTime($date['date']);
+        } elseif (is_array($date)) {
+            if (isset($date['date'])) {
+                $date = new DateTime($date['date']);
+            } elseif (!empty($date['$date']['$numberLong'])) {
+                $timestamp = $date['$date']['$numberLong'] / 1000;
+                $date = new DateTime("@{$timestamp}");
+            }
         } elseif (is_string($date)) {
             $date = new DateTime($date);
         } elseif (!$date instanceof DateTimeInterface) {
