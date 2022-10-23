@@ -2,7 +2,7 @@
 
 This project aims to make using Laravel framework more organized and extensible.
 
-# Table of contents
+## Table of contents
 
 - [Mongez](#mongez)
 - [Table of contents](#table-of-contents)
@@ -13,17 +13,17 @@ This project aims to make using Laravel framework more organized and extensible.
   - [Change Log](#change-log)
 - [Documentation](#documentation)
 
-# Requirements
+## Requirements
 
 - Laravel `>=5.6`
 
-# Installation
+## Installation
 
 Run the following Command in your cli.
 
 `composer require hassanzohdy/mongez`
 
-# Configurations
+## Configurations
 
 Once its done run the following command to create the `config/mongez.php` file.
 
@@ -45,11 +45,12 @@ class MyClass
     $this->transUsers('usersGroups.permissions'); // will translate from `Users` module and `usersGroups` file and the keyword is `permissions
   }
 }
-
 ```
 
 ## Change Log
 
+- 2.23.5 (23 Oct 2022)
+  - Now generated model will have `casts` property instead of `dates` for date casting.
 - 2.23.4 (22 Oct 2022)
   - Fixed defining the class namespace of `UTCDateTime` in `functions.php` file.
 - 2.23.3 (22 Oct 2022)
@@ -97,6 +98,6 @@ class MyClass
 - 2.1.14 (28 Feb 2022)
   - Fixed generated `database` directory to be `Database`.
 
-# Documentation
+## Documentation
 
 See full documentation in the [wiki page](https://github.com/hassanzohdy/mongez/wiki).

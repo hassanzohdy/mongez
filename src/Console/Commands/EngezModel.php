@@ -112,10 +112,18 @@ class EngezModel extends EngezGeneratorCommand implements EngezInterface
         }
 
         if ($this->optionHasValue('date')) {
-            $dateColumns = $this->option('date');
+            $dateColumns = explode(',', $this->option('date'));
 
-            $data[] = $this->replaceStub('Models/date', [
-                '{{ columns }}' => $this->stubStringAsArray($dateColumns),
+            foreach ($dateColumns as $key => $dateColumn) {
+                $index = $key;
+                $key = $dateColumn;
+                $dateColumn = 'datetime'; 
+                $dateColumns[$key] = $dateColumn;
+                unset($dateColumns[$index]);
+            }
+
+            $data[] = $this->replaceStub('Models/casts', [
+                '{{ columns }}' => $this->stubStringAsArray($dateColumns, true),
             ]);
         }
 

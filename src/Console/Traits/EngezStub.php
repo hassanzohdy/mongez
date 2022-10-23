@@ -41,9 +41,10 @@ trait EngezStub
      * Convert the given data as array syntax
      *
      * @param array|string $data
+     * @param  bool $newLine
      * @return string
      */
-    protected function stubStringAsArray($data): string
+    protected function stubStringAsArray($data,bool $newLine = false): string
     {
         if (is_string($data)) {
             $data = explode(',', $data);
@@ -51,23 +52,24 @@ trait EngezStub
 
         $string = '';
 
-        // $isAssociativeArray = false;
+        $spacing = "        ";
 
+        $startLine = $newLine ? PHP_EOL . $spacing : PHP_EOL;
+        
         foreach ($data as $index => $value) {
             if (is_numeric($index)) {
                 $string .= "'" . $value . "',";
             } else {
-                // $isAssociativeArray = true;
-                $string .= "'" . $index . "' => '" . $value . "',";
+                $string .= $startLine . "'" . $index . "' => '" . $value . "',";
             }
         }
 
         $string = rtrim($string, ',');
 
-        // if ($isAssociativeArray) {
-        //     return '[' . PHP_EOL . $string . PHP_EOL . ']';
-        // } else {
-        // }
+        if ($newLine) {
+            return '[' . $spacing .  $string . PHP_EOL . '    ]';
+        }
+
         return '[' . $string . ']';
     }
 

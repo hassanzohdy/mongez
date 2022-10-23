@@ -1,0 +1,5 @@
+
+	/** 
+	* {@inheritDoc}
+	*/
+	protected $casts = {{ columns }};
