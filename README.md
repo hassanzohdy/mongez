@@ -49,6 +49,8 @@ class MyClass
 
 ## Change Log
 
+- 2.24.0 (24 Nov 2022)
+  - Enhanced Resource Manager Errors to display the resource class name.
 - 2.23.5 (23 Oct 2022)
   - Now generated model will have `casts` property instead of `dates` for date casting.
 - 2.23.4 (22 Oct 2022)

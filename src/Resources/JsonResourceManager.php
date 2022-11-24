@@ -190,53 +190,58 @@ abstract class JsonResourceManager extends JsonResource
      */
     public function toArray($request)
     {
-        $this->request = $request;
+        try {
 
-        $this->assetsUrlFunction = $this->assetsUrlFunction ?: static::assetsFunction();
+            $this->request = $request;
 
-        static::DATA && $this->collectData(static::DATA);
+            $this->assetsUrlFunction = $this->assetsUrlFunction ?: static::assetsFunction();
 
-        static::STRING_DATA && $this->collectStringData(static::STRING_DATA);
+            static::DATA && $this->collectData(static::DATA);
 
-        static::INTEGER_DATA && $this->collectIntegerData(static::INTEGER_DATA);
+            static::STRING_DATA && $this->collectStringData(static::STRING_DATA);
 
-        static::FLOAT_DATA && $this->collectFloatData(static::FLOAT_DATA);
+            static::INTEGER_DATA && $this->collectIntegerData(static::INTEGER_DATA);
 
-        static::LOCATION_DATA && $this->collectLocationData(static::LOCATION_DATA);
+            static::FLOAT_DATA && $this->collectFloatData(static::FLOAT_DATA);
 
-        static::BOOLEAN_DATA && $this->collectBooleanData(static::BOOLEAN_DATA);
+            static::LOCATION_DATA && $this->collectLocationData(static::LOCATION_DATA);
 
-        static::OBJECT_DATA && $this->collectObjectData(static::OBJECT_DATA);
+            static::BOOLEAN_DATA && $this->collectBooleanData(static::BOOLEAN_DATA);
 
-        static::LOCALIZED && $this->collectLocalized(static::LOCALIZED);
+            static::OBJECT_DATA && $this->collectObjectData(static::OBJECT_DATA);
 
-        static::LOCALIZED_RESOURCE_DATA && $this->collectLocalizedResources(static::LOCALIZED_RESOURCE_DATA);
+            static::LOCALIZED && $this->collectLocalized(static::LOCALIZED);
 
-        static::LOCALIZED_COLLECTABLE_DATA && $this->collectLocalizedCollection(static::LOCALIZED_COLLECTABLE_DATA);
+            static::LOCALIZED_RESOURCE_DATA && $this->collectLocalizedResources(static::LOCALIZED_RESOURCE_DATA);
 
-        static::ASSETS && $this->collectAssets(static::ASSETS);
+            static::LOCALIZED_COLLECTABLE_DATA && $this->collectLocalizedCollection(static::LOCALIZED_COLLECTABLE_DATA);
 
-        static::COLLECTABLE && $this->collectCollectables(static::COLLECTABLE);
+            static::ASSETS && $this->collectAssets(static::ASSETS);
 
-        static::RESOURCES && $this->collectResources(static::RESOURCES);
+            static::COLLECTABLE && $this->collectCollectables(static::COLLECTABLE);
 
-        static::DATES && $this->collectDates(static::DATES);
+            static::RESOURCES && $this->collectResources(static::RESOURCES);
 
-        $this->extend($request);
+            static::DATES && $this->collectDates(static::DATES);
 
-        // unset all data from the resource
-        if (!empty(static::$disabledKeys)) {
-            foreach (static::$disabledKeys as $key) {
-                unset($this->data[$key]);
-            }
-        }
+            $this->extend($request);
 
-        if (!empty(static::$allowedKeys)) {
-            foreach (array_keys($this->data) as $key) {
-                if (!in_array($key, static::$allowedKeys)) {
+            // unset all data from the resource
+            if (!empty(static::$disabledKeys)) {
+                foreach (static::$disabledKeys as $key) {
                     unset($this->data[$key]);
                 }
             }
+
+            if (!empty(static::$allowedKeys)) {
+                foreach (array_keys($this->data) as $key) {
+                    if (!in_array($key, static::$allowedKeys)) {
+                        unset($this->data[$key]);
+                    }
+                }
+            }
+        } catch (\Throwable $th) {
+            throw new \Exception(sprintf('Error In Resource %s, %s', get_class($this), $th->getMessage()));
         }
 
         return $this->data;
