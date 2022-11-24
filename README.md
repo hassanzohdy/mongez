@@ -49,6 +49,8 @@ class MyClass
 
 ## Change Log
 
+- 2.24.1 (24 Nov 2022)
+  - Fixed empty array of date in `date_response`.
 - 2.24.0 (24 Nov 2022)
   - Enhanced Resource Manager Errors to display the resource class name.
 - 2.23.5 (23 Oct 2022)

@@ -184,6 +184,8 @@ if (!function_exists('date_response')) {
             } elseif (!empty($date['$date']['$numberLong'])) {
                 $timestamp = $date['$date']['$numberLong'] / 1000;
                 $date = new DateTime("@{$timestamp}");
+            } else {
+                return;
             }
         } elseif (is_string($date)) {
             $date = new DateTime($date);
