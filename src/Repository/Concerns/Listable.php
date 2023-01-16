@@ -153,6 +153,8 @@ trait Listable
 
         $this->query = $this->getQuery();
 
+        $this->trigger("listing", $this->query);
+
         $this->select();
 
         $filterManger = new FilterManager($this->query, $options, static::FILTER_BY);
@@ -479,8 +481,9 @@ trait Listable
      */
     protected function records(Collection $records): Collection
     {
-        return $records->map(function ($record) {
-            if (!empty(static::ARRAYBLE_DATA)) {
+        $hasArrayableData = !empty(static::ARRAYBLE_DATA);
+        return $records->map(function ($record) use ($hasArrayableData) {
+            if ($hasArrayableData) {
                 foreach (static::ARRAYBLE_DATA as $column) {
                     $record[$column] = $this->decodeArray($record[$column]);
                 }
@@ -575,6 +578,10 @@ trait Listable
     {
         $model = static::MODEL;
 
-        return $model::where($column, $value)->first();
+        $query = $model::where($column, $value);
+
+        $this->trigger('fetching', $query);
+
+        return $query->first();
     }
 }

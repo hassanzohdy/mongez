@@ -157,6 +157,38 @@ if (!function_exists('str_remove_first')) {
     }
 }
 
+if (!function_exists('parse_date')) {
+    /**
+     * Convert the given date to a Datetime object
+     * 
+     * @param  mixed $date
+     * @return \DateTime | null
+     */
+    function parse_date($date)
+    {
+        if ($date instanceof UTCDateTime) {
+            $date = $date->toDateTime();
+        } elseif (is_numeric($date)) {
+            $date = new DateTime("@{$date}");
+        } elseif (is_array($date)) {
+            if (isset($date['date'])) {
+                $date = new DateTime($date['date']);
+            } elseif (!empty($date['$date']['$numberLong'])) {
+                $timestamp = $date['$date']['$numberLong'] / 1000;
+                $date = new DateTime("@{$timestamp}");
+            } else {
+                return;
+            }
+        } elseif (is_string($date)) {
+            $date = new DateTime($date);
+        } elseif (!$date instanceof DateTimeInterface) {
+            return;
+        }
+
+        return $date;
+    }
+}
+
 if (!function_exists('date_response')) {
     /**
      * Parse the date and return more readable data
