@@ -520,13 +520,13 @@ abstract class JsonResourceManager extends JsonResource
                     }
                 } else {
                     if ($localizedValue['localeCode'] === $localeCode) {
-                        return (string) $localizedValue['text'];
+                        return (string) ($localizedValue['text'] ?? '');
                     }
                 }
             }
             return $valuesList ?: $value;
         } elseif ($localizationMode === 'object' && isset($value[$localeCode]) || isset($value[$localeCode])) {
-            return (string) $value[$localeCode];
+            return (string) ($localizedValue['text'] ?? '');
         }
 
         return $value;
