@@ -48,7 +48,8 @@ class MyClass
 ```
 
 ## Change Log
-
+- 2.24.2 (24 Dec 2023)
+  - Fixed request sql options is overwritten by current class sql options
 - 2.24.1 (24 Nov 2022)
   - Fixed empty array of date in `date_response`.
 - 2.24.0 (24 Nov 2022)

@@ -338,7 +338,8 @@ abstract class RestfulApiController extends ApiController
             $requestData['orderBy'] = [$request->sortBy, $request->sortDirection];
         };
 
-        return array_merge($requestData, (array) $this->controllerInfo('listOptions'));
+        return array_merge((array) $this->controllerInfo('listOptions'), $requestData);
+        // return array_merge($requestData, (array) $this->controllerInfo('listOptions'));
     }
 
     /**
