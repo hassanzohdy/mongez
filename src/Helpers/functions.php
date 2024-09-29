@@ -105,10 +105,10 @@ if (!function_exists('repo')) {
      * Get repository object for the given repository name
      * 
      * @param string $repository
-     * @return \HZ\Illuminate\Mongez\Repository\RepositoryInterface
+     * @return \HZ\Illuminate\Mongez\Repository\MongoDBRepositoryManager
      * @throws \HZ\Illuminate\Mongez\Repository\NotFoundRepositoryException
      */
-    function repo(string $repository): RepositoryInterface
+    function repo(string $repository): \HZ\Illuminate\Mongez\Repository\MongoDBRepositoryManager
     {
         static $repos = [];
 
