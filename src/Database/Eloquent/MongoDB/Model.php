@@ -6,7 +6,7 @@ use HZ\Illuminate\Mongez\Database\Eloquent\Associatable;
 use HZ\Illuminate\Mongez\Database\Eloquent\ModelEvents;
 use DateTimeInterface;
 use Illuminate\Support\Facades\DB;
-use Jenssegers\Mongodb\Eloquent\Model as BaseModel;
+use MongoDB\Laravel\Eloquent\Model as BaseModel;
 use HZ\Illuminate\Mongez\Database\Eloquent\ModelTrait;
 
 abstract class Model extends BaseModel
@@ -238,7 +238,7 @@ abstract class Model extends BaseModel
      */
     public static function tableName()
     {
-        if (static::$tableName === null) {
+        if (empty(static::$tableName)) {
             $model = new static;
             static::$tableName = ($model)->getTable();
         }
@@ -286,8 +286,8 @@ abstract class Model extends BaseModel
         // before creating, we will check if the created_by column has value
         // if so, then we will update the column for the current user id
         static::creating(function ($model) {
-            if (!$model->id) {
-                $model->id = static::nextId();
+            if (!$model->cid) {
+                $model->cid = static::nextId();
             }
         });
 
@@ -334,16 +334,17 @@ abstract class Model extends BaseModel
 
         $collection = static::tableName();
 
-        $ids = DB::collection('ids');
+        $ids = DB::table('ids');
 
         if (!$lastId) {
             $ids->insert([
                 'collection' => $collection,
-                'id' => static::$initialId ?: mt_rand(100000, 999999),
+                'cid' => static::$initialId ?: mt_rand(100000, 999999),
             ]);
         } else {
+            // dd($ids->where('collection', $collection)->get());
             $ids->where('collection', $collection)->update([
-                'id' => $newId
+                'cid' => $newId
             ]);
         }
 
@@ -367,11 +368,13 @@ abstract class Model extends BaseModel
      */
     public static function lastInsertId(): int
     {
-        $ids = DB::collection('ids');
+        $ids = DB::table('ids');
 
         $info = $ids->where('collection', static::tableName())->first();
 
-        return $info ? $info['id'] : 0;
+        if (empty($info?->cid)) return 0;
+
+        return $info->cid;
     }
 
     /**
@@ -381,7 +384,7 @@ abstract class Model extends BaseModel
      */
     public static function resetAutoIncrement()
     {
-        DB::collection('ids')->where('collection', static::tableName())->delete();
+        DB::table('ids')->where('collection', static::tableName())->delete();
     }
 
     /**
@@ -456,7 +459,7 @@ abstract class Model extends BaseModel
      */
     public static function find($id)
     {
-        return static::where('id', (int) $id)->first();
+        return static::where('cid', (int) $id)->first();
     }
 
     /**
