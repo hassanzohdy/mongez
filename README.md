@@ -51,6 +51,11 @@ class MyClass
 
 ## Change Log
 
+-   3.1.0 (29 Sep 2024)
+    -   Update codebase to support laravel 11+
+    -   Remove Carbon `setWeekStartsAt` and `setWeekEndsAt` as it was removed from carbon.
+-   3.0.1 (29 Sep 2024)
+    -   Update codebase to support laravel 10 with new mongodb elquent integration
 -   2.24.2 (24 Dec 2023)
     -   Fixed request sql options is overwritten by current class sql options
 -   2.24.1 (24 Nov 2022)
