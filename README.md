@@ -17,7 +17,7 @@ This project aims to make using Laravel framework more organized and extensible.
 
 -   Laravel `>=11`
 
-### For compatibility with older versions of Laravel 10, please use version 3.0 of this package.
+### For compatibility with Laravel 10, please use version 3.0 of this package.
 
 ### For compatibility with older versions of Laravel, please use version 2.x of this package.
 
