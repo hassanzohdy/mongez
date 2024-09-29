@@ -286,8 +286,8 @@ abstract class Model extends BaseModel
         // before creating, we will check if the created_by column has value
         // if so, then we will update the column for the current user id
         static::creating(function ($model) {
-            if (!$model->cid) {
-                $model->cid = static::nextId();
+            if (!$model->id) {
+                $model->id = static::nextId();
             }
         });
 
@@ -339,12 +339,12 @@ abstract class Model extends BaseModel
         if (!$lastId) {
             $ids->insert([
                 'collection' => $collection,
-                'cid' => static::$initialId ?: mt_rand(100000, 999999),
+                'id' => static::$initialId ?: mt_rand(100000, 999999),
             ]);
         } else {
             // dd($ids->where('collection', $collection)->get());
             $ids->where('collection', $collection)->update([
-                'cid' => $newId
+                'id' => $newId
             ]);
         }
 
@@ -372,9 +372,9 @@ abstract class Model extends BaseModel
 
         $info = $ids->where('collection', static::tableName())->first();
 
-        if (empty($info?->cid)) return 0;
+        if (empty($info?->id)) return 0;
 
-        return $info->cid;
+        return $info->id;
     }
 
     /**
@@ -459,7 +459,7 @@ abstract class Model extends BaseModel
      */
     public static function find($id)
     {
-        return static::where('cid', (int) $id)->first();
+        return static::where('id', (int) $id)->first();
     }
 
     /**

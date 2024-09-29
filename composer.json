@@ -13,7 +13,7 @@
         "php": ">=8.2",
         "cocur/slugify": "^4.0",
         "illuminate/support": ">=10.0",
-        "mongodb/laravel-mongodb": "^5.0.2"
+        "mongodb/laravel-mongodb": "^4.8"
     },
     "authors": [
         {
