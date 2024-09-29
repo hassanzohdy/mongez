@@ -35,7 +35,7 @@ if (!function_exists('user')) {
      */
     function user($guard = null)
     {
-        return request()->user($guard);
+        return auth($guard)->user();
     }
 }
 
