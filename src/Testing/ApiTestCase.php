@@ -16,9 +16,9 @@ use HZ\Illuminate\Mongez\Testing\Traits\WithAccessToken;
 
 abstract class ApiTestCase extends TestCase
 {
-    use CreatesApplication;
+    // use CreatesApplication;
 
-    use WithFaker;
+    // use WithFaker;
 
     use WithAccessToken;
 
@@ -78,7 +78,7 @@ abstract class ApiTestCase extends TestCase
      */
     protected function callFrom($response)
     {
-        $this->refreshApplication();
+        // $this->refreshApplication();
 
         return $response;
     }
@@ -226,26 +226,28 @@ abstract class ApiTestCase extends TestCase
         return $response;
     }
 
-    /**
-     * Create the test response instance from the given response.
-     *
-     * @param  \Illuminate\Http\Response  $response
-     * @return \Illuminate\Testing\TestResponse
-     */
-    protected function createTestResponse($response)
-    {
-        $testResponse = TestResponse::fromBaseResponse($response);
+    // /**
+    //  * Create the test response instance from the given response.
+    //  *
+    //  * @param  \Illuminate\Http\Response  $response
+    //  * @return \Illuminate\Testing\TestResponse
+    //  */
+    // protected function createTestResponse($response, $request)
+    // {
+    //     // $testResponse = TestResponse::fromBaseResponse($response);
 
-        $testResponse->setTestSuit($this);
+    //     // $testResponse->setTestSuit($this);
 
-        return tap($testResponse, function ($response) {
-            $response->withExceptions(
-                $this->app->bound(LoggedExceptionCollection::class)
-                    ? $this->app->make(LoggedExceptionCollection::class)
-                    : new LoggedExceptionCollection()
-            );
-        });
-    }
+    //     // return tap($testResponse, function ($response) {
+    //     //     $response->withExceptions(
+    //     //         $this->app->bound(LoggedExceptionCollection::class)
+    //     //             ? $this->app->make(LoggedExceptionCollection::class)
+    //     //             : new LoggedExceptionCollection()
+    //     //     );
+    //     // });
+
+    //     return $response;
+    // }
 
     /**
      * Prepare the given uri
@@ -291,9 +293,9 @@ abstract class ApiTestCase extends TestCase
                     [$key, $length] = explode(':', $key);
                 }
 
-                $data[$key] = $this->faker->password($length);
+                $data[$key] = \fake()->password($length);
             } else {
-                $data[$key] = $this->faker->$value;
+                $data[$key] = \fake()->$value;
             }
         }
 
@@ -307,6 +309,6 @@ abstract class ApiTestCase extends TestCase
      */
     public function appendHeaders(): array
     {
-        return config('mongez.testing.headers', []);
+        return \config('mongez.testing.headers', []);
     }
 }
