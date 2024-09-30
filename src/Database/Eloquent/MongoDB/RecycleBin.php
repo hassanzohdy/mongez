@@ -18,7 +18,7 @@ trait RecycleBin
 
         $primaryId = $this->id;
 
-        DB::collection($trashTable)->insert([
+        DB::table($trashTable)->insert([
             'primaryId' => $primaryId,
             'record' => $recordInfo,
             'deletedBy' => ($user = user()) ? $user->sharedInfo() : null,
@@ -35,7 +35,7 @@ trait RecycleBin
      */
     public static function getDeleted()
     {
-        $records = DB::collection(static::trashTable())->pluck('record');
+        $records = DB::table(static::trashTable())->pluck('record');
 
         return $records->map(function ($record) {
             return new static($record);
@@ -50,7 +50,7 @@ trait RecycleBin
      */
     public static function findDeleted($id)
     {
-        $record = DB::collection(static::trashTable())->where('primaryId', (int) $id)->first();
+        $record = DB::table(static::trashTable())->where('primaryId', (int) $id)->first();
 
         if (!$record) return null;
 
@@ -75,7 +75,7 @@ trait RecycleBin
             $restoredIds[] = $record->id;
         }
 
-        DB::collection(static::trashTable())->whereIn('primaryId', $restoredIds)->delete();
+        DB::table(static::trashTable())->whereIn('primaryId', $restoredIds)->delete();
 
         return $records;
     }
