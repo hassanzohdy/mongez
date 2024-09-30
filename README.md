@@ -53,6 +53,9 @@ class MyClass
 
 ## Change Log
 
+-   3.1.4 (30 Sep 2024)
+    -   Add published scope (user will add to models that need it)
+    -   Add `findBy`, `forUser` and `forCustomer` scopes to all models
 -   3.1.0 (29 Sep 2024)
     -   Update codebase to support laravel 11+
     -   Remove Carbon `setWeekStartsAt` and `setWeekEndsAt` as it was removed from carbon.
