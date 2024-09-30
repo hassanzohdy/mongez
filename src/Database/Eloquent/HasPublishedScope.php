@@ -4,7 +4,7 @@ namespace HZ\Illuminate\Mongez\Database\Eloquent;
 
 use Illuminate\Database\Eloquent\Builder;
 
-trait HasPublishedState
+trait HasPublishedScope
 {
     /**
      * Scope a query to only include published records.
