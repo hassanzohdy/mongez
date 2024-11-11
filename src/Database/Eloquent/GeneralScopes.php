@@ -17,16 +17,8 @@ trait GeneralScopes
     /**
      * Scope to find by user id
      */
-    public function scopeForUser(Builder $query, int $id, string $userKey = 'user'): void
+    public function scopeFor(Builder $query, int $id, string $key = 'user'): void
     {
-        $query->where("{$userKey}.id", $id);
-    }
-
-    /**
-     * Scope to find by customer id
-     */
-    public function scopeForCustomer(Builder $query, int $id): void
-    {
-        $this->scopeForUser($query, $id, 'customer');
+        $query->where("{$key}.id", $id);
     }
 }
