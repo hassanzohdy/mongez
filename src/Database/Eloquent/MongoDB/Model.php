@@ -5,13 +5,14 @@ namespace HZ\Illuminate\Mongez\Database\Eloquent\MongoDB;
 use HZ\Illuminate\Mongez\Database\Eloquent\Associatable;
 use HZ\Illuminate\Mongez\Database\Eloquent\ModelEvents;
 use DateTimeInterface;
+use HZ\Illuminate\Mongez\Database\Eloquent\GeneralScopes;
 use Illuminate\Support\Facades\DB;
 use MongoDB\Laravel\Eloquent\Model as BaseModel;
 use HZ\Illuminate\Mongez\Database\Eloquent\ModelTrait;
 
 abstract class Model extends BaseModel
 {
-    use RecycleBin, ModelEvents, Associatable;
+    use RecycleBin, ModelEvents, Associatable, GeneralScopes;
 
     use ModelTrait {
         boot as traitBoot;
