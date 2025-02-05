@@ -6,7 +6,7 @@ use HZ\Illuminate\Mongez\Database\Eloquent\Associatable;
 use HZ\Illuminate\Mongez\Database\Eloquent\ModelEvents;
 use DateTimeInterface;
 use Illuminate\Support\Facades\DB;
-use Jenssegers\Mongodb\Eloquent\Model as BaseModel;
+use MongoDB\Laravel\Eloquent\Model as BaseModel;
 use HZ\Illuminate\Mongez\Database\Eloquent\ModelTrait;
 
 abstract class Model extends BaseModel
@@ -238,7 +238,7 @@ abstract class Model extends BaseModel
      */
     public static function tableName()
     {
-        if (static::$tableName === null) {
+        if (empty(static::$tableName)) {
             $model = new static;
             static::$tableName = ($model)->getTable();
         }
@@ -334,7 +334,7 @@ abstract class Model extends BaseModel
 
         $collection = static::tableName();
 
-        $ids = DB::collection('ids');
+        $ids = DB::table('ids');
 
         if (!$lastId) {
             $ids->insert([
@@ -342,6 +342,7 @@ abstract class Model extends BaseModel
                 'id' => static::$initialId ?: mt_rand(100000, 999999),
             ]);
         } else {
+            // dd($ids->where('collection', $collection)->get());
             $ids->where('collection', $collection)->update([
                 'id' => $newId
             ]);
@@ -367,11 +368,13 @@ abstract class Model extends BaseModel
      */
     public static function lastInsertId(): int
     {
-        $ids = DB::collection('ids');
+        $ids = DB::table('ids');
 
         $info = $ids->where('collection', static::tableName())->first();
 
-        return $info ? $info['id'] : 0;
+        if (empty($info?->id)) return 0;
+
+        return $info->id;
     }
 
     /**
@@ -381,7 +384,7 @@ abstract class Model extends BaseModel
      */
     public static function resetAutoIncrement()
     {
-        DB::collection('ids')->where('collection', static::tableName())->delete();
+        DB::table('ids')->where('collection', static::tableName())->delete();
     }
 
     /**
